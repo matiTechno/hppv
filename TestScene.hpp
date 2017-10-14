@@ -2,33 +2,37 @@
 
 #include "Scene.hpp"
 #include "Renderer.hpp"
+#include "Space.hpp"
 
 class TestScene: public Scene
 {
 public:
     TestScene()
     {
-        camera_.pos = {200.f, 200.f};
-        camera_.size = {1000.f, 1000.f};
+        properties_.pos = {100, 100};
+        properties_.size = {500, 200};
+        properties_.maximized = false;
     }
 
-    void render(Renderer& renderer, Rect projection) override
+    void render(Renderer& renderer) override
     {
-        glm::vec2 offset(20.f, 20.f);
-
-        Sprite sprite;
-        sprite.pos = camera_.pos + offset;
-        sprite.size = camera_.size - 2.f * offset;
-        sprite.color = {1.f, 0.f, 0.f, 0.5f};
-        //sprite.rotation = 3.14f / 4.f;
-
-        renderer.cache(sprite);
-
-        sprite.pos = projection.pos + offset;
-        sprite.size = projection.size - 2.f * offset;
-        sprite.color = {0.f, 1.f, 0.f, 0.1f};
-        sprite.rotation = 0.f;
-
-        renderer.cache(sprite);
+        Space space(0.f, 0.f, 100.f, 100.f);
+        auto projectedSpace = createExpandedToMatchAspectRatio(space, properties_.size);
+        renderer.setProjection(projectedSpace);
+        {
+            Sprite sprite;
+            sprite.color = {0.f, 1.f, 0.f, 0.1f};
+            sprite.pos = space.pos_;
+            sprite.size = space.size_;
+            renderer.cache(sprite);
+        }
+        {
+            Sprite sprite;
+            sprite.color = {1.f, 0.f, 0.f, 0.8f};
+            sprite.pos = {25.f, 25.f};
+            sprite.size = {50.f, 50.f};
+            renderer.cache(sprite);
+        }
+        renderer.flush();
     }
 };

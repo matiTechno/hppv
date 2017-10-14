@@ -4,10 +4,12 @@
 #include <GLFW/glfw3.h>
 #include "Scene.hpp"
 #include "Renderer.hpp"
-#include "Rect.hpp"
+#include "Space.hpp"
 
 App::App() = default;
 App::~App() = default;
+
+Frame App::frame_;
 
 bool App::initialize()
 {
@@ -48,41 +50,53 @@ void App::run()
 
    while(!glfwWindowShouldClose(window_))
    {
+       frame_.eventQueue.clear();
+
        glfwPollEvents();
 
        float newTime = glfwGetTime();
-       float frameTime = newTime - time;
+       frame_.frameTime = newTime - time;
        time = newTime;
-       (void)frameTime;
        
-       glm::ivec2 framebufferSize;
-       glfwGetFramebufferSize(window_, &framebufferSize.x, &framebufferSize.y);
-       auto aspect = static_cast<float>(framebufferSize.x) / framebufferSize.y;
+       glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
+                                       &frame_.framebufferSize.y);
 
-       glViewport(0, 0, framebufferSize.x, framebufferSize.y);
+       if(scene_->properties_.maximized)
+       {
+           scene_->properties_.pos = {0, 0};
+           scene_->properties_.size = frame_.framebufferSize;
+       }
+       
        glClear(GL_COLOR_BUFFER_BIT);
 
+       // render scene border
        {
-           auto camera = scene_->camera_;
-           auto cameraAspect = camera.size.x / camera.size.y;
+           renderer_->setViewport({0, 0}, frame_.framebufferSize,
+                                          frame_.framebufferSize);
 
-           Rect projection;
-           projection.size = camera.size;
-       
-           if(cameraAspect < aspect)
-               projection.size.x = aspect * projection.size.y;
-       
-           else if(cameraAspect > aspect)
-               projection.size.y = projection.size.x / aspect;
-       
-           projection.pos = camera.pos - (projection.size - camera.size) / 2.f;
+           renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
 
-           renderer_->setProjection(projection);
-           
-           scene_->render(*renderer_, projection);
-           
+           auto scenePos = scene_->properties_.pos;
+           auto sceneSize = scene_->properties_.size;
+
+           Sprite sprite;
+           sprite.color = {0.f, 1.f, 0.f, 0.4f};
+           sprite.pos = scenePos - 1;
+           sprite.size = sceneSize + 4;
+           renderer_->cache(sprite);
+
+           sprite.color = {0.f, 0.f, 0.f, 1.f};
+           sprite.pos = scenePos;
+           sprite.size = sceneSize;
+           renderer_->cache(sprite);
+
            renderer_->flush();
        }
+
+       renderer_->setViewport(scene_->properties_.pos,
+                              scene_->properties_.size, frame_.framebufferSize);
+
+       scene_->render(*renderer_);
 
        glfwSwapBuffers(window_);
    }

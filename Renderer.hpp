@@ -5,7 +5,7 @@
 #include <glm/mat4x4.hpp>
 #include <vector>
 #include "Shader.hpp"
-#include "Rect.hpp"
+class Space;
 
 struct Sprite
 {
@@ -29,14 +29,15 @@ public:
     Renderer& operator=(Renderer&&) = delete;
 
     // asserts that the cache is empty
-    void setProjection(Rect rect);
+    void setProjection(const Space& space);
+    void setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize);
 
     void cache(const Sprite& sprite);
 
     void cache(glm::vec2 pos, glm::vec2 size, glm::vec4 color, float rotation,
                 glm::vec2 rotationPoint);
 
-    // returns the number of rendered sprites
+    // returns a number of rendered sprites
     int flush();
 
 private:

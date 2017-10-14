@@ -1,0 +1,14 @@
+todo:
+
+* embedded sdf font
+* textures
+* ImGui
+* Space modifier functions
+* Renderer new states (blending, sampling, ...) + batching
+
+external dependencies:
+
+* glfw
+* glm
+
+compiles with gcc 7.2.0

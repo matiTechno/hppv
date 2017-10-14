@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Space.hpp"
 
 static const char* shaderSource = R"(
 
@@ -104,16 +105,23 @@ Renderer::~Renderer()
     glDeleteBuffers(1, &boInstances_);
 }
 
-void Renderer::setProjection(Rect rect)
+void Renderer::setProjection(const Space& space)
 {
     assert(instances_.empty());
 
-    auto matrix = glm::ortho(rect.pos.x, rect.pos.x + rect.size.x,
-                             rect.pos.y + rect.size.y, rect.pos.y);
+    auto matrix = glm::ortho(space.pos_.x, space.pos_.x + space.size_.x,
+                             space.pos_.y + space.size_.y, space.pos_.y);
 
     shader_.bind();
     glUniformMatrix4fv(shader_.getUniformLocation("projection"), 1, GL_FALSE,
                        &matrix[0][0]);
+}
+
+void Renderer::setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize)
+{
+    assert(instances_.empty());
+
+    glViewport(pos.x, framebufferSize.y - pos.y - size.y, size.x, size.y);
 }
 
 int Renderer::flush()

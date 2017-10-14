@@ -3,7 +3,7 @@
 #include <cassert>
 #include <functional>
 
-// when embedding in class with move semantics
+// when embedding in class with move semantics,
 // always capture by value in the callback
 class Deleter
 {

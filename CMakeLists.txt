@@ -11,11 +11,13 @@ add_executable(testscene
     Deleter.hpp
     glad.c
     glad.h
-    Rect.hpp
     Renderer.cpp
     Renderer.hpp
     Scene.hpp
+    Scene.cpp
     Shader.hpp
+    Space.cpp
+    Space.hpp
     )
 
 target_link_libraries(testscene PRIVATE -lglfw -lGL -ldl -lstdc++fs)
