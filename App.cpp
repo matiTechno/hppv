@@ -5,6 +5,9 @@
 #include "Scene.hpp"
 #include "Renderer.hpp"
 #include "Space.hpp"
+#include <iostream>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 App::App() = default;
 App::~App() = default;
@@ -15,6 +18,15 @@ bool  App::handleQuitEvent_ = true;
 
 bool App::initialize()
 {
+    std::cout << "GLFW compile time version " << GLFW_VERSION_MAJOR
+              << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << std::endl;
+    
+    std::cout << "GLFW run time version     " << glfwGetVersionString() << std::endl;
+    
+    std::cout << "GLM version               " << GLM_VERSION << std::endl;
+
+    glfwSetErrorCallback(errorCallback);
+
     if(!glfwInit())
         return false;
 
@@ -36,12 +48,21 @@ bool App::initialize()
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         return false;
 
+    std::cout << "vendor                    " << glGetString(GL_VENDOR) << std::endl;
+    std::cout << "renderer                  " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "OpenGL version            " << glGetString(GL_VERSION) << std::endl;
+
     glfwSwapInterval(1);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     renderer_ = std::make_unique<Renderer>();
+
+    ImGui_ImplGlfwGL3_Init(window_, false);
+    deleterImGui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
+
+    std::cout << "dear imgui version        " << IMGUI_VERSION << std::endl;
 
     frame_.events.reserve(20);
 
@@ -51,6 +72,7 @@ bool App::initialize()
     glfwSetCursorPosCallback(window_, cursorPosCallback);
     glfwSetMouseButtonCallback(window_, mouseButtonCallback);
     glfwSetScrollCallback(window_, scrollCallback);
+    glfwSetCharCallback(window_, charCallback);
 
     return true;
 }
@@ -64,6 +86,7 @@ void App::run()
        frame_.events.clear();
 
        glfwPollEvents();
+       ImGui_ImplGlfwGL3_NewFrame();
 
        float newTime = glfwGetTime();
        frame_.frameTime = newTime - time;
@@ -72,13 +95,14 @@ void App::run()
        glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
                                        &frame_.framebufferSize.y);
 
-       if(scene_->properties_.maximized)
+       if(scene_->properties_.maximize)
        {
            scene_->properties_.pos = {0, 0};
            scene_->properties_.size = frame_.framebufferSize;
        }
 
-       scene_->processInput(true);
+       scene_->processInput(!(ImGui::GetIO().WantCaptureKeyboard ||
+                              ImGui::GetIO().WantCaptureMouse));
        
        glClear(GL_COLOR_BUFFER_BIT);
 
@@ -111,6 +135,8 @@ void App::run()
 
        scene_->render(*renderer_);
 
+       ImGui::Render();
+
        glfwSwapBuffers(window_);
    }
 }
@@ -123,6 +149,11 @@ void App::quit()
 void App::setVsync(bool on)
 {
     glfwSwapInterval(on);
+}
+
+void App::errorCallback(int, const char* description)
+{
+    std::cout << description << std::endl;
 }
 
 void App::windowCloseCallback(GLFWwindow*)
@@ -145,13 +176,15 @@ void App::windowFocusCallback(GLFWwindow*, int focused)
     frame_.events.push_back(event);
 }
 
-void App::keyCallback(GLFWwindow*, int key, int, int action, int mods)
+void App::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     Event event(Event::Key);
     event.key.key = key;
     event.key.action = action;
     event.key.mods = mods;
     frame_.events.push_back(event);
+    
+    ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
 }
 
 void App::cursorPosCallback(GLFWwindow*, double xpos, double ypos)
@@ -161,18 +194,27 @@ void App::cursorPosCallback(GLFWwindow*, double xpos, double ypos)
     frame_.events.push_back(event);
 }
 
-void App::mouseButtonCallback(GLFWwindow*, int button, int action, int mods)
+void App::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     Event event(Event::MouseButton);
     event.mouseButton.button = button;
     event.mouseButton.action = action;
     event.mouseButton.mods = mods;
     frame_.events.push_back(event);
+    
+    ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
 }
 
-void App::scrollCallback(GLFWwindow*, double xoffset, double yoffset)
+void App::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
     Event event(Event::Scroll);
     event.scroll.offset = {xoffset, yoffset};
     frame_.events.push_back(event);
+    
+    ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
+}
+
+void App::charCallback(GLFWwindow* window, unsigned int codepoint)
+{
+    ImGui_ImplGlfwGL3_CharCallback(window, codepoint);
 }

@@ -1,20 +1,22 @@
 todo:
 
-* events handling
+XXX* ImGui
+OOO* prototype scene - base class for prototypes
+
 * Space modifier functions
-* prototype scene - base class for prototypes
+* support for multiple scenes
 
 * embedded sdf font
 * textures
-* ImGui
 * Renderer new states (blending, sampling, ...) + batching
-* support for multiple scenes
 * App init parameters
 * App static functions - printing OpenGL info / setting glClearColor / ...
+* add hppv namespace
+* postprocessing unit
 
 external dependencies:
 
 * glfw
 * glm
 
-compiles with gcc 7.2.0
+compiles with gcc 7.2.0 on linux

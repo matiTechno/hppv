@@ -162,7 +162,7 @@ void Renderer::cache(glm::vec2 pos, glm::vec2 size, glm::vec4 color, float rotat
 
     matrix = glm::translate(matrix, glm::vec3(pos, 0.f));
 
-    if(rotation)
+    if(rotation != 0.f)
     {
         matrix = glm::translate(matrix, glm::vec3(size / 2.f + rotationPoint, 0.f));
         matrix = glm::rotate(matrix, rotation, glm::vec3(0.f, 0.f, -1.f));

@@ -20,4 +20,6 @@ struct Space
 
 };
 
-Space createExpandedToMatchAspectRatio(Space space, glm::ivec2 size);
+// inspired by glm matrix transform functions
+// return new object instead of modifying existing one
+Space expandToMatchAspectRatio(Space space, glm::ivec2 size);

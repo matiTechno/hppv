@@ -1,6 +1,6 @@
 #include "Space.hpp"
 
-Space createExpandedToMatchAspectRatio(Space space, glm::ivec2 size)
+Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {
     auto spaceAspect = space.size.x / space.size.y;
 

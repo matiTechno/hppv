@@ -12,21 +12,17 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual void processInput(bool hasInput)
-    {
-        (void)hasInput;
-    }
+    virtual void update() {}
 
-    virtual void render(Renderer& renderer)
-    {
-        (void)renderer;
-    }
+    virtual void processInput(bool hasInput) {(void)hasInput;}
+
+    virtual void render(Renderer& renderer) {(void)renderer;}
 
     struct Properties
     {
         glm::ivec2 pos;
         glm::ivec2 size;
-        bool maximized;
+        bool maximize;
     } properties_;
 
     const Frame& frame_;

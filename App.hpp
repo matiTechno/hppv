@@ -38,6 +38,7 @@ public:
 
 private:
     Deleter deleterGlfw_;
+    Deleter deleterImGui_;
     std::unique_ptr<Scene> scene_;
     std::unique_ptr<Renderer> renderer_;
     static GLFWwindow* window_;
@@ -45,10 +46,12 @@ private:
     static bool handleQuitEvent_;
 
     void run();
+    static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);
     static void windowFocusCallback(GLFWwindow*, int focused);
-    static void keyCallback(GLFWwindow*, int key, int, int action, int mods);
+    static void keyCallback(GLFWwindow*, int key, int scancode, int action, int mods);
     static void cursorPosCallback(GLFWwindow*, double xpos, double ypos);
     static void mouseButtonCallback(GLFWwindow*, int button, int action, int mods);
     static void scrollCallback(GLFWwindow*, double xoffset, double yoffset);
+    static void charCallback(GLFWwindow*, unsigned int codepoint);
 };

@@ -1,29 +1,30 @@
 #pragma once
 
-#include "Scene.hpp"
+#include "PrototypeScene.hpp"
 #include "Renderer.hpp"
 #include "Space.hpp"
+#include "imgui/imgui.h"
 
-class TestScene: public Scene
+class TestScene: public PrototypeScene
 {
 public:
-    TestScene()
+    TestScene():
+        PrototypeScene(Space(0.f, 0.f, 100.f, 100.f), 1.1f)
     {
         properties_.pos = {100, 100};
         properties_.size = {500, 200};
-        properties_.maximized = false;
+        properties_.maximize = false;
     }
 
-    void render(Renderer& renderer) override
+private:
+    void prototypeRender(Renderer& renderer) override
     {
-        Space space(0.f, 0.f, 100.f, 100.f);
-        auto projectedSpace = createExpandedToMatchAspectRatio(space, properties_.size);
-        renderer.setProjection(projectedSpace);
+        ImGui::ShowTestWindow();
         {
             Sprite sprite;
             sprite.color = {0.f, 1.f, 0.f, 0.1f};
-            sprite.pos = space.pos;
-            sprite.size = space.size;
+            sprite.pos = {0.f, 0.f};
+            sprite.size = {100.f, 100.f};
             renderer.cache(sprite);
         }
         {
@@ -33,6 +34,5 @@ public:
             sprite.size = {50.f, 50.f};
             renderer.cache(sprite);
         }
-        renderer.flush();
     }
 };
