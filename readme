@@ -1,10 +1,16 @@
 todo:
 
+* events handling
+* Space modifier functions
+* prototype scene - base class for prototypes
+
 * embedded sdf font
 * textures
 * ImGui
-* Space modifier functions
 * Renderer new states (blending, sampling, ...) + batching
+* support for multiple scenes
+* App init parameters
+* App static functions - printing OpenGL info / setting glClearColor / ...
 
 external dependencies:
 

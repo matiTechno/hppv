@@ -109,8 +109,8 @@ void Renderer::setProjection(const Space& space)
 {
     assert(instances_.empty());
 
-    auto matrix = glm::ortho(space.pos_.x, space.pos_.x + space.size_.x,
-                             space.pos_.y + space.size_.y, space.pos_.y);
+    auto matrix = glm::ortho(space.pos.x, space.pos.x + space.size.x,
+                             space.pos.y + space.size.y, space.pos.y);
 
     shader_.bind();
     glUniformMatrix4fv(shader_.getUniformLocation("projection"), 1, GL_FALSE,

@@ -12,6 +12,11 @@ public:
 
     virtual ~Scene() = default;
 
+    virtual void processInput(bool hasInput)
+    {
+        (void)hasInput;
+    }
+
     virtual void render(Renderer& renderer)
     {
         (void)renderer;

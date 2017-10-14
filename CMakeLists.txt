@@ -9,6 +9,7 @@ add_executable(testscene
     App.cpp
     App.hpp
     Deleter.hpp
+    Event.hpp
     glad.c
     glad.h
     Renderer.cpp

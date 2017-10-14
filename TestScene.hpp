@@ -22,8 +22,8 @@ public:
         {
             Sprite sprite;
             sprite.color = {0.f, 1.f, 0.f, 0.1f};
-            sprite.pos = space.pos_;
-            sprite.size = space.size_;
+            sprite.pos = space.pos;
+            sprite.size = space.size;
             renderer.cache(sprite);
         }
         {

@@ -9,7 +9,9 @@
 App::App() = default;
 App::~App() = default;
 
+GLFWwindow* App::window_;
 Frame App::frame_;
+bool  App::handleQuitEvent_ = true;
 
 bool App::initialize()
 {
@@ -41,6 +43,15 @@ bool App::initialize()
     
     renderer_ = std::make_unique<Renderer>();
 
+    frame_.events.reserve(20);
+
+    glfwSetWindowCloseCallback(window_, windowCloseCallback);
+    glfwSetWindowFocusCallback(window_, windowFocusCallback);
+    glfwSetKeyCallback(window_, keyCallback);
+    glfwSetCursorPosCallback(window_, cursorPosCallback);
+    glfwSetMouseButtonCallback(window_, mouseButtonCallback);
+    glfwSetScrollCallback(window_, scrollCallback);
+
     return true;
 }
 
@@ -50,7 +61,7 @@ void App::run()
 
    while(!glfwWindowShouldClose(window_))
    {
-       frame_.eventQueue.clear();
+       frame_.events.clear();
 
        glfwPollEvents();
 
@@ -66,6 +77,8 @@ void App::run()
            scene_->properties_.pos = {0, 0};
            scene_->properties_.size = frame_.framebufferSize;
        }
+
+       scene_->processInput(true);
        
        glClear(GL_COLOR_BUFFER_BIT);
 
@@ -100,4 +113,66 @@ void App::run()
 
        glfwSwapBuffers(window_);
    }
+}
+
+void App::quit()
+{
+    glfwSetWindowShouldClose(window_, GLFW_TRUE);
+}
+
+void App::setVsync(bool on)
+{
+    glfwSwapInterval(on);
+}
+
+void App::windowCloseCallback(GLFWwindow*)
+{
+    if(handleQuitEvent_)
+        return;
+
+    glfwSetWindowShouldClose(window_, GLFW_FALSE);
+    frame_.events.push_back(Event(Event::Quit));
+}
+
+void App::windowFocusCallback(GLFWwindow*, int focused)
+{
+    Event event;
+    if(focused)
+        event.type = Event::FocusGained;
+    else
+        event.type = Event::FocusLost;
+
+    frame_.events.push_back(event);
+}
+
+void App::keyCallback(GLFWwindow*, int key, int, int action, int mods)
+{
+    Event event(Event::Key);
+    event.key.key = key;
+    event.key.action = action;
+    event.key.mods = mods;
+    frame_.events.push_back(event);
+}
+
+void App::cursorPosCallback(GLFWwindow*, double xpos, double ypos)
+{
+    Event event(Event::Cursor);
+    event.cursor.pos = {xpos, ypos};
+    frame_.events.push_back(event);
+}
+
+void App::mouseButtonCallback(GLFWwindow*, int button, int action, int mods)
+{
+    Event event(Event::MouseButton);
+    event.mouseButton.button = button;
+    event.mouseButton.action = action;
+    event.mouseButton.mods = mods;
+    frame_.events.push_back(event);
+}
+
+void App::scrollCallback(GLFWwindow*, double xoffset, double yoffset)
+{
+    Event event(Event::Scroll);
+    event.scroll.offset = {xoffset, yoffset};
+    frame_.events.push_back(event);
 }

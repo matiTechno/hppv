@@ -2,11 +2,11 @@
 
 Space createExpandedToMatchAspectRatio(Space space, glm::ivec2 size)
 {
-    auto spaceAspect = space.size_.x / space.size_.y;
+    auto spaceAspect = space.size.x / space.size.y;
 
     auto targetAspect = static_cast<float>(size.x) / size.y;
 
-    auto newSize = space.size_;
+    auto newSize = space.size;
 
     if(spaceAspect < targetAspect)
         newSize.x = targetAspect * newSize.y;
@@ -14,7 +14,7 @@ Space createExpandedToMatchAspectRatio(Space space, glm::ivec2 size)
     else if(spaceAspect > targetAspect)
         newSize.y = newSize.x / targetAspect;
     
-    auto newPos = space.pos_ - (newSize - space.size_) / 2.f;
+    auto newPos = space.pos - (newSize - space.size) / 2.f;
 
     return {newPos, newSize};
 }
