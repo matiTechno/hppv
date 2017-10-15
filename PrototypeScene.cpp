@@ -25,13 +25,13 @@ void PrototypeScene::processInput(bool hasInput)
                 if(rmb_.first)
                 {
                     // we need to recreate projection_ before using it
-                    // because space_ might have changed
+                    // because space_ or scene size might have changed
                     projection_ = expandToMatchAspectRatio(space_, properties_.size);
                     
                     auto newSpaceCoords = cursorSpacePos(projection_, event.cursor.pos,
                                                          *this, frame_.framebufferSize);
 
-                    auto spaceCoords =    cursorSpacePos(projection_, rmb_.second,
+                    auto spaceCoords    = cursorSpacePos(projection_, rmb_.second,
                                                          *this, frame_.framebufferSize);
                     
                     space_.pos -= newSpaceCoords - spaceCoords;
