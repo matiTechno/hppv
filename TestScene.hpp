@@ -9,7 +9,7 @@ class TestScene: public PrototypeScene
 {
 public:
     TestScene():
-        PrototypeScene(Space(0.f, 0.f, 100.f, 100.f), 1.1f)
+        PrototypeScene(Space(0.f, 0.f, 100.f, 100.f), 1.1f, false)
     {
         properties_.pos = {100, 100};
         properties_.size = {500, 200};

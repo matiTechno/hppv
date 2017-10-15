@@ -6,7 +6,7 @@
 class PrototypeScene: public Scene
 {
 public:
-    PrototypeScene(Space space, float zoomFactor);
+    PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor);
 
     void processInput(bool hasInput) final override;
     void render(Renderer& renderer)  final override;
@@ -15,9 +15,9 @@ private:
     virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
     virtual void prototypeRender(Renderer& renderer)  {(void)renderer;}
 
-    Space space_;
+    Space space_, projection_;
     float zoomFactor_;
-    float zoom_ = 1.f;
+    bool alwaysZoomToCursor_;
     float accumulator_ = 0.f;
     int frameCount_ = 0;
     float averageFrameTimeMs_ = 0.f;

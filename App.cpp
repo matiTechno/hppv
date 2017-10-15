@@ -65,6 +65,9 @@ bool App::initialize()
     std::cout << "dear imgui version        " << IMGUI_VERSION << std::endl;
 
     frame_.events.reserve(20);
+    
+    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
+                                    &frame_.framebufferSize.y);
 
     glfwSetWindowCloseCallback(window_, windowCloseCallback);
     glfwSetWindowFocusCallback(window_, windowFocusCallback);
@@ -73,6 +76,7 @@ bool App::initialize()
     glfwSetMouseButtonCallback(window_, mouseButtonCallback);
     glfwSetScrollCallback(window_, scrollCallback);
     glfwSetCharCallback(window_, charCallback);
+    glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);   
 
     return true;
 }
@@ -92,9 +96,6 @@ void App::run()
        frame_.frameTime = newTime - time;
        time = newTime;
        
-       glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
-                                       &frame_.framebufferSize.y);
-
        if(scene_->properties_.maximize)
        {
            scene_->properties_.pos = {0, 0};
@@ -217,4 +218,12 @@ void App::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 void App::charCallback(GLFWwindow* window, unsigned int codepoint)
 {
     ImGui_ImplGlfwGL3_CharCallback(window, codepoint);
+}
+
+void App::framebufferSizeCallback(GLFWwindow*, int width, int height)
+{
+    Event event(Event::FramebufferSize);
+    event.framebufferSize.prevSize = frame_.framebufferSize;
+    frame_.framebufferSize = {width, height};
+    event.framebufferSize.newSize = frame_.framebufferSize;
 }

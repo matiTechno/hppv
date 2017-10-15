@@ -5,9 +5,10 @@
 #include <string>
 #include <GLFW/glfw3.h>
 
-PrototypeScene::PrototypeScene(Space space, float zoomFactor):
+PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
     space_(space),
-    zoomFactor_(zoomFactor)
+    zoomFactor_(zoomFactor),
+    alwaysZoomToCursor_(alwaysZoomToCursor)
 {
     properties_.maximize = true;
     rmb_.first = false;
@@ -15,23 +16,28 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor):
 
 void PrototypeScene::processInput(bool hasInput)
 {
-    space_ = expandToMatchAspectRatio(space_, properties_.size);
-
     if(hasInput)
     {
         for(auto& event: frame_.events)
         {
             if(event.type == Event::Cursor)
             {
-                auto newCursorSpacePos = cursorSpacePos(space_, event.cursor.pos,
-                                                        *this, frame_.framebufferSize);
-
                 if(rmb_.first)
                 {
-                    space_.pos -= newCursorSpacePos - rmb_.second;
+                    // we need to recreate projection_ before using it
+                    // because space_ might have changed
+                    projection_ = expandToMatchAspectRatio(space_, properties_.size);
+                    
+                    auto newSpaceCoords = cursorSpacePos(projection_, event.cursor.pos,
+                                                         *this, frame_.framebufferSize);
+
+                    auto spaceCoords =    cursorSpacePos(projection_, rmb_.second,
+                                                         *this, frame_.framebufferSize);
+                    
+                    space_.pos -= newSpaceCoords - spaceCoords;
                 }
 
-                rmb_.second = newCursorSpacePos;
+                rmb_.second = event.cursor.pos;
             }
             else if(event.type == Event::MouseButton &&
                     event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
@@ -49,9 +55,16 @@ void PrototypeScene::processInput(bool hasInput)
             {
                 auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
 
-                if(rmb_.first)
+                if(rmb_.first || alwaysZoomToCursor_)
                 {
-                    space_ = zoomToPoint(space_, zoom, rmb_.second);
+                    projection_ = expandToMatchAspectRatio(space_, properties_.size);
+
+                    auto spaceCoords = cursorSpacePos(projection_, rmb_.second, *this,
+                                                      frame_.framebufferSize);
+
+                    // zoomToCursor would assign modified projection_ to space_
+                    // we don't want this
+                    space_ = zoomToPoint(space_, zoom, spaceCoords);
                 }
                 else
                 {
@@ -65,16 +78,13 @@ void PrototypeScene::processInput(bool hasInput)
         rmb_.first = false;
     }
 
-    glm::dvec2 newCursorPos;
-    glfwGetCursorPos(App::getWindow(), &newCursorPos.x, &newCursorPos.y);
-    rmb_.second = cursorSpacePos(space_, newCursorPos, *this, frame_.framebufferSize);
-
     prototypeProcessInput(hasInput);
 }
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    renderer.setProjection(space_);
+    projection_ = expandToMatchAspectRatio(space_, properties_.size);
+    renderer.setProjection(projection_);
     prototypeRender(renderer);
     renderer.flush();
 
@@ -85,7 +95,7 @@ void PrototypeScene::render(Renderer& renderer)
     {
         auto averageFrameTime = accumulator_ / frameCount_;
         averageFrameTimeMs_ = averageFrameTime * 1000.f;
-        averageFps_ = 1.f / averageFrameTime + 0.5f;
+        averageFps_ =   1.f / averageFrameTime + 0.5f;
         frameCount_ = 0;
         accumulator_ = 0.f;
     }
@@ -96,7 +106,7 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("h p p v");
         ImGui::Text("made by     m a t i T e c h n o");
         ImGui::Text("frameTime   %f ms", averageFrameTimeMs_);
-        ImGui::Text("fps         %d", averageFps_);
+        ImGui::Text("fps         %d",    averageFps_);
 
         std::string buttonText("vsyn ");
         if(vsync_)
@@ -108,11 +118,18 @@ void PrototypeScene::render(Renderer& renderer)
             App::setVsync(vsync_ = !vsync_);
 
         ImGui::Separator();
-        ImGui::Text("rmb      move around\n"
-                    "scroll   zoom to center / cursor if rmb");
+        ImGui::Text("rmb      move around");
+        std::string zoomInfo("scroll   zoom to ");
+        if(alwaysZoomToCursor_)
+            zoomInfo += "cursor";
+        else
+            zoomInfo += "center / cursor if rmb";
+        ImGui::Text(zoomInfo.c_str());
 
         ImGui::Separator();
-        ImGui::Text("space coords   %.2f, %.2f", rmb_.second.x, rmb_.second.y);
+        auto spaceCoords = cursorSpacePos(projection_, rmb_.second, *this,
+                                          frame_.framebufferSize);
+        ImGui::Text("space coords   %.2f, %.2f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
 }

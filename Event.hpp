@@ -3,14 +3,14 @@
 
 struct Event
 {
-    // as for now there is not need for cursor enter / leave and
-    // framebuffer resize events
+    // as for now there is not need for cursor enter / leave events
     
     enum Type
     {
         Quit,
         FocusLost,
         FocusGained,
+        FramebufferSize,
         Key,
         Cursor,
         MouseButton,
@@ -24,6 +24,11 @@ struct Event
 
     union
     {
+        struct
+        {
+            glm::ivec2 prevSize;
+            glm::ivec2 newSize;
+        } framebufferSize;
         struct
         {
             int key;

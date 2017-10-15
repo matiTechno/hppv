@@ -23,6 +23,7 @@ public:
     App();
     ~App();
     
+    // sets frame_.framebufferSize
     bool initialize();
 
     template<typename T, typename ... Args>
@@ -55,4 +56,5 @@ private:
     static void mouseButtonCallback(GLFWwindow*, int button, int action, int mods);
     static void scrollCallback(GLFWwindow*, double xoffset, double yoffset);
     static void charCallback(GLFWwindow*, unsigned int codepoint);
+    static void framebufferSizeCallback(GLFWwindow*, int width, int height);
 };
