@@ -1,6 +1,10 @@
 #pragma once
 
 #include <glm/vec2.hpp>
+
+namespace hppv
+{
+
 class Scene;
 
 struct Space
@@ -33,3 +37,5 @@ Space zoomToPoint( Space space, float zoom, glm::vec2 point);
 Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene);
 
 glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene);
+
+} // namespace hppv

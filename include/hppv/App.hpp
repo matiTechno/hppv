@@ -2,11 +2,17 @@
 
 #include <memory>
 #include <vector>
-#include "Deleter.hpp"
-#include "Event.hpp"
+
 #include <glm/vec2.hpp>
 
+#include "Deleter.hpp"
+#include "Event.hpp"
+
 class GLFWwindow;
+
+namespace hppv
+{
+
 class Scene;
 class Renderer;
 
@@ -24,7 +30,7 @@ public:
     ~App();
     
     // sets frame_.framebufferSize
-    bool initialize();
+    bool initialize(bool printDebugInfo);
 
     template<typename T, typename ... Args>
     void executeScene(Args&& ... args)
@@ -58,3 +64,5 @@ private:
     static void charCallback(GLFWwindow*, unsigned int codepoint);
     static void framebufferSizeCallback(GLFWwindow*, int width, int height);
 };
+
+} // namespace hppv

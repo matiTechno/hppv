@@ -1,6 +1,10 @@
 #pragma once
 
 #include <glm/vec2.hpp>
+
+namespace hppv
+{
+
 struct Frame;
 
 class Renderer;
@@ -27,3 +31,5 @@ public:
 
     const Frame& frame_;
 };
+
+} // namespace hppv

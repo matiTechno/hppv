@@ -42,6 +42,9 @@ void main()
 
 )";
 
+namespace hppv
+{
+
 Renderer::Renderer():
     shader_(shaderSource, "Renderer")
 {
@@ -175,3 +178,5 @@ void Renderer::cache(glm::vec2 pos, glm::vec2 size, glm::vec4 color, float rotat
 
     instances_.push_back(instance);
 }
+
+} // namespace hppv

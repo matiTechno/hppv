@@ -3,6 +3,9 @@
 #include <cassert>
 #include <functional>
 
+namespace hppv
+{
+
 // when embedding in class with move semantics,
 // always capture by value in the callback
 class Deleter
@@ -40,3 +43,5 @@ public:
 private:
     std::function<void(void)> callback_;
 };
+
+} // namespace hppv

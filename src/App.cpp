@@ -12,6 +12,9 @@
 
 #include "imgui/imgui_impl_glfw_gl3.h"
 
+namespace hppv
+{
+
 App::App() = default;
 App::~App() = default;
 
@@ -19,14 +22,19 @@ GLFWwindow* App::window_;
 Frame App::frame_;
 bool  App::handleQuitEvent_ = true;
 
-bool App::initialize()
+bool App::initialize(bool printDebugInfo)
 {
-    std::cout << "GLFW compile time version " << GLFW_VERSION_MAJOR
-              << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << std::endl;
-    
-    std::cout << "GLFW run time version     " << glfwGetVersionString() << std::endl;
-    
-    std::cout << "GLM version               " << GLM_VERSION << std::endl;
+    if(printDebugInfo)
+    {
+        std::cout << "GLFW compile time version " << GLFW_VERSION_MAJOR
+                  << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << '\n';
+        
+        std::cout << "GLFW run time version     " << glfwGetVersionString() << '\n';
+
+        std::cout << "GLM version               " << GLM_VERSION << '\n';
+
+        std::cout << "dear imgui version        " << IMGUI_VERSION << std::endl;
+    }
 
     glfwSetErrorCallback(errorCallback);
 
@@ -51,9 +59,13 @@ bool App::initialize()
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         return false;
 
-    std::cout << "vendor                    " << glGetString(GL_VENDOR) << std::endl;
-    std::cout << "renderer                  " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL version            " << glGetString(GL_VERSION) << std::endl;
+    if(printDebugInfo)
+    {
+        std::cout << "vendor                    " << glGetString(GL_VENDOR) << '\n';
+        std::cout << "renderer                  " << glGetString(GL_RENDERER) << '\n';
+        std::cout << "OpenGL version            " << glGetString(GL_VERSION)
+                  << std::endl;
+    }
 
     glfwSwapInterval(1);
 
@@ -64,8 +76,6 @@ bool App::initialize()
 
     ImGui_ImplGlfwGL3_Init(window_, false);
     deleterImGui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
-
-    std::cout << "dear imgui version        " << IMGUI_VERSION << std::endl;
 
     frame_.events.reserve(20);
     
@@ -230,3 +240,5 @@ void App::framebufferSizeCallback(GLFWwindow*, int width, int height)
     frame_.framebufferSize = {width, height};
     event.framebufferSize.newSize = frame_.framebufferSize;
 }
+
+} // namespace hppv

@@ -1,6 +1,9 @@
 #include <hppv/Space.hpp>
 #include <hppv/Scene.hpp>
 
+namespace hppv
+{
+
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {
     auto spaceAspect = space.size.x / space.size.y;
@@ -52,3 +55,5 @@ glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene)
     return space.pos + (space.size / glm::vec2(scene.properties_.size))
                        * cursorPos;
 }
+
+} // namespace hppv

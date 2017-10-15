@@ -7,6 +7,9 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/App.hpp>
 
+namespace hppv
+{
+
 PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
     space_(space),
     zoomFactor_(zoomFactor),
@@ -131,3 +134,5 @@ void PrototypeScene::render(Renderer& renderer)
     }
     ImGui::End();
 }
+
+} // namespace hppv

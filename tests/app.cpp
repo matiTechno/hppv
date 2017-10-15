@@ -4,6 +4,6 @@
 
 TEST_CASE("App initialization")
 {
-    App app;
-    REQUIRE(app.initialize());
+    hppv::App app;
+    REQUIRE(app.initialize(true));
 }

@@ -1,10 +1,16 @@
 #pragma once
 
+#include <vector>
+
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
-#include <vector>
+
 #include "Shader.hpp"
+
+namespace hppv
+{
+
 class Space;
 
 struct Sprite
@@ -52,3 +58,5 @@ private:
 
     std::vector<Instance> instances_;
 };
+
+} // namespace hppv

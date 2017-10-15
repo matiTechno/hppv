@@ -1,5 +1,9 @@
 #pragma once
+
 #include <glm/vec2.hpp>
+
+namespace hppv
+{
 
 struct Event
 {
@@ -54,3 +58,5 @@ struct Event
         } scroll;
     };
 };
+
+} // namespace hppv

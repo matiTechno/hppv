@@ -1,7 +1,12 @@
 #pragma once
+
+#include <utility>
+
 #include "Scene.hpp"
 #include "Space.hpp"
-#include <utility>
+
+namespace hppv
+{
 
 class PrototypeScene: public Scene
 {
@@ -13,6 +18,8 @@ public:
 
 private:
     virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
+
+    // projection is already set and you don't have to call renderer.flush()
     virtual void prototypeRender(Renderer& renderer)  {(void)renderer;}
 
     Space space_;
@@ -25,3 +32,5 @@ private:
     bool vsync_ = true;
     std::pair<bool, glm::vec2> rmb_;
 };
+
+} // namespace hppv

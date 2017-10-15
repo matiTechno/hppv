@@ -1,3 +1,5 @@
+h p p v   -   high performance physics visualization
+
 todo:
 
 * add hppv namespace
@@ -6,12 +8,17 @@ todo:
 * App init parameters
 * App static functions - printing OpenGL info / setting glClearColor / ...
 * scene properties
+* setting viewport with space coordinates
 * sdf fonts, format produced by Hiero
 * textures
 * Renderer new states (blending, sampling, ...) + batching
 * postprocessing
 * some simple fun animations
 * cmake find libraries and include paths for externals
+
+note:
+
+* Shader is in the sh namespace, not hppv
 
 external dependencies:
 
