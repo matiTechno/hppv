@@ -1,12 +1,15 @@
-#include "App.hpp"
-#include <glm/vec2.hpp>
-#include "glad.h"
-#include <GLFW/glfw3.h>
-#include "Scene.hpp"
-#include "Renderer.hpp"
-#include "Space.hpp"
 #include <iostream>
-#include "imgui/imgui.h"
+
+#include <hppv/glad.h> // must be included before glfw3.hpp
+#include <glm/vec2.hpp>
+#include <GLFW/glfw3.h>
+
+#include <hppv/App.hpp>
+#include <hppv/Scene.hpp>
+#include <hppv/Renderer.hpp>
+#include <hppv/Space.hpp>
+#include <hppv/imgui.h>
+
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 App::App() = default;

@@ -1,11 +1,13 @@
-#include "glad.h"
-#define SHADER_IMPLEMENTATION
-#include "Shader.hpp"
-#include "Renderer.hpp"
 #include <cassert>
 #include <cstddef>
+
 #include <glm/gtc/matrix_transform.hpp>
-#include "Space.hpp"
+
+#include <hppv/glad.h>
+#define SHADER_IMPLEMENTATION
+#include <hppv/Shader.hpp>
+#include <hppv/Renderer.hpp>
+#include <hppv/Space.hpp>
 
 static const char* shaderSource = R"(
 

@@ -1,5 +1,5 @@
-#include "Space.hpp"
-#include "Scene.hpp"
+#include <hppv/Space.hpp>
+#include <hppv/Scene.hpp>
 
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {
@@ -37,29 +37,18 @@ Space zoomToPoint(Space space, float zoom, glm::vec2 point)
     return space;
 }
 
-Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene,
-                   glm::ivec2 framebufferSize)
+Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene)
 {
-    auto pos    = cursorSpacePos(space, cursorPos, scene, framebufferSize);
+    auto pos    = cursorSpacePos(space, cursorPos, scene);
     space.size *= 1.f / zoom;
-    auto newPos = cursorSpacePos(space, cursorPos, scene, framebufferSize);
+    auto newPos = cursorSpacePos(space, cursorPos, scene);
     space.pos -= newPos - pos;
     return space;
 }
 
-glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene,
-                         glm::ivec2 framebufferSize)
+glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene)
 {
-    cursorPos = cursorScenePos(scene, cursorPos, framebufferSize);
-
+    cursorPos -= glm::vec2(scene.properties_.pos);
     return space.pos + (space.size / glm::vec2(scene.properties_.size))
-                       * (cursorPos - glm::vec2(scene.properties_.pos));
-}
-
-glm::vec2 cursorScenePos(const Scene& scene, glm::vec2 cursorPos,
-                         glm::ivec2 framebufferSize)
-{
-    return glm::vec2(scene.properties_.pos) + (glm::vec2(scene.properties_.size)
-                                              / glm::vec2(framebufferSize))
-                                              * cursorPos;
+                       * cursorPos;
 }

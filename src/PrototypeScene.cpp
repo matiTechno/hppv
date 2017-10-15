@@ -1,9 +1,11 @@
-#include "PrototypeScene.hpp"
-#include "imgui/imgui.h"
-#include "Renderer.hpp"
-#include "App.hpp"
 #include <string>
+
 #include <GLFW/glfw3.h>
+
+#include <hppv/PrototypeScene.hpp>
+#include <hppv/imgui.h>
+#include <hppv/Renderer.hpp>
+#include <hppv/App.hpp>
 
 PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
     space_(space),
@@ -24,15 +26,13 @@ void PrototypeScene::processInput(bool hasInput)
             {
                 if(rmb_.first)
                 {
-                    // we need to recreate projection_ before using it
+                    // we need to recreate projection before using it
                     // because space_ or scene size might have changed
-                    projection_ = expandToMatchAspectRatio(space_, properties_.size);
+                    auto proj = expandToMatchAspectRatio(space_, properties_.size);
                     
-                    auto newSpaceCoords = cursorSpacePos(projection_, event.cursor.pos,
-                                                         *this, frame_.framebufferSize);
+                    auto newSpaceCoords = cursorSpacePos(proj, event.cursor.pos, *this);
 
-                    auto spaceCoords    = cursorSpacePos(projection_, rmb_.second,
-                                                         *this, frame_.framebufferSize);
+                    auto spaceCoords    = cursorSpacePos(proj, rmb_.second, *this);
                     
                     space_.pos -= newSpaceCoords - spaceCoords;
                 }
@@ -57,10 +57,9 @@ void PrototypeScene::processInput(bool hasInput)
 
                 if(rmb_.first || alwaysZoomToCursor_)
                 {
-                    projection_ = expandToMatchAspectRatio(space_, properties_.size);
+                    auto proj = expandToMatchAspectRatio(space_, properties_.size);
 
-                    auto spaceCoords = cursorSpacePos(projection_, rmb_.second, *this,
-                                                      frame_.framebufferSize);
+                    auto spaceCoords = cursorSpacePos(proj, rmb_.second, *this);
 
                     // zoomToCursor would assign modified projection_ to space_
                     // we don't want this
@@ -83,8 +82,8 @@ void PrototypeScene::processInput(bool hasInput)
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    projection_ = expandToMatchAspectRatio(space_, properties_.size);
-    renderer.setProjection(projection_);
+    auto proj = expandToMatchAspectRatio(space_, properties_.size);
+    renderer.setProjection(proj);
     prototypeRender(renderer);
     renderer.flush();
 
@@ -100,7 +99,7 @@ void PrototypeScene::render(Renderer& renderer)
         accumulator_ = 0.f;
     }
 
-    ImGui::Begin("control panel", nullptr,
+    ImGui::Begin("PrototypeScene", nullptr,
                  ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("h p p v");
@@ -127,9 +126,8 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text(zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = cursorSpacePos(projection_, rmb_.second, *this,
-                                          frame_.framebufferSize);
-        ImGui::Text("space coords   %.2f, %.2f", spaceCoords.x, spaceCoords.y);
+        auto spaceCoords = cursorSpacePos(proj, rmb_.second, *this);
+        ImGui::Text("space coords   %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
 }

@@ -30,11 +30,6 @@ Space zoomToCenter(Space space, float zoom);
 
 Space zoomToPoint( Space space, float zoom, glm::vec2 point);
 
-Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene,
-                   glm::ivec2 framebufferSize);
+Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene);
 
-glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene,
-                         glm::ivec2 framebufferSize);
-
-glm::vec2 cursorScenePos(const Scene& scene, glm::vec2 cursorPos,
-                         glm::ivec2 framebufferSize);
+glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene);

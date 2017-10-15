@@ -15,7 +15,7 @@ private:
     virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
     virtual void prototypeRender(Renderer& renderer)  {(void)renderer;}
 
-    Space space_, projection_;
+    Space space_;
     float zoomFactor_;
     bool alwaysZoomToCursor_;
     float accumulator_ = 0.f;

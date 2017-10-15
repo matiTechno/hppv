@@ -1,9 +1,7 @@
-#pragma once
-
-#include "PrototypeScene.hpp"
-#include "Renderer.hpp"
-#include "Space.hpp"
-#include "imgui/imgui.h"
+#include <hppv/App.hpp>
+#include <hppv/PrototypeScene.hpp>
+#include <hppv/Renderer.hpp>
+#include <hppv/imgui.h>
 
 class TestScene: public PrototypeScene
 {
@@ -13,7 +11,7 @@ public:
     {
         properties_.pos = {100, 100};
         properties_.size = {500, 200};
-        //properties_.maximize = false;
+        properties_.maximize = false;
     }
 
 private:
@@ -36,3 +34,11 @@ private:
         }
     }
 };
+
+int main()
+{
+    App app;
+    if(!app.initialize()) return 1;
+    app.executeScene<TestScene>();
+    return 0;
+}

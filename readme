@@ -1,17 +1,17 @@
 todo:
 
-* directory structure
-* support for multiple scenes
+* add hppv namespace
+* multiple scenes
+
 * App init parameters
 * App static functions - printing OpenGL info / setting glClearColor / ...
-* add hppv namespace
-* tests with catch
 * scene properties
 * sdf fonts, format produced by Hiero
 * textures
 * Renderer new states (blending, sampling, ...) + batching
-* postprocessing unit
+* postprocessing
 * some simple fun animations
+* cmake find libraries and include paths for externals
 
 external dependencies:
 
