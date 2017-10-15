@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 #include <hppv/glad.h> // must be included before glfw3.hpp
 #include <glm/vec2.hpp>
@@ -75,12 +76,7 @@ bool App::initialize(bool printDebugInfo)
     renderer_ = std::make_unique<Renderer>();
 
     ImGui_ImplGlfwGL3_Init(window_, false);
-    deleterImGui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
-
-    frame_.events.reserve(20);
-    
-    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
-                                    &frame_.framebufferSize.y);
+    deleterImgui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
 
     glfwSetWindowCloseCallback(window_, windowCloseCallback);
     glfwSetWindowFocusCallback(window_, windowFocusCallback);
@@ -91,6 +87,14 @@ bool App::initialize(bool printDebugInfo)
     glfwSetCharCallback(window_, charCallback);
     glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);   
 
+    frame_.window = window_;
+
+    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
+                                    &frame_.framebufferSize.y);
+    frame_.events.reserve(20);
+    scenes_.reserve(10);
+    scenesToRender_.reserve(10);
+
     return true;
 }
 
@@ -98,7 +102,7 @@ void App::run()
 {
    float time = glfwGetTime();
 
-   while(!glfwWindowShouldClose(window_))
+   while(!glfwWindowShouldClose(window_) && scenes_.size())
    {
        frame_.events.clear();
 
@@ -109,45 +113,81 @@ void App::run()
        frame_.frameTime = newTime - time;
        time = newTime;
        
-       if(scene_->properties_.maximize)
+       for(auto& scene: scenes_)
        {
-           scene_->properties_.pos = {0, 0};
-           scene_->properties_.size = frame_.framebufferSize;
+           if(scene->properties_.maximize)
+           {
+               scene->properties_.pos = {0, 0};
+               scene->properties_.size = frame_.framebufferSize;
+           }
        }
 
-       scene_->processInput(!(ImGui::GetIO().WantCaptureKeyboard ||
-                              ImGui::GetIO().WantCaptureMouse));
+       for(auto it = scenes_.begin(); it != scenes_.end() - 1; ++it)
+           (*it)->processInput(false);
+
+       auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
+                              ImGui::GetIO().WantCaptureMouse;
+
+       scenes_.back()->processInput(!imguiWantsInput);
        
+       for(auto& scene: scenes_)
+           scene->update();
+
+       scenesToRender_.clear();
+
+       for(auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
+       {
+           scenesToRender_.insert(scenesToRender_.begin(), &**it);
+           if((*it)->properties_.opaque)
+               break;
+       }
+
        glClear(GL_COLOR_BUFFER_BIT);
 
-       // render scene border
+       // drop shadows; todo: custom shader
        {
            renderer_->setViewport({0, 0}, frame_.framebufferSize,
                                           frame_.framebufferSize);
 
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
 
-           auto scenePos = scene_->properties_.pos;
-           auto sceneSize = scene_->properties_.size;
+           for(auto& scene: scenesToRender_)
+           {
+               auto pos = scene->properties_.pos;
+               auto size = scene->properties_.size;
 
-           Sprite sprite;
-           sprite.color = {0.f, 1.f, 0.f, 0.4f};
-           sprite.pos = scenePos - 1;
-           sprite.size = sceneSize + 4;
-           renderer_->cache(sprite);
+               Sprite sprite;
+               sprite.color = {0.f, 1.f, 0.f, 0.4f};
+               sprite.pos = pos - 1;
+               sprite.size = size + 4;
+               renderer_->cache(sprite);
 
-           sprite.color = {0.f, 0.f, 0.f, 1.f};
-           sprite.pos = scenePos;
-           sprite.size = sceneSize;
-           renderer_->cache(sprite);
+               sprite.color = {0.f, 0.f, 0.f, 1.f};
+               sprite.pos = pos;
+               sprite.size = size;
+               renderer_->cache(sprite);
 
-           renderer_->flush();
+               renderer_->flush();
+           }
        }
 
-       renderer_->setViewport(scene_->properties_.pos,
-                              scene_->properties_.size, frame_.framebufferSize);
+       for(auto scene: scenesToRender_)
+       {
+           renderer_->setViewport(scene->properties_.pos, scene->properties_.size,
+                                  frame_.framebufferSize);
 
-       scene_->render(*renderer_);
+           scene->render(*renderer_);
+       }
+
+       {
+           auto& topScene = *scenes_.back();
+           auto sceneToPush = std::move(topScene.properties_.sceneToPush);
+           auto numToPop = topScene.properties_.numScenesToPop;
+           assert(numToPop <= scenes_.size());
+
+           scenes_.erase(scenes_.end() - numToPop, scenes_.end());
+           if(sceneToPush) scenes_.push_back(std::move(sceneToPush));
+       }
 
        ImGui::Render();
 

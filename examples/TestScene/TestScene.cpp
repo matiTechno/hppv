@@ -39,6 +39,7 @@ int main()
 {
     hppv::App app;
     if(!app.initialize(false)) return 1;
-    app.executeScene<TestScene>();
+    app.pushScene<TestScene>();
+    app.run();
     return 0;
 }

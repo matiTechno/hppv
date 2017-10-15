@@ -21,6 +21,7 @@ struct Frame
     float frameTime;
     glm::ivec2 framebufferSize;
     std::vector<Event> events;
+    GLFWwindow* window;
 };
 
 class App
@@ -33,27 +34,27 @@ public:
     bool initialize(bool printDebugInfo);
 
     template<typename T, typename ... Args>
-    void executeScene(Args&& ... args)
+    void pushScene(Args&& ... args)
     {
-        scene_ = std::make_unique<T>(std::forward<Args>(args)...);
-        run();
+        scenes_.push_back(std::make_unique<T>(std::forward<Args>(args)...));
     }
 
-    static const Frame& getFrame() {return frame_;}
-    static GLFWwindow* getWindow() {return window_;}
+    void run();
+
     static void quit();
     static void setVsync(bool on);
+    static const Frame& getFrame() {return frame_;}
 
 private:
     Deleter deleterGlfw_;
-    Deleter deleterImGui_;
-    std::unique_ptr<Scene> scene_;
+    Deleter deleterImgui_;
+    std::vector<std::unique_ptr<Scene>> scenes_;
+    std::vector<Scene*> scenesToRender_;
     std::unique_ptr<Renderer> renderer_;
     static GLFWwindow* window_;
     static Frame frame_;
     static bool handleQuitEvent_;
 
-    void run();
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);
     static void windowFocusCallback(GLFWwindow*, int focused);

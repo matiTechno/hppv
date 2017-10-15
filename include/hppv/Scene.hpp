@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <glm/vec2.hpp>
 
 namespace hppv
@@ -16,17 +18,21 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual void update() {}
-
     virtual void processInput(bool hasInput) {(void)hasInput;}
+
+    virtual void update() {}
 
     virtual void render(Renderer& renderer) {(void)renderer;}
 
     struct Properties
     {
-        glm::ivec2 pos;
-        glm::ivec2 size;
-        bool maximize;
+        glm::ivec2 pos = {0, 0};
+        glm::ivec2 size = {100, 100};
+        bool maximize = false;
+        bool opaque = true;
+        // only polled for the top scene
+        unsigned numScenesToPop = 0;
+        std::unique_ptr<Scene> sceneToPush;
     } properties_;
 
     const Frame& frame_;

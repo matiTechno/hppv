@@ -2,18 +2,16 @@ h p p v   -   high performance physics visualization
 
 todo:
 
-* multiple scenes
-
+* setting viewport (scissor?) with space coordinates
+* textures
+* sdf fonts, format produced by Hiero
+* Renderer new states (blending, sampling, ...) + batching
 * App init parameters
 * App static functions - printing OpenGL info / setting glClearColor / ...
-* scene properties
-* setting viewport with space coordinates
-* sdf fonts, format produced by Hiero
-* textures
-* Renderer new states (blending, sampling, ...) + batching
 * postprocessing
 * some simple fun animations
 * cmake find libraries and include paths for externals
+* rendering with custom shaders
 
 note:
 
