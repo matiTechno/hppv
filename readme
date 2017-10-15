@@ -1,18 +1,17 @@
 todo:
 
-XXX* ImGui
-OOO* prototype scene - base class for prototypes
-
-* Space modifier functions
+* directory structure
 * support for multiple scenes
-
-* embedded sdf font
-* textures
-* Renderer new states (blending, sampling, ...) + batching
 * App init parameters
 * App static functions - printing OpenGL info / setting glClearColor / ...
 * add hppv namespace
+* tests with catch
+* scene properties
+* sdf fonts, format produced by Hiero
+* textures
+* Renderer new states (blending, sampling, ...) + batching
 * postprocessing unit
+* some simple fun animations
 
 external dependencies:
 

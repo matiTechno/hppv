@@ -33,6 +33,7 @@ public:
     }
 
     static const Frame& getFrame() {return frame_;}
+    static GLFWwindow* getWindow() {return window_;}
     static void quit();
     static void setVsync(bool on);
 

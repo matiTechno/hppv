@@ -3,24 +3,77 @@
 #include "Renderer.hpp"
 #include "App.hpp"
 #include <string>
+#include <GLFW/glfw3.h>
 
-PrototypeScene::PrototypeScene(Space sceneSpace, float zoomFactor):
-    space_(sceneSpace),
+PrototypeScene::PrototypeScene(Space space, float zoomFactor):
+    space_(space),
     zoomFactor_(zoomFactor)
 {
     properties_.maximize = true;
+    rmb_.first = false;
 }
 
 void PrototypeScene::processInput(bool hasInput)
 {
-    (void)hasInput;
-    // ...
+    space_ = expandToMatchAspectRatio(space_, properties_.size);
+
+    if(hasInput)
+    {
+        for(auto& event: frame_.events)
+        {
+            if(event.type == Event::Cursor)
+            {
+                auto newCursorSpacePos = cursorSpacePos(space_, event.cursor.pos,
+                                                        *this, frame_.framebufferSize);
+
+                if(rmb_.first)
+                {
+                    space_.pos -= newCursorSpacePos - rmb_.second;
+                }
+
+                rmb_.second = newCursorSpacePos;
+            }
+            else if(event.type == Event::MouseButton &&
+                    event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
+            {
+                if(event.mouseButton.action == GLFW_PRESS)
+                {
+                    rmb_.first = true;
+                }
+                else
+                {
+                    rmb_.first = false;
+                }
+            }
+            else if(event.type == Event::Scroll)
+            {
+                auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
+
+                if(rmb_.first)
+                {
+                    space_ = zoomToPoint(space_, zoom, rmb_.second);
+                }
+                else
+                {
+                    space_ = zoomToCenter(space_, zoom);
+                }
+            }
+        }
+    }
+    else
+    {
+        rmb_.first = false;
+    }
+
+    glm::dvec2 newCursorPos;
+    glfwGetCursorPos(App::getWindow(), &newCursorPos.x, &newCursorPos.y);
+    rmb_.second = cursorSpacePos(space_, newCursorPos, *this, frame_.framebufferSize);
+
     prototypeProcessInput(hasInput);
 }
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    space_ = expandToMatchAspectRatio(space_, properties_.size);
     renderer.setProjection(space_);
     prototypeRender(renderer);
     renderer.flush();
@@ -56,7 +109,10 @@ void PrototypeScene::render(Renderer& renderer)
 
         ImGui::Separator();
         ImGui::Text("rmb      move around\n"
-                    "scrool   zoom to center / cursor if rmb");
+                    "scroll   zoom to center / cursor if rmb");
+
+        ImGui::Separator();
+        ImGui::Text("space coords   %.2f, %.2f", rmb_.second.x, rmb_.second.y);
     }
     ImGui::End();
 }

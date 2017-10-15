@@ -13,7 +13,7 @@ public:
     {
         properties_.pos = {100, 100};
         properties_.size = {500, 200};
-        properties_.maximize = false;
+        //properties_.maximize = false;
     }
 
 private:

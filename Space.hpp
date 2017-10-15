@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/vec2.hpp>
+class Scene;
 
 struct Space
 {
@@ -22,4 +23,18 @@ struct Space
 
 // inspired by glm matrix transform functions
 // return new object instead of modifying existing one
+
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size);
+
+Space zoomToCenter(Space space, float zoom);
+
+Space zoomToPoint( Space space, float zoom, glm::vec2 point);
+
+Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene,
+                   glm::ivec2 framebufferSize);
+
+glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene,
+                         glm::ivec2 framebufferSize);
+
+glm::vec2 cursorScenePos(const Scene& scene, glm::vec2 cursorPos,
+                         glm::ivec2 framebufferSize);

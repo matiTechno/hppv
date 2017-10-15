@@ -3,10 +3,8 @@
 
 struct Event
 {
-    // window resize event should be handled by the proper use of Space class
-    // and its modifier functions
-    
-    // as for now there is not need for cursor enter / leave events
+    // as for now there is not need for cursor enter / leave and
+    // framebuffer resize events
     
     enum Type
     {
