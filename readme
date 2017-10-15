@@ -2,7 +2,6 @@ h p p v   -   high performance physics visualization
 
 todo:
 
-* add hppv namespace
 * multiple scenes
 
 * App init parameters
