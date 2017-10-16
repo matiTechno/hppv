@@ -36,9 +36,10 @@ void PrototypeScene::processInput(bool hasInput)
                     auto newSpaceCoords = cursorSpacePos(projection, event.cursor.pos,
                                                          *this);
 
-                    auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
+                    auto prevSpaceCoords = cursorSpacePos(projection, rmb_.second,
+                                                          *this);
                     
-                    space_.pos -= newSpaceCoords - spaceCoords;
+                    space_.pos -= newSpaceCoords - prevSpaceCoords;
                 }
 
                 rmb_.second = event.cursor.pos;
