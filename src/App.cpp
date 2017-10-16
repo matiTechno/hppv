@@ -87,8 +87,6 @@ bool App::initialize(bool printDebugInfo)
     glfwSetCharCallback(window_, charCallback);
     glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);   
 
-    frame_.window = window_;
-
     glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
                                     &frame_.framebufferSize.y);
     frame_.events.reserve(20);
@@ -146,8 +144,7 @@ void App::run()
 
        // drop shadows; todo: custom shader
        {
-           renderer_->setViewport({0, 0}, frame_.framebufferSize,
-                                          frame_.framebufferSize);
+           renderer_->setViewport(frame_.framebufferSize);
 
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
 
@@ -166,16 +163,14 @@ void App::run()
                sprite.pos = pos;
                sprite.size = size;
                renderer_->cache(sprite);
-
-               renderer_->flush();
            }
+           
+           renderer_->flush();
        }
 
        for(auto scene: scenesToRender_)
        {
-           renderer_->setViewport(scene->properties_.pos, scene->properties_.size,
-                                  frame_.framebufferSize);
-
+           renderer_->setViewport(*scene);
            scene->render(*renderer_);
        }
 

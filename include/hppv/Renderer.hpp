@@ -12,6 +12,7 @@ namespace hppv
 {
 
 class Space;
+class Scene;
 
 struct Sprite
 {
@@ -36,7 +37,8 @@ public:
 
     // asserts that the cache is empty
     void setProjection(const Space& space);
-    void setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize);
+    void setViewport(glm::ivec2 framebufferSize);
+    void setViewport(const Scene& scene);
 
     void cache(const Sprite& sprite);
 

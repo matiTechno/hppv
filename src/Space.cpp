@@ -4,6 +4,16 @@
 namespace hppv
 {
 
+Space::Space(float x, float y, float w, float h):
+    pos(x, y),
+    size(w, h)
+{}
+
+Space::Space(glm::vec2 pos, glm::vec2 size):
+    pos(pos),
+    size(size)
+{}
+
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {
     auto spaceAspect = space.size.x / space.size.y;
@@ -37,15 +47,6 @@ Space zoomToPoint(Space space, float zoom, glm::vec2 point)
     space.size *= 1.f / zoom;
     auto newRatio = (point - space.pos) / space.size;
     space.pos -= (ratio - newRatio) * space.size;
-    return space;
-}
-
-Space zoomToCursor(Space space, float zoom, glm::vec2 cursorPos, const Scene& scene)
-{
-    auto pos    = cursorSpacePos(space, cursorPos, scene);
-    space.size *= 1.f / zoom;
-    auto newPos = cursorSpacePos(space, cursorPos, scene);
-    space.pos -= newPos - pos;
     return space;
 }
 

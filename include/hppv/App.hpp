@@ -19,9 +19,8 @@ class Renderer;
 struct Frame
 {
     float frameTime;
-    glm::ivec2 framebufferSize;
+    glm::ivec2 framebufferSize; // initialized in App::initialize()
     std::vector<Event> events;
-    GLFWwindow* window;
 };
 
 class App
@@ -30,7 +29,6 @@ public:
     App();
     ~App();
     
-    // sets frame_.framebufferSize
     bool initialize(bool printDebugInfo);
 
     template<typename T, typename ... Args>
@@ -48,9 +46,9 @@ public:
 private:
     Deleter deleterGlfw_;
     Deleter deleterImgui_;
+    std::unique_ptr<Renderer> renderer_;
     std::vector<std::unique_ptr<Scene>> scenes_;
     std::vector<Scene*> scenesToRender_;
-    std::unique_ptr<Renderer> renderer_;
     static GLFWwindow* window_;
     static Frame frame_;
     static bool handleQuitEvent_;

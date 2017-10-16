@@ -18,11 +18,11 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual void processInput(bool hasInput) {(void)hasInput;}
+    virtual void processInput(bool hasInput);
 
-    virtual void update() {}
+    virtual void update();
 
-    virtual void render(Renderer& renderer) {(void)renderer;}
+    virtual void render(Renderer& renderer);
 
     struct Properties
     {

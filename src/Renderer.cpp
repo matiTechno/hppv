@@ -8,6 +8,8 @@
 #include <hppv/Shader.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Space.hpp>
+#include <hppv/Scene.hpp>
+#include <hppv/App.hpp>
 
 static const char* shaderSource = R"(
 
@@ -122,11 +124,21 @@ void Renderer::setProjection(const Space& space)
                        &matrix[0][0]);
 }
 
-void Renderer::setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize)
+void Renderer::setViewport(glm::ivec2 framebufferSize)
 {
     assert(instances_.empty());
 
-    glViewport(pos.x, framebufferSize.y - pos.y - size.y, size.x, size.y);
+    glViewport(0, 0, framebufferSize.x, framebufferSize.y);
+}
+
+void Renderer::setViewport(const Scene& scene)
+{
+    assert(instances_.empty());
+
+    auto pos = scene.properties_.pos;
+    auto size = scene.properties_.size;
+
+    glViewport(pos.x, scene.frame_.framebufferSize.y - pos.y - size.y, size.x, size.y);
 }
 
 int Renderer::flush()

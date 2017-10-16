@@ -17,10 +17,10 @@ public:
     void render(Renderer& renderer)  final override;
 
 private:
-    virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
+    virtual void prototypeProcessInput(bool hasInput);
 
-    // projection is already set and you don't have to call renderer.flush()
-    virtual void prototypeRender(Renderer& renderer)  {(void)renderer;}
+    // projection is already set; you don't have to call renderer.flush()
+    virtual void prototypeRender(Renderer& renderer);
 
     Space space_;
     float zoomFactor_;

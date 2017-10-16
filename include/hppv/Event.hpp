@@ -7,8 +7,6 @@ namespace hppv
 
 struct Event
 {
-    // as for now there is not need for cursor enter / leave events
-    
     enum Type
     {
         Quit,
@@ -33,6 +31,7 @@ struct Event
             glm::ivec2 prevSize;
             glm::ivec2 newSize;
         } framebufferSize;
+
         struct
         {
             int key;

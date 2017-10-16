@@ -31,11 +31,12 @@ void PrototypeScene::processInput(bool hasInput)
                 {
                     // we need to recreate projection before using it
                     // because space_ or scene size might have changed
-                    auto proj = expandToMatchAspectRatio(space_, properties_.size);
+                    auto projection = expandToMatchAspectRatio(space_, properties_.size);
                     
-                    auto newSpaceCoords = cursorSpacePos(proj, event.cursor.pos, *this);
+                    auto newSpaceCoords = cursorSpacePos(projection, event.cursor.pos,
+                                                         *this);
 
-                    auto spaceCoords    = cursorSpacePos(proj, rmb_.second, *this);
+                    auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
                     
                     space_.pos -= newSpaceCoords - spaceCoords;
                 }
@@ -60,12 +61,10 @@ void PrototypeScene::processInput(bool hasInput)
 
                 if(rmb_.first || alwaysZoomToCursor_)
                 {
-                    auto proj = expandToMatchAspectRatio(space_, properties_.size);
+                    auto projection = expandToMatchAspectRatio(space_, properties_.size);
 
-                    auto spaceCoords = cursorSpacePos(proj, rmb_.second, *this);
+                    auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
 
-                    // zoomToCursor would assign modified projection_ to space_
-                    // we don't want this
                     space_ = zoomToPoint(space_, zoom, spaceCoords);
                 }
                 else
@@ -85,8 +84,8 @@ void PrototypeScene::processInput(bool hasInput)
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    auto proj = expandToMatchAspectRatio(space_, properties_.size);
-    renderer.setProjection(proj);
+    auto projection = expandToMatchAspectRatio(space_, properties_.size);
+    renderer.setProjection(projection);
     prototypeRender(renderer);
     renderer.flush();
 
@@ -129,10 +128,20 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text(zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = cursorSpacePos(proj, rmb_.second, *this);
+        auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
         ImGui::Text("space coords   %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
+}
+
+void PrototypeScene::prototypeProcessInput(bool hasInput)
+{
+    (void)hasInput;
+}
+
+void PrototypeScene::prototypeRender(Renderer& renderer)
+{
+    (void)renderer;
 }
 
 } // namespace hppv
