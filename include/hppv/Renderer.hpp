@@ -7,6 +7,7 @@
 #include <glm/mat4x4.hpp>
 
 #include "Shader.hpp"
+#include "GLobjects.hpp"
 
 namespace hppv
 {
@@ -29,11 +30,6 @@ public:
     using GLuint = unsigned int;
 
     Renderer();
-    ~Renderer();
-    Renderer(const Renderer&) = delete;
-    Renderer& operator=(const Renderer&) = delete;
-    Renderer(Renderer&&) = delete;
-    Renderer& operator=(Renderer&&) = delete;
 
     // asserts that the cache is empty
     void setProjection(const Space& space);
@@ -50,7 +46,8 @@ public:
 
 private:
     sh::Shader shader_;
-    GLuint vao_, boQuad_, boInstances_;
+    GLvao vao_;
+    GLbo boQuad_, boInstances_;
 
     struct Instance
     {

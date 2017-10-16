@@ -1,10 +1,14 @@
 add_library(hppv
     App.cpp
     glad.c
+    GLobjects.cpp
     PrototypeScene.cpp
     Renderer.cpp
     Scene.cpp
     Space.cpp
+    Texture.cpp
+
+    stb_image.h
 
     imgui/imgui.cpp
     imgui/imgui_demo.cpp

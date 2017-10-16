@@ -52,10 +52,6 @@ Renderer::Renderer():
 {
     instances_.reserve(100000);
 
-    glGenVertexArrays(1, &vao_);
-    glGenBuffers(1, &boQuad_);
-    glGenBuffers(1, &boInstances_);
-
     float vertices[] =
     {
         0.f, 0.f,
@@ -66,14 +62,14 @@ Renderer::Renderer():
         0.f, 0.f
     };
 
-    glBindBuffer(GL_ARRAY_BUFFER, boQuad_);
+    glBindBuffer(GL_ARRAY_BUFFER, boQuad_.getId());
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(vao_);
+    glBindVertexArray(vao_.getId());
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, boInstances_);
+    glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
 
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
                           reinterpret_cast<const void*>(offsetof(Instance, color)));
@@ -103,13 +99,6 @@ Renderer::Renderer():
     glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
                           reinterpret_cast<const void*>(offsetof(Instance, matrix)
                           + 3 * sizeof(glm::vec4)));
-}
-
-Renderer::~Renderer()
-{
-    glDeleteVertexArrays(1, &vao_);
-    glDeleteBuffers(1, &boQuad_);
-    glDeleteBuffers(1, &boInstances_);
 }
 
 void Renderer::setProjection(const Space& space)
@@ -143,12 +132,12 @@ void Renderer::setViewport(const Scene& scene)
 
 int Renderer::flush()
 {
-    glBindBuffer(GL_ARRAY_BUFFER, boInstances_);
+    glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
 
     glBufferData(GL_ARRAY_BUFFER, instances_.size() * sizeof(Instance),
                  instances_.data(), GL_STREAM_DRAW);
 
-    glBindVertexArray(vao_);
+    glBindVertexArray(vao_.getId());
 
     shader_.bind();
 
