@@ -96,7 +96,7 @@ void PrototypeScene::render(Renderer& renderer)
     {
         auto averageFrameTime = accumulator_ / frameCount_;
         averageFrameTimeMs_ = averageFrameTime * 1000.f;
-        averageFps_ =   1.f / averageFrameTime + 0.5f;
+        averageFps_ = 1.f / averageFrameTime + 0.5f;
         frameCount_ = 0;
         accumulator_ = 0.f;
     }
@@ -125,7 +125,7 @@ void PrototypeScene::render(Renderer& renderer)
             zoomInfo += "cursor";
         else
             zoomInfo += "center / cursor if rmb";
-        ImGui::Text(zoomInfo.c_str());
+        ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();
         auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);

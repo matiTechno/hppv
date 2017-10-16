@@ -16,7 +16,7 @@ todo:
 * sdf fonts, format produced by Hiero
 * App init parameters
 * postprocessing
-* better cmake (finding libraries / corss-compilation)
+* better cmake (finding libraries / cross-compilation)
 
 note:
 
