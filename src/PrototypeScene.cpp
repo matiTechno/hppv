@@ -88,7 +88,6 @@ void PrototypeScene::render(Renderer& renderer)
     auto projection = expandToMatchAspectRatio(space_, properties_.size);
     renderer.setProjection(projection);
     prototypeRender(renderer);
-    renderer.flush();
 
     ++frameCount_;
     accumulator_ += frame_.frameTime;

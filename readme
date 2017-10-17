@@ -5,14 +5,16 @@ todo:
 * setting viewport with space coordinates
 * textures
 * Renderer states and batching:
-                               * viewport
-                               * projection
-                               * shader
-                               * blending
-                               * texture
-                               * sampling
-                               * sprite / circle / text / ...
+                               x viewport
+                               x projection
+                               x shader
+                                            * blending
+                               x texture
+                                            * sampling
+                               x start
+                               x count
 ----------
+* samplers; default renderer samplers
 * sdf fonts, format produced by Hiero
 * App init parameters
 * postprocessing

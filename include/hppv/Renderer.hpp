@@ -23,7 +23,6 @@ struct Sprite
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the sprite center
-    Texture* texture = nullptr;
     glm::ivec4 texCoords;
 };
 
@@ -34,34 +33,39 @@ public:
 
     Renderer();
 
+    void setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize);
+
     void setProjection(const Space& space);
 
-    void setViewport(glm::ivec2 framebufferSize);
-    void setViewport(const Scene& scene);
+    void setShader(sh::Shader* shader); // nullptr to set default shader
+
+    // todo: add unit parameter
+    void setTexture(Texture* texture); // nullptr to disable texture sampling
+                                       // if default shader is used
 
     void cache(const Sprite& sprite);
 
-    void cache(glm::vec2 pos, glm::vec2 size, glm::vec4 color, float rotation,
-               glm::vec2 rotationPoint, Texture* texture, glm::ivec4 texCoords);
+    int flush(); // returns a number of rendered instances
 
-    // returns a number of rendered sprites
-    int flush();
+    static const char* vertexShaderSource; // use this for custom shader implementation
 
 private:
-    sh::Shader shader_;
+    sh::Shader shaderColor_, shaderTexture_;
     GLvao vao_;
     GLbo boQuad_, boInstances_;
 
     struct Instance
     {
+        glm::mat4 matrix;
         glm::vec4 color;
         glm::vec4 texCoords;
-        glm::mat4 matrix;
     };
 
     struct Batch
     {
-        int type;
+        glm::ivec4 viewportCoords;
+        glm::mat4 projection;
+        sh::Shader* shader;
         Texture* texture;
         int start;
         int count;
@@ -69,6 +73,8 @@ private:
 
     std::vector<Instance> instances_;
     std::vector<Batch> batches_;
+
+    Batch& getTargetBatch();
 };
 
 } // namespace hppv

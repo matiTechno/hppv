@@ -19,7 +19,7 @@ public:
 private:
     virtual void prototypeProcessInput(bool hasInput);
 
-    // projection is already set; you don't have to call renderer.flush()
+    // projection is already set
     virtual void prototypeRender(Renderer& renderer);
 
     Space space_;

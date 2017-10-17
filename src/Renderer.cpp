@@ -1,4 +1,3 @@
-#include <cassert>
 #include <cstddef>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,10 +8,12 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/Space.hpp>
 #include <hppv/Scene.hpp>
-#include <hppv/App.hpp>
 #include <hppv/Texture.hpp>
 
-static const char* shaderSource = R"(
+namespace hppv
+{
+
+const char* Renderer::vertexShaderSource = R"(
 
 VERTEX
 #version 330
@@ -34,6 +35,10 @@ void main()
     vTexCoord = vertex.zw * texCoords.zw + texCoords.xy;
 }
 
+)";
+
+static const char* colorShaderSource = R"(
+
 FRAGMENT
 #version 330
 
@@ -47,23 +52,49 @@ uniform int type;
 
 void main()
 {
-    if(type == 0)
-        color = vColor;
-
-    else if(type == 1)
-        color = texture(sampler, vTexCoord) * vColor;
+    color = vColor;
 }
 
 )";
 
-namespace hppv
+static const char* textureShaderSource = R"(
+
+FRAGMENT
+#version 330
+
+out vec4 color;
+
+in vec4 vColor;
+in vec2 vTexCoord;
+
+uniform sampler2D sampler;
+uniform int type;
+
+void main()
 {
+    color = texture(sampler, vTexCoord) * vColor;
+}
+
+)";
 
 Renderer::Renderer():
-    shader_(shaderSource, "Renderer")
+    shaderColor_(std::string(vertexShaderSource) + colorShaderSource, "Renderer color"),
+    shaderTexture_(std::string(vertexShaderSource) + textureShaderSource,
+                 "Renderer texture")
 {
     instances_.resize(100000);
+
     batches_.reserve(100);
+
+    batches_.emplace_back();
+
+    {
+        auto& first = batches_.front();
+        first.shader = &shaderColor_;
+        first.texture = nullptr;
+        first.start = 0;
+        first.count = 0;
+    }
 
     float vertices[] =
     {
@@ -119,130 +150,142 @@ Renderer::Renderer():
                           + 3 * sizeof(glm::vec4)));
 }
 
+void Renderer::setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize)
+{
+    auto& batch = getTargetBatch();
+    batch.viewportCoords = {pos.x, framebufferSize.y - pos.y - size.y, size.x, size.y};
+}
+
 void Renderer::setProjection(const Space& space)
 {
-    //assert(instances_.empty());
-
-    auto matrix = glm::ortho(space.pos.x, space.pos.x + space.size.x,
-                             space.pos.y + space.size.y, space.pos.y);
-
-    shader_.bind();
-    glUniformMatrix4fv(shader_.getUniformLocation("projection"), 1, GL_FALSE,
-                       &matrix[0][0]);
+    auto& batch = getTargetBatch();
+    batch.projection = glm::ortho(space.pos.x, space.pos.x + space.size.x,
+                                  space.pos.y + space.size.y, space.pos.y);
 }
 
-void Renderer::setViewport(glm::ivec2 framebufferSize)
+void Renderer::setShader(sh::Shader* shader)
 {
-    //assert(instances_.empty());
+    auto& batch = getTargetBatch();
 
-    glViewport(0, 0, framebufferSize.x, framebufferSize.y);
+    if(shader)
+        batch.shader = shader;
+
+    else if(batch.texture)
+        batch.shader = &shaderTexture_;
+
+    else
+        batch.shader = &shaderColor_;
 }
 
-void Renderer::setViewport(const Scene& scene)
+void Renderer::setTexture(Texture* texture)
 {
-    //assert(instances_.empty());
+    auto& batch = getTargetBatch();
+    batch.texture = texture;
 
-    auto pos = scene.properties_.pos;
-    auto size = scene.properties_.size;
+    if(batch.shader == &shaderColor_ && texture)
+        batch.shader = &shaderTexture_;
 
-    glViewport(pos.x, scene.frame_.framebufferSize.y - pos.y - size.y, size.x, size.y);
+    else if(batch.shader == &shaderTexture_ && !texture)
+        batch.shader = &shaderColor_;
+}
+
+void Renderer::cache(const Sprite& sprite)
+{
+    Instance i;
+
+    i.color = sprite.color;
+
+    i.matrix = glm::mat4(1.f);
+
+    i.matrix = glm::translate(i.matrix, glm::vec3(sprite.pos, 0.f));
+
+    if(sprite.rotation != 0.f)
+    {
+        i.matrix = glm::translate(i.matrix, glm::vec3(sprite.size / 2.f
+                                                      + sprite.rotationPoint, 0.f));
+
+        i.matrix = glm::rotate(i.matrix, sprite.rotation, glm::vec3(0.f, 0.f, -1.f));
+
+        i.matrix = glm::translate(i.matrix, glm::vec3(-sprite.size / 2.f
+                                                      - sprite.rotationPoint, 0.f));
+    }
+
+    i.matrix = glm::scale(i.matrix, glm::vec3(sprite.size, 1.f));
+
+    auto& batch = batches_.back();
+
+    if(batch.texture)
+    {
+        auto texSize = batch.texture->getSize();
+
+        i.texCoords.x = float(sprite.texCoords.x) / texSize.x;
+        i.texCoords.y = float(sprite.texCoords.y) / texSize.y;
+        i.texCoords.z = float(sprite.texCoords.z) / texSize.x;
+        i.texCoords.w = float(sprite.texCoords.w) / texSize.y;
+    }
+
+    auto index = batch.start + batch.count;
+
+    if(index + 1 > static_cast<int>(instances_.size()))
+        instances_.emplace_back();
+
+    instances_[index] = i;
+
+    ++batch.count;
 }
 
 int Renderer::flush()
 {
-    if(batches_.empty())
+    auto numToRender = batches_.back().start + batches_.back().count;
+
+    if(!numToRender)
         return 0;
 
     glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
-
-    auto numToRender = batches_.back().start + batches_.back().count; 
 
     glBufferData(GL_ARRAY_BUFFER, numToRender * sizeof(Instance), instances_.data(),
                  GL_STREAM_DRAW);
 
     glBindVertexArray(vao_.getId());
 
-    shader_.bind();
-
     for(auto& batch: batches_)
     {
+        glViewport(batch.viewportCoords.x, batch.viewportCoords.y,
+                   batch.viewportCoords.z, batch.viewportCoords.w);
+
+        batch.shader->bind();
+
+        glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE,
+                           &batch.projection[0][0]);
+
         if(batch.texture)
             batch.texture->bind();
 
-        glUniform1i(shader_.getUniformLocation("type"), 1);
-        
-        glDrawArraysInstanced(GL_TRIANGLES, batch.start, 6, batch.count);
+        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.count, batch.start);
     }
     
-    batches_.clear();
+    batches_.erase(batches_.begin(), batches_.end() - 1);
+    batches_.front().start = 0;
+    batches_.front().count = 0;
 
     return numToRender;
 }
 
-
-void Renderer::cache(const Sprite& sprite)
+Renderer::Batch& Renderer::getTargetBatch()
 {
-    cache(sprite.pos, sprite.size, sprite.color, sprite.rotation,
-          sprite.rotationPoint, sprite.texture, sprite.texCoords);
-}
-
-void Renderer::cache(glm::vec2 pos, glm::vec2 size, glm::vec4 color, float rotation,
-                     glm::vec2 rotationPoint, Texture* texture, glm::ivec4 texCoords)
-{
-    auto start = 0;
-    auto type = 0;
-
-    if(batches_.size())
     {
-        auto& lastBatch = batches_.back();
-        start = lastBatch.start + lastBatch.count;
-        if(start > instances_.size())
-            instances_.resize(start + 1);
-        if(texture != lastBatch.texture)
-        {
-            if(texture)
-            type = 1;
-            else
-                type = 0;
-            goto addBatch;
-        }
-    }
-    else
-    {
-addBatch:
-        batches_.push_back(Batch{type, texture, start, 0});
+        auto& current = batches_.back();
+        if(!current.count)
+            return current;
     }
 
-    ++batches_.back().count;
+    batches_.emplace_back();
 
-    auto& instance = instances_[start];
-
-    instance.color = color;
-
-    auto& matrix = instance.matrix;
-
-    matrix = glm::mat4(1.f);
-
-    matrix = glm::translate(matrix, glm::vec3(pos, 0.f));
-
-    if(rotation != 0.f)
-    {
-        matrix = glm::translate(matrix, glm::vec3(size / 2.f + rotationPoint, 0.f));
-        matrix = glm::rotate(matrix, rotation, glm::vec3(0.f, 0.f, -1.f));
-        matrix = glm::translate(matrix, glm::vec3(-size / 2.f - rotationPoint, 0.f));
-    }
-
-    matrix = glm::scale(matrix, glm::vec3(size, 1.f));
-
-    if(texture)
-    {
-        auto texSize = texture->getSize();
-
-        instance.texCoords.x = float(texCoords.x) / texSize.x;
-        instance.texCoords.y = float(texCoords.y) / texSize.y;
-        instance.texCoords.z = float(texCoords.z) / texSize.x;
-        instance.texCoords.w = float(texCoords.w) / texSize.y;
-    }
+    auto& current = batches_.back();
+    current = *(batches_.end() - 2);
+    current.start += current.count;
+    current.count = 0;
+    return current;
 }
 
 } // namespace hppv

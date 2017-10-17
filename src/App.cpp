@@ -146,9 +146,12 @@ void App::run()
 
        // drop shadows; todo: custom shader
        {
-           renderer_->setViewport(frame_.framebufferSize);
+           renderer_->setViewport({0, 0}, frame_.framebufferSize,
+                                          frame_.framebufferSize);
 
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
+           renderer_->setShader(nullptr);
+           renderer_->setTexture(nullptr);
 
            for(auto& scene: scenesToRender_)
            {
@@ -166,14 +169,16 @@ void App::run()
                sprite.size = size;
                renderer_->cache(sprite);
            }
-           
-           renderer_->flush();
        }
 
        for(auto scene: scenesToRender_)
        {
-           renderer_->setViewport(*scene);
+           renderer_->setViewport(scene->properties_.pos, scene->properties_.size,
+                                  frame_.framebufferSize);
+
            scene->render(*renderer_);
+
+           renderer_->flush();
        }
 
        {
