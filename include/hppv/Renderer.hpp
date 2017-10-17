@@ -12,6 +12,7 @@
 namespace hppv
 {
 
+class Texture;
 class Space;
 class Scene;
 
@@ -22,6 +23,8 @@ struct Sprite
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the sprite center
+    Texture* texture = nullptr;
+    glm::ivec4 texCoords;
 };
 
 class Renderer
@@ -31,15 +34,15 @@ public:
 
     Renderer();
 
-    // asserts that the cache is empty
     void setProjection(const Space& space);
+
     void setViewport(glm::ivec2 framebufferSize);
     void setViewport(const Scene& scene);
 
     void cache(const Sprite& sprite);
 
     void cache(glm::vec2 pos, glm::vec2 size, glm::vec4 color, float rotation,
-                glm::vec2 rotationPoint);
+               glm::vec2 rotationPoint, Texture* texture, glm::ivec4 texCoords);
 
     // returns a number of rendered sprites
     int flush();
@@ -52,10 +55,20 @@ private:
     struct Instance
     {
         glm::vec4 color;
+        glm::vec4 texCoords;
         glm::mat4 matrix;
     };
 
+    struct Batch
+    {
+        int type;
+        Texture* texture;
+        int start;
+        int count;
+    };
+
     std::vector<Instance> instances_;
+    std::vector<Batch> batches_;
 };
 
 } // namespace hppv
