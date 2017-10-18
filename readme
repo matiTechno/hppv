@@ -1,9 +1,11 @@
-h p p v   -   high performance physics visualization
+h p p v
+high performance physics visualization
 
 todo:
 
+* remove App::frame
+* improve Space design; rename to Coords?
 * setting viewport with space coordinates
-* textures
 * Renderer states and batching:
                                x viewport
                                x projection
@@ -13,7 +15,7 @@ todo:
                                             * sampling
                                x start
                                x count
-----------
+
 * samplers; default renderer samplers
 * sdf fonts, format produced by Hiero
 * App init parameters

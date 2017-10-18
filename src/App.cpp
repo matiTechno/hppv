@@ -169,6 +169,8 @@ void App::run()
                sprite.size = size;
                renderer_->cache(sprite);
            }
+
+           renderer_->flush();
        }
 
        for(auto scene: scenesToRender_)
