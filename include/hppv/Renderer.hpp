@@ -47,7 +47,7 @@ public:
 
     int flush(); // returns a number of rendered instances
 
-    static const char* vertexShaderSource; // use this for custom shader implementation
+    static const char* vertexShaderSource;
 
 private:
     sh::Shader shaderColor_, shaderTexture_;
