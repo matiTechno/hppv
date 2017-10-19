@@ -105,9 +105,11 @@ void PrototypeScene::render(Renderer& renderer)
                  ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("h p p v");
-        ImGui::Text("made by     m a t i T e c h n o");
-        ImGui::Text("frameTime   %f ms", averageFrameTimeMs_);
-        ImGui::Text("fps         %d",    averageFps_);
+        ImGui::Text("made by            m a t i T e c h n o");
+        ImGui::Text("frameTime          %f ms", averageFrameTimeMs_);
+        ImGui::Text("fps                %d",    averageFps_);
+        ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x,
+                                                 frame_.framebufferSize.y);
 
         std::string buttonText("vsyn ");
         if(vsync_)
@@ -129,7 +131,7 @@ void PrototypeScene::render(Renderer& renderer)
 
         ImGui::Separator();
         auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
-        ImGui::Text("space coords   %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+        ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
 }
