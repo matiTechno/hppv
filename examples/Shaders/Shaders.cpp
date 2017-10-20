@@ -45,7 +45,7 @@ private:
     void addShader(const char* fragmentSource)
     {
         shaders_.emplace_back(std::string(hppv::Renderer::vertexShaderSource) +
-                              "FRAGMENT\n" + fragmentSource, "no id");
+                              "FRAGMENT\n" + fragmentSource, "");
     }
 
     void prototypeRender(hppv::Renderer& renderer) override
@@ -63,20 +63,22 @@ private:
         }
         ImGui::End();
 
-        renderer.setProjection(hppv::Space({0.f, 0.f}, frame_.framebufferSize));
-        
-        hppv::Sprite sprite;
-        sprite.pos = {0.f, 0.f};
-        sprite.size = frame_.framebufferSize;
+        auto size = properties_.size;
 
         activeShader_->bind();
 
         glUniform1f(activeShader_->getUniformLocation("time"), time_);
 
-        glUniform2f(activeShader_->getUniformLocation("resolution"),
-                    float(frame_.framebufferSize.x), float(frame_.framebufferSize.y));
+        glUniform2f(activeShader_->getUniformLocation("resolution"), size.x, size.y);
 
         renderer.setShader(&*activeShader_);
+
+        renderer.setProjection(hppv::Space({0.f, 0.f}, size));
+
+        hppv::Sprite sprite;
+        sprite.pos = {0.f, 0.f};
+        sprite.size = size;
+
         renderer.cache(sprite);
     }
 };
