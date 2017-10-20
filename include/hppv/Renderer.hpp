@@ -30,10 +30,17 @@ struct Sprite
 struct Text
 {
     float scale = 1.f;
-    glm::vec2 pos;
+    glm::vec2 pos; // baseline
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     std::string text;
     Font* font;
+};
+
+struct Circle
+{
+    glm::vec2 center;
+    float radius;
+    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 };
 
 // add support for array of sprites to avoid some if statements
@@ -59,12 +66,14 @@ public:
 
     void cache(const Text& text);
 
+    void cache(const Circle& circle);
+
     int flush(); // returns a number of rendered instances
 
     static const char* vertexShaderSource;
 
 private:
-    sh::Shader shaderColor_, shaderTexture_, shaderFont_;
+    sh::Shader shaderColor_, shaderTexture_, shaderFont_, shaderCircle_;
     GLvao vao_;
     GLbo boQuad_, boInstances_;
 

@@ -51,6 +51,12 @@ private:
             text.pos = {0.f, 0.f};
             text.scale = 2.f;
             renderer.cache(text);
+
+            hppv::Circle circle;
+            circle.center = {20.f, 20.f};
+            circle.radius = 10.f;
+            circle.color = {1.f, 1.f, 0.f, 1.f};
+            renderer.cache(circle);
         }
     }
 };

@@ -28,12 +28,14 @@ uniform mat4 projection;
 
 out vec4 vColor;
 out vec2 vTexCoord;
+out vec2 vPosition;
 
 void main()
 {
     gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
     vColor = color;
     vTexCoord = vertex.zw * texCoords.zw + texCoords.xy;
+    vPosition = vertex.xy;
 }
 
 )";
@@ -104,11 +106,40 @@ void main()
 
 )";
 
+static const char* circleShaderSource = R"(
+
+FRAGMENT
+#version 330
+
+out vec4 color;
+
+in vec4 vColor;
+
+in vec2 vPosition;
+
+uniform float radius = 0.5;
+uniform vec2 center = vec2(0.5, 0.5);
+
+void main()
+{
+    float distanceFromCenter = length(vPosition - center);
+    float delta = fwidth(distanceFromCenter);
+    float alpha = smoothstep(radius - delta * 2,
+                             radius,
+                             distanceFromCenter);
+
+    color = vec4(vColor.rgb, vColor.a * (1 - alpha));
+}
+
+)";
+
 Renderer::Renderer():
     shaderColor_(std::string(vertexShaderSource) + colorShaderSource, "Renderer color"),
     shaderTexture_(std::string(vertexShaderSource) + textureShaderSource,
                  "Renderer texture"),
-    shaderFont_(std::string(vertexShaderSource) + fontShaderSource, "Renderer font")
+    shaderFont_(std::string(vertexShaderSource) + fontShaderSource, "Renderer font"),
+    shaderCircle_(std::string(vertexShaderSource) + circleShaderSource,
+            "Renderer circle")
 {
     instances_.resize(100000);
 
@@ -351,6 +382,35 @@ void Renderer::cache(const Text& text)
         ++index;
         penPos.x += glyph.advance * text.scale;
     };
+}
+
+void Renderer::cache(const Circle& circle)
+{
+
+    setShader(&shaderCircle_);
+
+    Instance i;
+
+    i.color = circle.color;
+
+    i.matrix = glm::mat4(1.f);
+
+    i.matrix = glm::translate(i.matrix, glm::vec3(circle.center - circle.radius, 0.f));
+
+
+    i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2(circle.radius,
+                                                        circle.radius) * 2.f, 1.f));
+
+    auto& batch = batches_.back();
+
+    auto index = batch.start + batch.count;
+
+    if(index + 1 > static_cast<int>(instances_.size()))
+        instances_.emplace_back();
+
+    instances_[index] = i;
+
+    ++batch.count;
 }
 
 Renderer::Batch& Renderer::getTargetBatch()
