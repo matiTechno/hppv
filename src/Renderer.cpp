@@ -9,6 +9,7 @@
 #include <hppv/Space.hpp>
 #include <hppv/Scene.hpp>
 #include <hppv/Texture.hpp>
+#include <hppv/Font.hpp>
 
 namespace hppv
 {
@@ -77,10 +78,37 @@ void main()
 
 )";
 
+static const char* fontShaderSource = R"(
+
+FRAGMENT
+#version 330
+
+out vec4 color;
+
+in vec4 vColor;
+in vec2 vTexCoord;
+
+uniform sampler2D sampler;
+uniform int type;
+
+uniform float smoothing = 1.0 / 16.0;
+
+void main()
+{
+    color = texture(sampler, vTexCoord) * vColor;
+
+    float distance = texture(sampler, vTexCoord).a;
+    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    color = vec4(vColor.rgb, vColor.a * alpha);
+}
+
+)";
+
 Renderer::Renderer():
     shaderColor_(std::string(vertexShaderSource) + colorShaderSource, "Renderer color"),
     shaderTexture_(std::string(vertexShaderSource) + textureShaderSource,
-                 "Renderer texture")
+                 "Renderer texture"),
+    shaderFont_(std::string(vertexShaderSource) + fontShaderSource, "Renderer font")
 {
     instances_.resize(100000);
 
@@ -269,6 +297,60 @@ int Renderer::flush()
     batches_.front().count = 0;
 
     return numToRender;
+}
+
+void Renderer::cache(const Text& text)
+{
+    // todo: move it outside
+    setShader(&shaderFont_);
+    setTexture(&text.font->getTexture());
+
+    auto& batch = batches_.back();
+
+    auto numInstances = batch.start + batch.count + text.text.size();
+    if(numInstances > static_cast<int>(instances_.size()))
+        instances_.resize(numInstances);
+
+    auto penPos = text.pos;
+    auto index = batch.start + batch.count + 1;
+
+    batch.count += text.text.size() + 1;
+
+    for(auto c: text.text)
+    {
+        if(c == '\n')
+        {
+            penPos.x = text.pos.x;
+            penPos.y += text.font->getLineHeight() * text.scale;
+            continue;
+        }
+
+        auto glyph = text.font->getGlyph(c);
+
+        Instance i;
+        
+        i.color = text.color;
+
+        i.matrix = glm::mat4(1.f);
+
+        i.matrix = glm::translate(i.matrix, glm::vec3(penPos
+                    + glm::vec2(glyph.offset) * text.scale, 0.f));
+        
+        i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2{glyph.texCoords.z,
+                                                   glyph.texCoords.w}
+                                                   * text.scale, 1.f));
+        
+        auto texSize = batch.texture->getSize();
+
+        i.texCoords.x = float(glyph.texCoords.x) / texSize.x;
+        i.texCoords.y = float(glyph.texCoords.y) / texSize.y;
+        i.texCoords.z = float(glyph.texCoords.z) / texSize.x;
+        i.texCoords.w = float(glyph.texCoords.w) / texSize.y;
+
+        instances_[index] = i;
+        ++index;
+        penPos.x += glyph.advance * text.scale;
+    };
 }
 
 Renderer::Batch& Renderer::getTargetBatch()

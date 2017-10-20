@@ -16,8 +16,8 @@ todo:
                                x start
                                x count
 
+* rendering circles
 * samplers; default renderer samplers
-* sdf fonts, format produced by Hiero
 * App init parameters
 * postprocessing
 * better cmake (finding libraries / cross-compilation)

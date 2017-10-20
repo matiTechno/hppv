@@ -15,6 +15,7 @@ namespace hppv
 class Texture;
 class Space;
 class Scene;
+class Font;
 
 struct Sprite
 {
@@ -26,6 +27,17 @@ struct Sprite
     glm::ivec4 texCoords;
 };
 
+struct Text
+{
+    float scale = 1.f;
+    glm::vec2 pos;
+    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+    std::string text;
+    Font* font;
+};
+
+// add support for array of sprites to avoid some if statements
+// same for text
 class Renderer
 {
 public:
@@ -45,12 +57,14 @@ public:
 
     void cache(const Sprite& sprite);
 
+    void cache(const Text& text);
+
     int flush(); // returns a number of rendered instances
 
     static const char* vertexShaderSource;
 
 private:
-    sh::Shader shaderColor_, shaderTexture_;
+    sh::Shader shaderColor_, shaderTexture_, shaderFont_;
     GLvao vao_;
     GLbo boQuad_, boInstances_;
 
