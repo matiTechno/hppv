@@ -30,6 +30,7 @@ public:
         glm::ivec2 size = {100, 100};
         bool maximize = false;
         bool opaque = true;
+        bool updateWhenNotTop = false;
         // only polled for the top scene
         unsigned numScenesToPop = 0;
         std::unique_ptr<Scene> sceneToPush;

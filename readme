@@ -4,7 +4,7 @@ high performance physics visualization
 todo:
 
 * remove App::frame
-* improve Space design; rename to Coords?
+* improve Space design; rename to Rect?
 * setting viewport with space coordinates
 * Renderer states and batching:
                                x viewport

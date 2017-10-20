@@ -73,6 +73,12 @@ void PrototypeScene::processInput(bool hasInput)
                     space_ = zoomToCenter(space_, zoom);
                 }
             }
+            else if(event.type == Event::FramebufferSize)
+            {
+                glm::dvec2 cursorPos;
+                glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
+                rmb_.second = cursorPos;
+            }
         }
     }
     else

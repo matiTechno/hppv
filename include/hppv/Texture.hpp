@@ -16,7 +16,6 @@ class Texture
 public:
     // all constructors call bind()
     Texture(const std::string& filename);
-    Texture(GLtexture texture);
     Texture(GLenum format, glm::ivec2 size);
 
     glm::ivec2 getSize() const {return size_;}

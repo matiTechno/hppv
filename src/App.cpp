@@ -113,26 +113,40 @@ void App::run()
        frame_.frameTime = newTime - time;
        time = newTime;
        
-       for(auto& scene: scenes_)
+       for(auto it = scenes_.begin(); it != scenes_.end() - 1; ++it)
        {
-           if(scene->properties_.maximize)
+           auto& scene = **it;
+
+           if(scene.properties_.maximize)
            {
-               scene->properties_.pos = {0, 0};
-               scene->properties_.size = frame_.framebufferSize;
+               scene.properties_.pos = {0, 0};
+               scene.properties_.size = frame_.framebufferSize;
            }
+           
+           scene.processInput(false);
+
+           if(scene.properties_.updateWhenNotTop)
+               scene.update();
        }
 
-       for(auto it = scenes_.begin(); it != scenes_.end() - 1; ++it)
-           (*it)->processInput(false);
+       // top scene
+       {
+           auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
+                                  ImGui::GetIO().WantCaptureMouse;
 
-       auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
-                              ImGui::GetIO().WantCaptureMouse;
+           auto& topScene = *scenes_.back();
+           
+           if(topScene.properties_.maximize)
+           {
+               topScene.properties_.pos = {0, 0};
+               topScene.properties_.size = frame_.framebufferSize;
+           }
 
-       scenes_.back()->processInput(!imguiWantsInput);
+           topScene.processInput(!imguiWantsInput);
+
+           topScene.update();
+       }
        
-       for(auto& scene: scenes_)
-           scene->update();
-
        scenesToRender_.clear();
 
        for(auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
@@ -283,6 +297,7 @@ void App::framebufferSizeCallback(GLFWwindow*, int width, int height)
     event.framebufferSize.prevSize = frame_.framebufferSize;
     frame_.framebufferSize = {width, height};
     event.framebufferSize.newSize = frame_.framebufferSize;
+    frame_.events.push_back(event);
 }
 
 } // namespace hppv

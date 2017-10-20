@@ -42,6 +42,7 @@ public:
     static void quit();
     static void setVsync(bool on);
     static const Frame& getFrame() {return frame_;}
+    static GLFWwindow* getWindow() {return window_;}
 
 private:
     Deleter deleterGlfw_;

@@ -32,15 +32,6 @@ Texture::Texture(const std::string& filename)
     }
 }
 
-Texture::Texture(GLtexture texture):
-    texture_(std::move(texture))
-{
-    bind();
-
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &size_.x);
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &size_.y);
-}
-
 Texture::Texture(GLenum format, glm::ivec2 size):
     size_(size)
 {
