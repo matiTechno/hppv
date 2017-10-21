@@ -4,7 +4,7 @@ high performance physics visualization
 todo:
 
 * remove / redesign getSpace() in PrototypeScene
-* add posprocessing helper functions to PrototypeScene
+* add postprocessing helper functions to PrototypeScene
 * improve Space design; rename to Rect
 * remove App::frame
 * Renderer::setSampler; default linear and nearest
