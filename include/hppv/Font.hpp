@@ -20,7 +20,6 @@ struct Glyph
     int advance;
 };
 
-// todo: descent
 class Font
 {
 public:
@@ -29,13 +28,11 @@ public:
     Texture& getTexture() {return *texture_;}
     Glyph getGlyph(int code) const;
     int getAscent() const {return ascent_;}
-    int getDescent() const {return descent_;}
     int getLineHeight() const {return lineHeight_;}
 
 private:
     std::unique_ptr<Texture> texture_;
     int ascent_;
-    int descent_;
     int lineHeight_;
 
     std::map<int, Glyph> glyphs_;

@@ -17,8 +17,22 @@ class Space;
 class Scene;
 class Font;
 
+struct Text
+{
+    float scale = 1.f;
+    glm::vec2 pos; // top left corner
+    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+    std::string text;
+    Font* font;
+
+    glm::vec2 getSize() const;
+};
+
 struct Sprite
 {
+    Sprite() = default;
+    Sprite(const Text& text): pos(text.pos), size(text.getSize()) {}
+
     glm::vec2 pos; // top left corner; y grows down
     glm::vec2 size;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
@@ -27,14 +41,6 @@ struct Sprite
     glm::ivec4 texCoords;
 };
 
-struct Text
-{
-    float scale = 1.f;
-    glm::vec2 pos; // baseline
-    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-    std::string text;
-    Font* font;
-};
 
 struct Circle
 {

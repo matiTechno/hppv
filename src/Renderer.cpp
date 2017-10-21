@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <algorithm>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -496,6 +497,33 @@ Renderer::Batch& Renderer::getTargetBatch()
     current.start += current.count;
     current.count = 0;
     return current;
+}
+
+glm::vec2 Text::getSize() const
+{
+    float x = 0.f;
+    glm::vec2 size = {0.f, 0.f};
+
+    auto lineHeight = font->getLineHeight() * scale;
+
+    size.y += lineHeight;
+
+    for(auto c: text)
+    {
+        if(c == '\n')
+        {
+            size.x = std::max(size.x, x);
+            x = 0.f;
+            size.y += lineHeight;
+            continue;
+        }
+
+        auto glyph = font->getGlyph('c');
+        x += glyph.advance * scale;
+    }
+
+    size.x = std::max(size.x, x);
+    return size;
 }
 
 } // namespace hppv

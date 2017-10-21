@@ -117,7 +117,7 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x,
                                                  frame_.framebufferSize.y);
 
-        std::string buttonText("vsyn ");
+        std::string buttonText("vsync ");
         if(vsync_)
             buttonText += "off";
         else
