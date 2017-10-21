@@ -11,7 +11,9 @@ todo:
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * createTextureCopy()
-* massive new features refactor
+* massive new features refactor (Framebuffer, ...)
+* change texCoords to texRect
+* Renderer::cache(Sprite* sprites, int count);
 
 note:
 
