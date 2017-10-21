@@ -69,9 +69,6 @@ bool App::initialize(bool printDebugInfo)
     }
 
     glfwSwapInterval(1);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     renderer_ = std::make_unique<Renderer>();
 
@@ -160,8 +157,7 @@ void App::run()
 
        // drop shadows; todo: custom shader
        {
-           renderer_->setViewport({0, 0}, frame_.framebufferSize,
-                                          frame_.framebufferSize);
+           renderer_->setViewport(frame_.framebufferSize);
 
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
            renderer_->setShader(nullptr);
@@ -189,8 +185,7 @@ void App::run()
 
        for(auto scene: scenesToRender_)
        {
-           renderer_->setViewport(scene->properties_.pos, scene->properties_.size,
-                                  frame_.framebufferSize);
+           renderer_->setViewport(*scene);
 
            scene->render(*renderer_);
 

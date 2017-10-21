@@ -10,6 +10,7 @@
 #include <hppv/Scene.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/Font.hpp>
+#include <hppv/App.hpp>
 
 namespace hppv
 {
@@ -35,6 +36,34 @@ void main()
     gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
     vColor = color;
     vTexCoord = vertex.zw * texCoords.zw + texCoords.xy;
+    vPosition = vertex.xy;
+}
+
+)";
+
+const char* Renderer::vertexShaderFlippedSource = R"(
+
+VERTEX
+#version 330
+
+layout(location = 0) in vec4 vertex;
+layout(location = 1) in vec4 color;
+layout(location = 2) in vec4 texCoords;
+layout(location = 3) in mat4 matrix;
+
+uniform mat4 projection;
+
+out vec4 vColor;
+out vec2 vTexCoord;
+out vec2 vPosition;
+
+void main()
+{
+    gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
+    vColor = color;
+    vec2 nVertex = vertex.zw;
+    nVertex.y = (vertex.y - 1) * -1.0;
+    vTexCoord = nVertex.xy * texCoords.zw + texCoords.xy;
     vPosition = vertex.xy;
 }
 
@@ -139,7 +168,9 @@ Renderer::Renderer():
                  "Renderer texture"),
     shaderFont_(std::string(vertexShaderSource) + fontShaderSource, "Renderer font"),
     shaderCircle_(std::string(vertexShaderSource) + circleShaderSource,
-            "Renderer circle")
+            "Renderer circle"),
+    shaderFlipped_(std::string(vertexShaderFlippedSource) + textureShaderSource,
+                   "Renderer flipped")
 {
     instances_.resize(100000);
 
@@ -153,7 +184,11 @@ Renderer::Renderer():
         first.texture = nullptr;
         first.start = 0;
         first.count = 0;
+        first.srcAlpha = GL_SRC_ALPHA;
+        first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
     }
+
+    glEnable(GL_BLEND);
 
     float vertices[] =
     {
@@ -214,6 +249,18 @@ void Renderer::setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebuff
     auto& batch = getTargetBatch();
     batch.viewportCoords = {pos.x, framebufferSize.y - pos.y - size.y, size.x, size.y};
 }
+
+void Renderer::setViewport(const Scene& scene)
+{
+    setViewport(scene.properties_.pos, scene.properties_.size,
+                scene.frame_.framebufferSize);
+}
+
+void Renderer::setViewport(glm::ivec2 framebufferSize)
+{
+    setViewport({0, 0}, framebufferSize, framebufferSize);
+}
+
 
 void Renderer::setProjection(const Space& space)
 {
@@ -320,6 +367,8 @@ int Renderer::flush()
         if(batch.texture)
             batch.texture->bind();
 
+        glBlendFunc(batch.srcAlpha, batch.dstAlpha);
+
         glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.count, batch.start);
     }
     
@@ -339,7 +388,7 @@ void Renderer::cache(const Text& text)
     auto& batch = batches_.back();
 
     auto numInstances = batch.start + batch.count + text.text.size();
-    if(numInstances > static_cast<int>(instances_.size()))
+    if(numInstances > instances_.size())
         instances_.resize(numInstances);
 
     auto penPos = text.pos;
@@ -411,6 +460,25 @@ void Renderer::cache(const Circle& circle)
     instances_[index] = i;
 
     ++batch.count;
+}
+
+void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
+{
+    auto& batch = getTargetBatch();
+    batch.srcAlpha = srcAlpha;
+    batch.dstAlpha = dstAlpha;
+}
+
+void Renderer::setShaderFlipped()
+{
+    auto& batch = getTargetBatch();
+    batch.shader = &shaderFlipped_;
+}
+
+void Renderer::setShaderColor()
+{
+    auto& batch = getTargetBatch();
+    batch.shader = &shaderColor_;
 }
 
 Renderer::Batch& Renderer::getTargetBatch()

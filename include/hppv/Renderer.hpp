@@ -49,18 +49,29 @@ class Renderer
 {
 public:
     using GLuint = unsigned int;
+    using GLenum = unsigned int;
 
     Renderer();
 
     void setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize);
 
+    void setViewport(const Scene& scene);
+
+    void setViewport(glm::ivec2 framebufferSize);
+
     void setProjection(const Space& space);
 
     void setShader(sh::Shader* shader); // nullptr to set default shader
 
+    void setShaderFlipped();
+
+    void setShaderColor();
+
     // todo: add unit parameter
     void setTexture(Texture* texture); // nullptr to disable texture sampling
                                        // if default shader is used
+
+    void setBlend(GLenum srcAlpha, GLenum dstAlpha);
 
     void cache(const Sprite& sprite);
 
@@ -71,9 +82,12 @@ public:
     int flush(); // returns a number of rendered instances
 
     static const char* vertexShaderSource;
+    static const char* vertexShaderFlippedSource;
 
 private:
-    sh::Shader shaderColor_, shaderTexture_, shaderFont_, shaderCircle_;
+    sh::Shader shaderColor_, shaderTexture_, shaderFont_, shaderCircle_,
+               shaderFlipped_;
+
     GLvao vao_;
     GLbo boQuad_, boInstances_;
 
@@ -90,6 +104,7 @@ private:
         glm::mat4 projection;
         sh::Shader* shader;
         Texture* texture;
+        GLenum srcAlpha, dstAlpha;
         int start;
         int count;
     };

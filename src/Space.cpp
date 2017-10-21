@@ -57,4 +57,9 @@ glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene)
                        * cursorPos;
 }
 
+glm::ivec4 spaceToWindow(glm::ivec4 rect, Space projection, const Scene& scene)
+{
+
+}
+
 } // namespace hppv

@@ -3,24 +3,13 @@ high performance physics visualization
 
 todo:
 
+* improve Space design; rename to Rect
 * remove App::frame
-* improve Space design; rename to Rect?
-* setting viewport with space coordinates
-* Renderer states and batching:
-                               x viewport
-                               x projection
-                               x shader
-                                            * blending
-                               x texture
-                                            * sampling
-                               x start
-                               x count
-
-* rendering circles
-* samplers; default renderer samplers
+* Renderer::setSampler; default linear and nearest
 * App init parameters
-* postprocessing
 * better cmake (finding libraries / cross-compilation)
+* createTextureCopy()
+* massive new features refactor
 
 note:
 

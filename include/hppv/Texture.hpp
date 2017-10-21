@@ -10,17 +10,22 @@ namespace hppv
 {
 
 using GLenum = unsigned int;
+using GLuint = unsigned int;
 
 class Texture
 {
 public:
-    // all constructors call bind()
+    // call bind()
     Texture(const std::string& filename);
     Texture(GLenum format, glm::ivec2 size);
+
+    Texture() = default;
 
     glm::ivec2 getSize() const {return size_;}
 
     void bind(GLenum unit = 0);
+
+    GLuint getId() {return texture_.getId();}
 
 private:
     GLtexture texture_;

@@ -2,6 +2,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 add_library(hppv
     App.cpp
     Font.cpp
+    Framebuffer.cpp
     glad.c
     GLobjects.cpp
     PrototypeScene.cpp
