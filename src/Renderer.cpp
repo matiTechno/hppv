@@ -437,7 +437,7 @@ void Renderer::cache(const Text& text)
 void Renderer::cache(const Circle& circle)
 {
 
-    setShader(&shaderCircle_);
+    //setShader(&shaderCircle_);
 
     Instance i;
 
@@ -480,6 +480,12 @@ void Renderer::setShaderColor()
 {
     auto& batch = getTargetBatch();
     batch.shader = &shaderColor_;
+}
+
+void Renderer::setShaderCircle()
+{
+    auto& batch = getTargetBatch();
+    batch.shader = &shaderCircle_;
 }
 
 Renderer::Batch& Renderer::getTargetBatch()

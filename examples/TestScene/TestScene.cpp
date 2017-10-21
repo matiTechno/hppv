@@ -75,6 +75,7 @@ private:
                         frame_.framebufferSize);
 
                 renderer.setProjection(hppv::Space(0.f, 0.f, 40.f, 40.f));
+                renderer.setShaderCircle();
                 hppv::Circle circle;
                 circle.center = {20.f, 20.f};
                 circle.radius = 20.f;

@@ -11,9 +11,10 @@ todo:
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * createTextureCopy()
-* massive new features refactor (Framebuffer, ...)
+* massive new features refactor (Framebuffer, better Shader setting, ...)
 * change texCoords to texRect
 * Renderer::cache(Sprite* sprites, int count);
+* hiding cursor
 
 note:
 

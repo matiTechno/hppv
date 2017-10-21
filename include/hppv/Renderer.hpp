@@ -71,6 +71,8 @@ public:
 
     void setShaderFlipped();
 
+    void setShaderCircle();
+
     void setShaderColor();
 
     // todo: add unit parameter
