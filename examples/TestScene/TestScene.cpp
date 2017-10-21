@@ -67,10 +67,18 @@ private:
                 text.scale = 2.f;
                 renderer.cache(text);
 
+                auto viewport = hppv::spaceToWindow(hppv::Space(20.f, 20.f, 40.f, 40.f),
+                                 hppv::expandToMatchAspectRatio(getSpace(),
+                                     properties_.size), *this);
+
+                renderer.setViewport({viewport.x, viewport.y}, {viewport.z, viewport.w},
+                        frame_.framebufferSize);
+
+                renderer.setProjection(hppv::Space(0.f, 0.f, 40.f, 40.f));
                 hppv::Circle circle;
                 circle.center = {20.f, 20.f};
-                circle.radius = 10.f;
-                circle.color = {1.f, 1.f, 0.f, 1.f};
+                circle.radius = 20.f;
+                circle.color = {1.f, 0.5f, 0.f, 1.f};
                 renderer.cache(circle);
             }
 

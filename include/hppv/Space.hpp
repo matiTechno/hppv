@@ -29,6 +29,6 @@ Space zoomToPoint( Space space, float zoom, glm::vec2 point);
 
 glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene);
 
-glm::ivec4 spaceToWindow(glm::ivec4 rect, Space projection, const Scene& scene);
+glm::ivec4 spaceToWindow(Space rect, Space projection, const Scene& scene);
 
 } // namespace hppv

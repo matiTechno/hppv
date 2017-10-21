@@ -57,9 +57,14 @@ glm::vec2 cursorSpacePos(Space space, glm::vec2 cursorPos, const Scene& scene)
                        * cursorPos;
 }
 
-glm::ivec4 spaceToWindow(glm::ivec4 rect, Space projection, const Scene& scene)
+glm::ivec4 spaceToWindow(Space rect, Space projection, const Scene& scene)
 {
+    auto newPos = (glm::vec2(scene.properties_.size) / projection.size)
+                  * (rect.pos - projection.pos) + glm::vec2(scene.properties_.pos);
 
+    auto newSize = rect.size * (glm::vec2(scene.properties_.size) / projection.size);
+
+    return {newPos, newSize};
 }
 
 } // namespace hppv

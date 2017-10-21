@@ -17,7 +17,7 @@ public:
     void render(Renderer& renderer)  final override;
 
 protected:
-    Space getSpace() {return space_;};
+    Space getSpace() {return space_;}
 
 private:
     virtual void prototypeProcessInput(bool hasInput);
