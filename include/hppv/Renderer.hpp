@@ -49,6 +49,15 @@ struct Circle
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 };
 
+enum class RenderMode
+{
+    color,
+    texture,
+    circle,
+    font,
+    flippedY
+};
+
 // add support for array of sprites to avoid some if statements
 // same for text
 class Renderer
@@ -67,17 +76,13 @@ public:
 
     void setProjection(const Space& space);
 
-    void setShader(sh::Shader* shader); // nullptr to set default shader
+    void setShader(sh::Shader& shader);
 
-    void setShaderFlipped();
-
-    void setShaderCircle();
-
-    void setShaderColor();
+    // move shaders to flat map or something
+    void setShader(RenderMode mode);
 
     // todo: add unit parameter
-    void setTexture(Texture* texture); // nullptr to disable texture sampling
-                                       // if default shader is used
+    void setTexture(Texture& texture);
 
     void setBlend(GLenum srcAlpha, GLenum dstAlpha);
 

@@ -160,8 +160,7 @@ void App::run()
            renderer_->setViewport(frame_.framebufferSize);
 
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
-           renderer_->setShader(nullptr);
-           renderer_->setTexture(nullptr);
+           renderer_->setShader(RenderMode::color);
 
            for(auto& scene: scenesToRender_)
            {

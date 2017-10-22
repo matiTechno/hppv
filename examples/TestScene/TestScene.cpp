@@ -43,8 +43,7 @@ private:
             */
 
             {
-                renderer.setTexture(nullptr);
-                renderer.setShader(nullptr);
+                renderer.setShader(hppv::RenderMode::color);
                 hppv::Sprite sprite;
                 sprite.color = {0.f, 1.f, 0.f, 0.1f};
                 sprite.pos = {20.f, 20.f};
@@ -52,7 +51,8 @@ private:
                 renderer.cache(sprite);
             }
             {
-                renderer.setTexture(&font_.getTexture());
+                renderer.setShader(hppv::RenderMode::texture);
+                renderer.setTexture(font_.getTexture());
                 hppv::Sprite sprite;
                 //sprite.color = {1.f, 0.f, 1.f, 0.4f};
                 sprite.pos = {45.f, 45.f};
@@ -60,6 +60,8 @@ private:
                 sprite.texCoords = {0, 0, texture_.getSize()};
                 renderer.cache(sprite);
 
+                renderer.setShader(hppv::RenderMode::font);
+                renderer.setTexture(font_.getTexture());
                 hppv::Text text;
                 text.text = "Hula dupal\nBarcelona !!! :D";
                 text.font = &font_;
@@ -75,7 +77,7 @@ private:
                         frame_.framebufferSize);
 
                 renderer.setProjection(hppv::Space(0.f, 0.f, 40.f, 40.f));
-                renderer.setShaderCircle();
+                renderer.setShader(hppv::RenderMode::circle);
                 hppv::Circle circle;
                 circle.center = {20.f, 20.f};
                 circle.radius = 20.f;

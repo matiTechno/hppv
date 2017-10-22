@@ -270,30 +270,29 @@ void Renderer::setProjection(const Space& space)
                                   space.pos.y + space.size.y, space.pos.y);
 }
 
-void Renderer::setShader(sh::Shader* shader)
+void Renderer::setShader(sh::Shader& shader)
 {
     auto& batch = getTargetBatch();
-
-    if(shader)
-        batch.shader = shader;
-
-    else if(batch.texture)
-        batch.shader = &shaderTexture_;
-
-    else
-        batch.shader = &shaderColor_;
+    batch.shader = &shader;
 }
 
-void Renderer::setTexture(Texture* texture)
+void Renderer::setTexture(Texture& texture)
 {
     auto& batch = getTargetBatch();
-    batch.texture = texture;
+    batch.texture = &texture;
+}
 
-    if(batch.shader == &shaderColor_ && texture)
-        batch.shader = &shaderTexture_;
-
-    else if(batch.shader == &shaderTexture_ && !texture)
-        batch.shader = &shaderColor_;
+void Renderer::setShader(RenderMode mode)
+{
+    auto& batch = getTargetBatch();
+    switch(mode)
+    {
+    case RenderMode::color: batch.shader = &shaderColor_; break;
+    case RenderMode::circle: batch.shader = &shaderCircle_; break;
+    case RenderMode::flippedY: batch.shader = &shaderFlipped_; break;
+    case RenderMode::font: batch.shader = &shaderFont_; break;
+    case RenderMode::texture: batch.shader = &shaderTexture_; break;
+    }
 }
 
 void Renderer::cache(const Sprite& sprite)
@@ -382,10 +381,6 @@ int Renderer::flush()
 
 void Renderer::cache(const Text& text)
 {
-    // todo: move it outside
-    setShader(&shaderFont_);
-    setTexture(&text.font->getTexture());
-
     auto& batch = batches_.back();
 
     auto numInstances = batch.start + batch.count + text.text.size();
@@ -393,9 +388,9 @@ void Renderer::cache(const Text& text)
         instances_.resize(numInstances);
 
     auto penPos = text.pos;
-    auto index = batch.start + batch.count + 1;
+    auto index = batch.start + batch.count;
 
-    batch.count += text.text.size() + 1;
+    batch.count += text.text.size();
 
     for(auto c: text.text)
     {
@@ -468,24 +463,6 @@ void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
     auto& batch = getTargetBatch();
     batch.srcAlpha = srcAlpha;
     batch.dstAlpha = dstAlpha;
-}
-
-void Renderer::setShaderFlipped()
-{
-    auto& batch = getTargetBatch();
-    batch.shader = &shaderFlipped_;
-}
-
-void Renderer::setShaderColor()
-{
-    auto& batch = getTargetBatch();
-    batch.shader = &shaderColor_;
-}
-
-void Renderer::setShaderCircle()
-{
-    auto& batch = getTargetBatch();
-    batch.shader = &shaderCircle_;
 }
 
 Renderer::Batch& Renderer::getTargetBatch()

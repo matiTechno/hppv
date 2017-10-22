@@ -71,7 +71,7 @@ private:
 
         glUniform2f(activeShader_->getUniformLocation("resolution"), size.x, size.y);
 
-        renderer.setShader(&*activeShader_);
+        renderer.setShader(*activeShader_);
 
         renderer.setProjection(hppv::Space({0.f, 0.f}, size));
 
