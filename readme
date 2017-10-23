@@ -5,7 +5,7 @@ todo:
 
 * remove / redesign getSpace() in PrototypeScene
 * add postprocessing helper functions to PrototypeScene
-* improve Space design; rename to Rect
+* improve Space design; rename to Rect?
 * remove App::frame
 * Renderer::setSampler; default linear and nearest
 * App init parameters
@@ -15,6 +15,8 @@ todo:
 * change texCoords to texRect
 * Renderer::cache(Sprite* sprites, int count);
 * hiding cursor
+* add single header flat_map library
+* move sh::Shader development to this repo
 
 note:
 
