@@ -501,7 +501,7 @@ glm::vec2 Text::getSize() const
             continue;
         }
 
-        auto glyph = font->getGlyph('c');
+        auto glyph = font->getGlyph(c);
         x += glyph.advance * scale;
     }
 
