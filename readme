@@ -17,6 +17,8 @@ todo:
 * hiding cursor
 * add single header flat_map library
 * move sh::Shader development to this repo
+* use GL_ONE / GL_ONE_MINUS_SRC_ALPHA as the default mode
+* spaceToScene()
 
 note:
 

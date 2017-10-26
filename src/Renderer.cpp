@@ -136,7 +136,7 @@ void main()
 
 )";
 
-static const char* circleShaderSource = R"(
+static const char* circleColorShaderSource = R"(
 
 FRAGMENT
 #version 330
@@ -163,15 +163,47 @@ void main()
 
 )";
 
+static const char* circleTextureShaderSource = R"(
+
+FRAGMENT
+#version 330
+
+out vec4 color;
+
+in vec4 vColor;
+
+in vec2 vPosition;
+
+in vec2 vTexCoord;
+
+uniform float radius = 0.5;
+uniform vec2 center = vec2(0.5, 0.5);
+
+uniform sampler2D sampler;
+
+void main()
+{
+    float distanceFromCenter = length(vPosition - center);
+    float delta = fwidth(distanceFromCenter);
+    float alpha = smoothstep(radius - delta * 2,
+                             radius,
+                             distanceFromCenter);
+
+    color = texture(sampler, vTexCoord) * vec4(vColor.rgb, vColor.a * (1 - alpha));
+}
+
+)";
 Renderer::Renderer():
     shaderColor_(std::string(vertexShaderSource) + colorShaderSource, "Renderer color"),
     shaderTexture_(std::string(vertexShaderSource) + textureShaderSource,
                  "Renderer texture"),
     shaderFont_(std::string(vertexShaderSource) + fontShaderSource, "Renderer font"),
-    shaderCircle_(std::string(vertexShaderSource) + circleShaderSource,
-            "Renderer circle"),
+    shaderCircleColor_(std::string(vertexShaderSource) + circleColorShaderSource,
+            "Renderer circle color"),
     shaderFlipped_(std::string(vertexShaderFlippedSource) + textureShaderSource,
-                   "Renderer flipped")
+                   "Renderer flipped"),
+    shaderCircleTexture_(std::string(vertexShaderSource) + circleTextureShaderSource,
+            "Renderer circle texture")
 {
     instances_.resize(100000);
 
@@ -288,7 +320,8 @@ void Renderer::setShader(RenderMode mode)
     switch(mode)
     {
     case RenderMode::color: batch.shader = &shaderColor_; break;
-    case RenderMode::circle: batch.shader = &shaderCircle_; break;
+    case RenderMode::circleColor: batch.shader = &shaderCircleColor_; break;
+    case RenderMode::circleTexture: batch.shader = &shaderCircleTexture_; break;
     case RenderMode::flippedY: batch.shader = &shaderFlipped_; break;
     case RenderMode::font: batch.shader = &shaderFont_; break;
     case RenderMode::texture: batch.shader = &shaderTexture_; break;
@@ -324,11 +357,12 @@ void Renderer::cache(const Sprite& sprite)
     {
         auto texSize = batch.texture->getSize();
 
-        i.texCoords.x = float(sprite.texCoords.x) / texSize.x;
-        i.texCoords.y = float(sprite.texCoords.y) / texSize.y;
-        i.texCoords.z = float(sprite.texCoords.z) / texSize.x;
-        i.texCoords.w = float(sprite.texCoords.w) / texSize.y;
+        i.texCoords.x = sprite.texCoords.x / texSize.x;
+        i.texCoords.y = sprite.texCoords.y / texSize.y;
+        i.texCoords.z = sprite.texCoords.z / texSize.x;
+        i.texCoords.w = sprite.texCoords.w / texSize.y;
     }
+
 
     auto index = batch.start + batch.count;
 
@@ -432,8 +466,6 @@ void Renderer::cache(const Text& text)
 void Renderer::cache(const Circle& circle)
 {
 
-    //setShader(&shaderCircle_);
-
     Instance i;
 
     i.color = circle.color;
@@ -447,6 +479,16 @@ void Renderer::cache(const Circle& circle)
                                                         circle.radius) * 2.f, 1.f));
 
     auto& batch = batches_.back();
+
+    if(batch.texture)
+    {
+        auto texSize = batch.texture->getSize();
+
+        i.texCoords.x = circle.texCoords.x / texSize.x;
+        i.texCoords.y = circle.texCoords.y / texSize.y;
+        i.texCoords.z = circle.texCoords.z / texSize.x;
+        i.texCoords.w = circle.texCoords.w / texSize.y;
+    }
 
     auto index = batch.start + batch.count;
 

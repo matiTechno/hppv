@@ -6,6 +6,7 @@
 #include <hppv/Shader.hpp>
 #include <hppv/Font.hpp>
 #include <hppv/Framebuffer.hpp>
+#include <hppv/glad.h>
 
 class TestScene: public hppv::PrototypeScene
 {
@@ -13,7 +14,8 @@ public:
     TestScene():
         PrototypeScene(hppv::Space(20.f, 20.f, 100.f, 100.f), 1.1f, false),
         texture_("/home/mati/font.png"),
-        font_("/home/mati/font.fnt")
+        font_("/home/mati/font.fnt"),
+        fb(GL_RGBA8, 1)
     {
         properties_.pos = {100, 100};
         properties_.size = {500, 200};
@@ -23,29 +25,25 @@ public:
 private:
     hppv::Texture texture_;
     hppv::Font font_;
-    //hppv::Framebuffer fb;
+    hppv::Framebuffer fb;
     bool lock_ = false;
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
         ImGui::ShowTestWindow();
-        
-     /*   renderer.setProjection(
-                hppv::expandToMatchAspectRatio(hppv::Space(20.f, 20.f, 100.f, 100.f),
-                    properties_.size));
 
             {
                 fb.bind();
                 fb.setSize(properties_.size);
                 fb.clear();
-                renderer.setViewport(fb.getSize());
+                //renderer.setViewport(fb.getSize());
             }
-            */
+            //*/
 
             {
                 renderer.setShader(hppv::RenderMode::color);
                 hppv::Sprite sprite;
-                sprite.color = {0.f, 1.f, 0.f, 0.1f};
+                sprite.color = {1.f, 1.f, 1.f, 0.5f};
                 sprite.pos = {20.f, 20.f};
                 sprite.size = {100.f, 100.f};
                 renderer.cache(sprite);
@@ -77,7 +75,7 @@ private:
                         frame_.framebufferSize);
 
                 renderer.setProjection(hppv::Space(0.f, 0.f, 40.f, 40.f));
-                renderer.setShader(hppv::RenderMode::circle);
+                renderer.setShader(hppv::RenderMode::circleColor);
                 hppv::Circle circle;
                 circle.center = {20.f, 20.f};
                 circle.radius = 20.f;
@@ -85,24 +83,22 @@ private:
                 renderer.cache(circle);
             }
 
-    /*        renderer.flush();
+            renderer.flush();
             fb.unbind();
             renderer.setViewport(*this);
 
-        renderer.setTexture(&fb.getTexture());
-        renderer.setShaderFlipped();
+        renderer.setTexture(fb.getTexture(0));
+        renderer.setShader(hppv::RenderMode::flippedY);
 
         hppv::Sprite sprite;
-        sprite.pos = {20.f, 20.f};
-        sprite.size = {100.f, 100.f};
+        sprite.pos = {0.f, 0.f};
+        sprite.size = fb.getSize();
         sprite.texCoords = glm::ivec4(0, 0, fb.getSize());
         sprite.color = {1.f, 1.f, 0.f, 1.f};
 
-        renderer.setProjection(hppv::expandToMatchAspectRatio(getSpace(),
-                    properties_.size));
-        
+        renderer.setProjection(hppv::Space(0.f, 0.f, fb.getSize().x, fb.getSize().y));
+
         renderer.cache(sprite);
-        */
     }
 };
 

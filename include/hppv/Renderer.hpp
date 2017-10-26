@@ -38,7 +38,7 @@ struct Sprite
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the sprite center
-    glm::ivec4 texCoords;
+    glm::vec4 texCoords;
 };
 
 
@@ -47,13 +47,15 @@ struct Circle
     glm::vec2 center;
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+    glm::vec4 texCoords;
 };
 
 enum class RenderMode
 {
     color,
     texture,
-    circle,
+    circleColor,
+    circleTexture,
     font,
     flippedY
 };
@@ -98,8 +100,8 @@ public:
     static const char* vertexShaderFlippedSource;
 
 private:
-    sh::Shader shaderColor_, shaderTexture_, shaderFont_, shaderCircle_,
-               shaderFlipped_;
+    sh::Shader shaderColor_, shaderTexture_, shaderFont_, shaderCircleColor_,
+               shaderFlipped_, shaderCircleTexture_;
 
     GLvao vao_;
     GLbo boQuad_, boInstances_;
