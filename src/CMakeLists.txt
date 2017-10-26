@@ -6,9 +6,9 @@ add_library(hppv
     glad.c
     GLobjects.cpp
     PrototypeScene.cpp
+    Rect.cpp
     Renderer.cpp
     Scene.cpp
-    Space.cpp
     Texture.cpp
 
     stb_image.h

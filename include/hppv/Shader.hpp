@@ -32,7 +32,7 @@
 #include <map>
 #include <experimental/filesystem>
 
-namespace sh
+namespace hppv
 {
 
 namespace fs = std::experimental::filesystem;
@@ -98,7 +98,7 @@ private:
     bool swapProgram(const std::string& source);
 };
 
-} // namespace sh
+} // namespace hppv
 
 #ifdef SHADER_IMPLEMENTATION
 
@@ -107,7 +107,7 @@ private:
 #include <sstream>
 #include <algorithm>
 
-namespace sh
+namespace hppv
 {
     
 Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
@@ -396,6 +396,6 @@ bool Shader::swapProgram(const std::string& source)
     return true;
 }
 
-} // namespace sh
+} // namespace hppv
 
 #endif // SHADER_IMPLEMENTATION

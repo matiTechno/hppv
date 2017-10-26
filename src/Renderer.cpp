@@ -302,7 +302,7 @@ void Renderer::setProjection(const Space& space)
                                   space.pos.y + space.size.y, space.pos.y);
 }
 
-void Renderer::setShader(sh::Shader& shader)
+void Renderer::setShader(Shader& shader)
 {
     auto& batch = getTargetBatch();
     batch.shader = &shader;

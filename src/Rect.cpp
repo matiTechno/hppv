@@ -1,18 +1,8 @@
-#include <hppv/Space.hpp>
+#include <hppv/Rect.hpp>
 #include <hppv/Scene.hpp>
 
 namespace hppv
 {
-
-Space::Space(float x, float y, float w, float h):
-    pos(x, y),
-    size(w, h)
-{}
-
-Space::Space(glm::vec2 pos, glm::vec2 size):
-    pos(pos),
-    size(size)
-{}
 
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {

@@ -4,12 +4,13 @@
 
 #include <glm/vec2.hpp>
 
+#include <hppv/Rect.hpp>
+
 namespace hppv
 {
 
-struct Frame;
-
 class Renderer;
+struct Frame;
 
 class Scene
 {
@@ -26,8 +27,7 @@ public:
 
     struct Properties
     {
-        glm::ivec2 pos = {0, 0};
-        glm::ivec2 size = {100, 100};
+        Rect rect = {{0.f, 0.f}, {100.f, 100.f}};
         bool maximize = false;
         bool opaque = true;
         bool updateWhenNotTop = false;

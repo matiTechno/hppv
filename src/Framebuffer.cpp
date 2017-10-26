@@ -1,4 +1,7 @@
 #include <hppv/Framebuffer.hpp>
+
+#include <cassert>
+
 #include <hppv/glad.h>
 
 namespace hppv
@@ -7,6 +10,8 @@ namespace hppv
 Framebuffer::Framebuffer(GLenum textureFormat, int numAttachments):
     textureFormat_(textureFormat)
 {
+    assert(numAttachments > 0);
+
     bind();
 
     std::vector<GLenum> attachments(numAttachments);

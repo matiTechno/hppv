@@ -55,7 +55,7 @@ private:
     hppv::Texture texture_;
     hppv::Framebuffer framebuffer_;
     float time_ = 0.f;
-    sh::Shader shader_;
+    hppv::Shader shader_;
 
     void prototypeRender(hppv::Renderer& renderer) override
     {

@@ -1,12 +1,11 @@
 #pragma once
 
-#include <map> // todo: replace with flat_map
-#include <memory>
+#include <map>
 
 #include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 
 #include "Texture.hpp"
+#include "Rect.hpp"
 
 namespace hppv
 {
@@ -15,7 +14,7 @@ namespace hppv
 
 struct Glyph
 {
-    glm::ivec4 texCoords;
+    Rect texRect;
     glm::ivec2 offset;
     int advance;
 };
@@ -24,18 +23,18 @@ class Font
 {
 public:
     Font(const std::string& filename);
+    Font(Texture texture, std::map<int, Glyph> glyphs, int ascent, int lineHeight);
 
-    Texture& getTexture() {return *texture_;}
+    Texture& getTexture() {return texture_;}
     Glyph getGlyph(int code) const;
     int getAscent() const {return ascent_;}
     int getLineHeight() const {return lineHeight_;}
 
 private:
-    std::unique_ptr<Texture> texture_;
+    Texture texture_;
+    std::map<int, Glyph> glyphs_;
     int ascent_;
     int lineHeight_;
-
-    std::map<int, Glyph> glyphs_;
 };
 
 } // namespace hppv

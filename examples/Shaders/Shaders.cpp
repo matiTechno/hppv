@@ -38,8 +38,8 @@ public:
     }
 
 private:
-    std::vector<sh::Shader> shaders_;
-    std::vector<sh::Shader>::iterator activeShader_;
+    std::vector<hppv::Shader> shaders_;
+    std::vector<hppv::Shader>::iterator activeShader_;
     float time_ = 0.f;
 
     void addShader(const char* fragmentSource)

@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "Scene.hpp"
-#include "Space.hpp"
+#include "Rect.hpp"
 
 namespace hppv
 {
@@ -11,13 +11,18 @@ namespace hppv
 class PrototypeScene: public Scene
 {
 public:
-    PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor);
+    PrototypeScene(Rect world, float zoomFactor, bool alwaysZoomToCursor);
 
     void processInput(bool hasInput) final override;
     void render(Renderer& renderer)  final override;
 
 protected:
-    Space getSpace() {return space_;}
+    struct
+    {
+        Rect initialWorld;
+        Rect world;
+        Rect projection;
+    } prototype_;
 
 private:
     virtual void prototypeProcessInput(bool hasInput);
@@ -25,7 +30,6 @@ private:
     // projection is already set
     virtual void prototypeRender(Renderer& renderer);
 
-    Space space_;
     float zoomFactor_;
     bool alwaysZoomToCursor_;
     float accumulator_ = 0.f;

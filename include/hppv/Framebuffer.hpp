@@ -29,7 +29,6 @@ public:
 
     void setSize(glm::ivec2 size);
 
-    // call after setting size: to do clean this api !!! I want to see more robust class
     void clear();
 
 private:
