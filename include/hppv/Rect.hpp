@@ -26,9 +26,9 @@ Rect expandToMatchAspectRatio(Rect rect, glm::ivec2 size);
 
 Rect zoomToCenter(Rect rect, float zoom);
 
-Rect zoomToPoint(Rect space, float zoom, glm::vec2 point);
+Rect zoomToPoint(Rect rect, float zoom, glm::vec2 point);
 
-glm::vec2 mapCursorToRect(Rect rect, glm::vec2 cursorPos, const Scene& scene);
+glm::vec2 mapToProjection(glm::vec2 cursorPos, Rect projection, const Scene& scene);
 
 Rect mapToScene(Rect rect, Rect projection, const Scene& scene);
 

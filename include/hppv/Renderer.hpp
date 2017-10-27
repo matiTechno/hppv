@@ -110,7 +110,7 @@ public:
 
     void setSampler(GLsampler& sampler);
 
-    void setSampler(Sample mode);
+    void setSampler(Sample mode); // default is Sample::Linear
 
     // -----
 
