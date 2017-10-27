@@ -2,9 +2,7 @@
 
 #include <memory>
 
-#include <glm/vec2.hpp>
-
-#include <hppv/Rect.hpp>
+#include "Rect.hpp"
 
 namespace hppv
 {

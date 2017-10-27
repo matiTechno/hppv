@@ -10,8 +10,6 @@
 namespace hppv
 {
 
-class Scene;
-
 class Framebuffer
 {
 public:
