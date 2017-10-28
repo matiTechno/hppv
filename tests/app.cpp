@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <hppv/external/catch.hpp>
 
 #include <hppv/App.hpp>
 

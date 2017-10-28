@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "Scene.hpp"
-#include "Rect.hpp"
+#include "Space.hpp"
 
 namespace hppv
 {
@@ -11,7 +11,7 @@ namespace hppv
 class PrototypeScene: public Scene
 {
 public:
-    PrototypeScene(Rect world, float zoomFactor, bool alwaysZoomToCursor);
+    PrototypeScene(glm::ivec4 world, float zoomFactor, bool alwaysZoomToCursor);
 
     void processInput(bool hasInput) final override;
     void render(Renderer& renderer)  final override;
@@ -19,16 +19,17 @@ public:
 protected:
     struct
     {
-        Rect initialWorld;
-        Rect world;
-        Rect projection;
-    } prototype_;
+        const Space initialWorld;
+        Space world;
+        Space projection;
+    }
+    prototype_;
 
 private:
-    virtual void prototypeProcessInput(bool hasInput);
+    virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
 
     // projection is already set
-    virtual void prototypeRender(Renderer& renderer);
+    virtual void prototypeRender(Renderer& renderer) {(void)renderer;}
 
     float zoomFactor_;
     bool alwaysZoomToCursor_;

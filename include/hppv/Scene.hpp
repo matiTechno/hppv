@@ -2,13 +2,14 @@
 
 #include <memory>
 
-#include "Rect.hpp"
+#include <glm/vec2.hpp>
+
+#include "Frame.hpp"
 
 namespace hppv
 {
 
 class Renderer;
-struct Frame;
 
 class Scene
 {
@@ -17,22 +18,24 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual void processInput(bool hasInput);
+    virtual void processInput(bool hasInput) {(void)hasInput;}
 
-    virtual void update();
+    virtual void update() {}
 
-    virtual void render(Renderer& renderer);
+    virtual void render(Renderer& renderer) {(void)renderer;}
 
-    struct Properties
+    struct
     {
-        Rect rect = {{0.f, 0.f}, {100.f, 100.f}};
+        glm::ivec2 pos = {0, 0};
+        glm::ivec2 size = {100, 100};
         bool maximize = false;
         bool opaque = true;
         bool updateWhenNotTop = false;
         // only polled for the top scene
         unsigned numScenesToPop = 0;
         std::unique_ptr<Scene> sceneToPush;
-    } properties_;
+    }
+    properties_;
 
     const Frame& frame_;
 };

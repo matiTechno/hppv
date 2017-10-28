@@ -23,6 +23,12 @@ GLFWwindow* App::window_;
 Frame App::frame_;
 bool  App::handleQuitEvent_ = true;
 
+void App::hideCursor(bool hide)
+{
+    auto mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
+    glfwSetInputMode(window_, GLFW_CURSOR, mode);
+}
+
 bool App::initialize(bool printDebugInfo)
 {
     if(printDebugInfo)

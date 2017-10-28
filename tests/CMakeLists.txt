@@ -1,4 +1,4 @@
-add_library(tests-main tests-main.cpp catch.hpp)
+add_library(tests-main tests-main.cpp)
 target_link_libraries(tests-main PRIVATE hppv)
 
 add_executable(app app.cpp)

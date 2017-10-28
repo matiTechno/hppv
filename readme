@@ -3,22 +3,13 @@ high performance physics visualization
 
 todo:
 
-* remove / redesign getSpace() in PrototypeScene
-* add postprocessing helper functions to PrototypeScene
-* improve Space design; rename to Rect?
-* remove App::frame
-* Renderer::setSampler; default linear and nearest
+* !!! implementation !!!
+
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
-* createTextureCopy()
-* massive new features refactor (Framebuffer, better Shader setting, ...)
-* change texCoords to texRect
-* Renderer::cache(Sprite* sprites, int count);
-* hiding cursor
-* add single header flat_map library
-* use GL_ONE / GL_ONE_MINUS_SRC_ALPHA as the default mode
-* spaceToScene()
-* move externals to 'external' directory
+* flat_map
+* Shader uniform setting functions
+* update externals
 
 external dependencies:
 

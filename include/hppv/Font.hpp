@@ -3,9 +3,9 @@
 #include <map>
 
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 #include "Texture.hpp"
-#include "Rect.hpp"
 
 namespace hppv
 {
@@ -14,7 +14,7 @@ namespace hppv
 
 struct Glyph
 {
-    Rect texRect;
+    glm::ivec4 texRect;
     glm::ivec2 offset;
     int advance;
 };

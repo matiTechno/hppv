@@ -7,10 +7,10 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
-#include "Rect.hpp"
 #include "GLobjects.hpp"
 #include "Shader.hpp"
 #include "Font.hpp"
+#include "Space.hpp"
 
 namespace hppv
 {
@@ -24,7 +24,7 @@ struct Text
     float scale = 1.f;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
-    glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the text center
+    glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
     Font* font;
     std::string text;
 
@@ -47,7 +47,7 @@ struct Sprite
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f};
-    Rect texRect;
+    glm::vec4 texRect;
 };
 
 
@@ -56,7 +56,7 @@ struct Circle
     glm::vec2 center;
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-    Rect texRect;
+    glm::vec4 texRect;
 };
 
 enum class Render
@@ -84,15 +84,19 @@ public:
 
     // -----
 
-    void setViewport(Rect viewport, glm::ivec2 framebufferSize);
+    void setViewport(glm::ivec4 viewport);
 
     void setViewport(const Scene& scene);
 
-    void setViewport(glm::ivec2 framebufferSize);
+    // -----
+
+    void setScissor(glm::ivec4 scissor);
+
+    void setScissor(const Scene& scene);
 
     // -----
 
-    void setProjection(Rect projection); // y grows down
+    void setProjection(Space projection); // y grows down
 
     // -----
 
@@ -108,9 +112,9 @@ public:
 
     // -----
 
-    void setSampler(GLsampler& sampler);
+    void setSampler(GLsampler& sampler, GLenum unit = 0);
 
-    void setSampler(Sample mode); // default is Sample::Linear
+    void setSampler(Sample mode, GLenum unit = 0); // default is Sample::Linear
 
     // -----
 
@@ -170,20 +174,29 @@ private:
         glm::vec4 texRect;
     };
 
-    struct Batch
+    struct TexUnit
     {
-        Rect viewport;
-        Rect projection;
-        Shader* shader;
+        int unit;
         Texture* texture;
         GLsampler* sampler;
+    };
+
+    struct Batch
+    {
+        glm::ivec4 viewport;
+        glm::ivec4 scissor;
+        Space projection;
+        Shader* shader;
         GLenum srcAlpha;
         GLenum dstAlpha;
-        int start;
-        int count;
+        int startInstances;
+        int countInstances;
+        int startTexUnits;
+        int countTexUnits;
     };
 
     std::vector<Instance> instances_;
+    std::vector<TexUnit> texUnits_;
     std::vector<Batch> batches_;
 
     Batch& getBatchToUpdate();

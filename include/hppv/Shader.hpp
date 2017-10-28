@@ -8,18 +8,18 @@
 
 // shader source format (order does not matter):
 
-// VERTEX
+// #vertex
 // ...
-// GEOMETRY (optional)
+// #geometry (optional)
 // ...
-// FRAGMENT
-// ...
-// or
-// COMPUTE
+// #fragment
 // ...
 // or
-// INCLUDE "vertex.glsl"
-// FRAGMENT
+// #compute
+// ...
+// or
+// #include "vertex.glsl"
+// #fragment
 // ...
 
 // code is exception free
@@ -126,7 +126,7 @@ std::string loadSourceFromFile(const std::string& filename)
     stringstream << file.rdbuf();
     auto source = stringstream.str();
     
-    static const std::string includeDirective = "INCLUDE";
+    static const std::string includeDirective = "#include";
 
     auto lineFirst = source.find(includeDirective);
 
@@ -277,10 +277,10 @@ GLuint createProgram(const std::string& source, const std::string& id)
         std::string name;
     };
 
-    static const ShaderType shaderTypes[] = {{GL_VERTEX_SHADER,   "VERTEX"},
-                                             {GL_GEOMETRY_SHADER, "GEOMETRY"},
-                                             {GL_FRAGMENT_SHADER, "FRAGMENT"},
-                                             {GL_COMPUTE_SHADER,  "COMPUTE"}};
+    static const ShaderType shaderTypes[] = {{GL_VERTEX_SHADER,   "#vertex"},
+                                             {GL_GEOMETRY_SHADER, "#geometry"},
+                                             {GL_FRAGMENT_SHADER, "#fragment"},
+                                             {GL_COMPUTE_SHADER,  "#compute"}};
     
     struct ShaderData
     {

@@ -5,8 +5,8 @@
 
 #include <glm/vec2.hpp>
 
+#include "Frame.hpp"
 #include "Deleter.hpp"
-#include "Event.hpp"
 
 class GLFWwindow;
 
@@ -15,13 +15,6 @@ namespace hppv
 
 class Scene;
 class Renderer;
-
-struct Frame
-{
-    float frameTime;
-    glm::ivec2 framebufferSize; // initialized in App::initialize()
-    std::vector<Event> events;
-};
 
 class App
 {
@@ -41,6 +34,7 @@ public:
 
     static void quit();
     static void setVsync(bool on);
+    static void hideCursor(bool hide);
     static const Frame& getFrame() {return frame_;}
     static GLFWwindow* getWindow() {return window_;}
 
