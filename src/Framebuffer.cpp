@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include <hppv/glad.h>
+#include <hppv/external/glad.h>
 
 namespace hppv
 {

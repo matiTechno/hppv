@@ -1,5 +1,5 @@
 #include <hppv/GLobjects.hpp>
-#include <hppv/glad.h>
+#include <hppv/external/glad.h>
 
 namespace hppv
 {

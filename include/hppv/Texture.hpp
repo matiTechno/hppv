@@ -16,10 +16,9 @@ class Texture
 {
 public:
     // call bind()
-    Texture(const std::string& filename);
+    Texture();
+    explicit Texture(const std::string& filename);
     Texture(GLenum format, glm::ivec2 size);
-
-    Texture() = default;
 
     glm::ivec2 getSize() const {return size_;}
 
@@ -30,6 +29,8 @@ public:
 private:
     GLtexture texture_;
     glm::ivec2 size_;
+
+    void createDefault();
 };
 
 } // namespace hppv

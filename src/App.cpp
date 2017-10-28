@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 
-#include <hppv/glad.h> // must be included before glfw3.hpp
+#include <hppv/external/glad.h> // must be included before glfw3.hpp
 #include <glm/vec2.hpp>
 #include <GLFW/glfw3.h>
 
@@ -9,9 +9,9 @@
 #include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Space.hpp>
-#include <hppv/imgui.h>
+#include <hppv/external/imgui.h>
 
-#include "imgui/imgui_impl_glfw_gl3.h"
+#include "external/imgui/imgui_impl_glfw_gl3.h"
 
 namespace hppv
 {
@@ -21,13 +21,7 @@ App::~App() = default;
 
 GLFWwindow* App::window_;
 Frame App::frame_;
-bool  App::handleQuitEvent_ = true;
-
-void App::hideCursor(bool hide)
-{
-    auto mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
-    glfwSetInputMode(window_, GLFW_CURSOR, mode);
-}
+bool App::handleQuitEvent_ = true;
 
 bool App::initialize(bool printDebugInfo)
 {
@@ -161,12 +155,12 @@ void App::run()
 
        glClear(GL_COLOR_BUFFER_BIT);
 
-       // drop shadows; todo: custom shader
+       // borders
        {
-           renderer_->setViewport(frame_.framebufferSize);
+           renderer_->setViewport({0, 0, frame_.framebufferSize});
 
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
-           renderer_->setShader(RenderMode::color);
+           renderer_->setShader(Render::Color);
 
            for(auto& scene: scenesToRender_)
            {
@@ -221,6 +215,12 @@ void App::quit()
 void App::setVsync(bool on)
 {
     glfwSwapInterval(on);
+}
+
+void App::hideCursor(bool hide)
+{
+    auto mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
+    glfwSetInputMode(window_, GLFW_CURSOR, mode);
 }
 
 void App::errorCallback(int, const char* description)

@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include <hppv/PrototypeScene.hpp>
-#include <hppv/imgui.h>
+#include <hppv/external/imgui.h>
 #include <hppv/Renderer.hpp>
 #include <hppv/App.hpp>
 
@@ -11,12 +11,12 @@ namespace hppv
 {
 
 PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
-    space_(space),
+    prototype_{space, space},
     zoomFactor_(zoomFactor),
     alwaysZoomToCursor_(alwaysZoomToCursor)
 {
     properties_.maximize = true;
-    rmb_.first = false;
+    rmb_.pressed = false;
 }
 
 void PrototypeScene::processInput(bool hasInput)
@@ -27,63 +27,51 @@ void PrototypeScene::processInput(bool hasInput)
         {
             if(event.type == Event::Cursor)
             {
-                if(rmb_.first)
+                if(rmb_.pressed)
                 {
-                    // we need to recreate projection before using it
-                    // because space_ or scene size might have changed
-                    auto projection = expandToMatchAspectRatio(space_, properties_.size);
-                    
-                    auto newSpaceCoords = cursorSpacePos(projection, event.cursor.pos,
-                                                         *this);
+                    auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-                    auto prevSpaceCoords = cursorSpacePos(projection, rmb_.second,
-                                                          *this);
+                    auto newWorldPos = mapCursor(event.cursor.pos, projection, *this);
+
+                    auto prevWorldPos = mapCursor(rmb_.pos, projection, *this);
                     
-                    space_.pos -= newSpaceCoords - prevSpaceCoords;
+                    prototype_.space.pos -= newWorldPos - prevWorldPos;
                 }
 
-                rmb_.second = event.cursor.pos;
+                rmb_.pos = event.cursor.pos;
             }
-            else if(event.type == Event::MouseButton &&
-                    event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
+            else if(event.type == Event::MouseButton && event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
             {
-                if(event.mouseButton.action == GLFW_PRESS)
-                {
-                    rmb_.first = true;
-                }
-                else
-                {
-                    rmb_.first = false;
-                }
+                rmb_.pressed = event.mouseButton.action == GLFW_PRESS;
             }
             else if(event.type == Event::Scroll)
             {
                 auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
 
-                if(rmb_.first || alwaysZoomToCursor_)
+                if(rmb_.pressed || alwaysZoomToCursor_)
                 {
-                    auto projection = expandToMatchAspectRatio(space_, properties_.size);
+                    auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-                    auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
+                    auto worldPos = mapCursor(rmb_.pos, projection, *this);
 
-                    space_ = zoomToPoint(space_, zoom, spaceCoords);
+                    prototype_.space = zoomToPoint(prototype_.space, zoom, worldPos);
                 }
                 else
                 {
-                    space_ = zoomToCenter(space_, zoom);
+                    prototype_.space = zoomToCenter(prototype_.space, zoom);
                 }
             }
             else if(event.type == Event::FramebufferSize)
             {
                 glm::dvec2 cursorPos;
                 glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
-                rmb_.second = cursorPos;
+                rmb_.pos = cursorPos;
             }
         }
     }
     else
     {
-        rmb_.first = false;
+        rmb_.pressed = false;
     }
 
     prototypeProcessInput(hasInput);
@@ -91,7 +79,7 @@ void PrototypeScene::processInput(bool hasInput)
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    auto projection = expandToMatchAspectRatio(space_, properties_.size);
+    auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
     renderer.setProjection(projection);
     prototypeRender(renderer);
 
@@ -136,20 +124,10 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = cursorSpacePos(projection, rmb_.second, *this);
-        ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+        auto spaceCoords = mapCursor(rmb_.pos, projection, *this);
+        ImGui::Text("space pos          %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
-}
-
-void PrototypeScene::prototypeProcessInput(bool hasInput)
-{
-    (void)hasInput;
-}
-
-void PrototypeScene::prototypeRender(Renderer& renderer)
-{
-    (void)renderer;
 }
 
 } // namespace hppv

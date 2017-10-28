@@ -22,7 +22,7 @@ struct Glyph
 class Font
 {
 public:
-    Font(const std::string& filename);
+    explicit Font(const std::string& filename);
     Font(Texture texture, std::map<int, Glyph> glyphs, int ascent, int lineHeight);
 
     Texture& getTexture() {return texture_;}

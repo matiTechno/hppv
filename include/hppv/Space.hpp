@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 namespace hppv
 {
@@ -28,10 +29,10 @@ Space zoomToCenter(Space space, float zoom);
 
 Space zoomToPoint(Space space, float zoom, glm::vec2 point);
 
-glm::vec2 mapToProjection(glm::vec2 cursorPos, Space projection, const Scene& scene);
-
-glm::ivec4 mapToWindow(glm::vec4 rect, Space projection, const Scene& scene);
+glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene& scene);
 
 glm::ivec4 mapToScene(glm::vec4 rect, Space projection, const Scene& scene);
+
+glm::ivec4 mapToWindow(glm::vec4 rect, Space projection, const Scene& scene);
 
 } // namespace hppv

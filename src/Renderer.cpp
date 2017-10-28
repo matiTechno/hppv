@@ -3,7 +3,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <hppv/glad.h>
+#include <hppv/external/glad.h>
 #define SHADER_IMPLEMENTATION
 #include <hppv/Shader.hpp>
 #include <hppv/Renderer.hpp>
@@ -16,55 +16,57 @@
 namespace hppv
 {
 
-const char* Renderer::vertexShaderSource = R"(
+const std::string Renderer::vertexShaderSource = R"(
 
-VERTEX
+#vertex
 #version 330
 
 layout(location = 0) in vec4 vertex;
 layout(location = 1) in vec4 color;
-layout(location = 2) in vec4 texCoords;
+layout(location = 2) in vec4 normTexRect;
 layout(location = 3) in mat4 matrix;
 
 uniform mat4 projection;
 
 out vec4 vColor;
-out vec2 vTexCoord;
+out vec2 vTexCoords;
 out vec2 vPosition;
 
 void main()
 {
     gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
     vColor = color;
-    vTexCoord = vertex.zw * texCoords.zw + texCoords.xy;
+    vTexCoords = vertex.zw * normTexRect.zw + normTexRect.xy;
     vPosition = vertex.xy;
 }
 
 )";
 
-const char* Renderer::vertexShaderFlippedSource = R"(
+const std::string Renderer::vertexShaderTextureFlippedYSource = R"(
 
-VERTEX
+#vertex
 #version 330
 
 layout(location = 0) in vec4 vertex;
 layout(location = 1) in vec4 color;
-layout(location = 2) in vec4 texCoords;
+layout(location = 2) in vec4 normTexRect;
 layout(location = 3) in mat4 matrix;
 
 uniform mat4 projection;
 
 out vec4 vColor;
-out vec2 vTexCoord;
+out vec2 vTexCoords;
 out vec2 vPosition;
 
 void main()
 {
     gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
     vColor = color;
-    vec2 nVertex = vertex.zw;
-    nVertex.y = (vertex.y - 1) * -1.0;
-    vTexCoord = nVertex.xy * texCoords.zw + texCoords.xy;
+
+    vec2 texCoords = vertex.zw;
+    texCoords.y = (vertex.y - 1) * -1;
+    vTexCoords = texCoords.xy * normTexRect.zw + normTexRect.xy;
+
     vPosition = vertex.xy;
 }
 
@@ -72,16 +74,12 @@ void main()
 
 static const char* colorShaderSource = R"(
 
-FRAGMENT
+#fragment
 #version 330
 
-out vec4 color;
-
 in vec4 vColor;
-in vec2 vTexCoord;
 
-uniform sampler2D sampler;
-uniform int type;
+out vec4 color;
 
 void main()
 {
@@ -92,136 +90,164 @@ void main()
 
 static const char* textureShaderSource = R"(
 
-FRAGMENT
+#fragment
 #version 330
+
+in vec4 vColor;
+in vec2 vTexCoords;
+
+uniform sampler2D sampler;
 
 out vec4 color;
 
-in vec4 vColor;
-in vec2 vTexCoord;
-
-uniform sampler2D sampler;
-uniform int type;
-
 void main()
 {
-    color = texture(sampler, vTexCoord) * vColor;
+    color = texture(sampler, vTexCoords) * vColor;
 }
 
 )";
 
-static const char* fontShaderSource = R"(
+static const char* texturePremultiplyAlphaShaderSource = R"(
 
-FRAGMENT
+#fragment
 #version 330
+
+in vec4 vColor;
+in vec2 vTexCoords;
+
+uniform sampler2D sampler;
 
 out vec4 color;
 
-in vec4 vColor;
-in vec2 vTexCoord;
-
-uniform sampler2D sampler;
-uniform int type;
-
-uniform float smoothing = 1.0 / 16.0;
-
 void main()
 {
-    color = texture(sampler, vTexCoord) * vColor;
-
-    float distance = texture(sampler, vTexCoord).a;
-    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    color = vec4(vColor.rgb, vColor.a * alpha);
+    vec4 sample = texture(sampler, vTexCoords);
+    color = vec4(sample.rgb * sample.a, sample.a) * vColor;
 }
 
 )";
 
 static const char* circleColorShaderSource = R"(
 
-FRAGMENT
+#fragment
 #version 330
 
-out vec4 color;
-
 in vec4 vColor;
-
 in vec2 vPosition;
 
-uniform float radius = 0.5;
-uniform vec2 center = vec2(0.5, 0.5);
+const float radius = 0.5;
+const vec2 center = vec2(0.5, 0.5);
+
+out vec4 color;
 
 void main()
 {
     float distanceFromCenter = length(vPosition - center);
     float delta = fwidth(distanceFromCenter);
-    float alpha = smoothstep(radius - delta * 2,
-                             radius,
-                             distanceFromCenter);
+    float alpha = 1 - smoothstep(radius - delta * 2,
+                                 radius,
+                                 distanceFromCenter);
 
-    color = vec4(vColor.rgb, vColor.a * (1 - alpha));
+    color = vColor * alpha;
 }
 
 )";
 
 static const char* circleTextureShaderSource = R"(
 
-FRAGMENT
+#fragment
 #version 330
 
-out vec4 color;
-
 in vec4 vColor;
-
 in vec2 vPosition;
-
-in vec2 vTexCoord;
-
-uniform float radius = 0.5;
-uniform vec2 center = vec2(0.5, 0.5);
+in vec2 vTexCoords;
 
 uniform sampler2D sampler;
+
+const float radius = 0.5;
+const vec2 center = vec2(0.5, 0.5);
+
+out vec4 color;
 
 void main()
 {
     float distanceFromCenter = length(vPosition - center);
     float delta = fwidth(distanceFromCenter);
-    float alpha = smoothstep(radius - delta * 2,
-                             radius,
-                             distanceFromCenter);
+    float alpha = 1 - smoothstep(radius - delta * 2,
+                                 radius,
+                                 distanceFromCenter);
 
-    color = texture(sampler, vTexCoord) * vec4(vColor.rgb, vColor.a * (1 - alpha));
+    vec4 sample = texture(sampler, vTexCoords);
+    color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
 }
 
 )";
-Renderer::Renderer():
-    shaderColor_(std::string(vertexShaderSource) + colorShaderSource, "Renderer color"),
-    shaderTexture_(std::string(vertexShaderSource) + textureShaderSource,
-                 "Renderer texture"),
-    shaderFont_(std::string(vertexShaderSource) + fontShaderSource, "Renderer font"),
-    shaderCircleColor_(std::string(vertexShaderSource) + circleColorShaderSource,
-            "Renderer circle color"),
-    shaderFlipped_(std::string(vertexShaderFlippedSource) + textureShaderSource,
-                   "Renderer flipped"),
-    shaderCircleTexture_(std::string(vertexShaderSource) + circleTextureShaderSource,
-            "Renderer circle texture")
+
+static const char* fontShaderSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vTexCoords;
+
+uniform sampler2D sampler;
+
+const float smoothing = 1.0 / 16.0;
+
+out vec4 color;
+
+void main()
 {
+    float distance = texture(sampler, vTexCoords).a;
+    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    color = vColor * alpha;
+}
+
+)";
+
+Renderer::Renderer()
+{
+    shaders_.emplace(Render::Color, Shader(vertexShaderSource + colorShaderSource, "Render::Color"));
+    shaders_.emplace(Render::Texture, Shader(vertexShaderSource + textureShaderSource, "Render::Texture"));
+    shaders_.emplace(Render::TexturePremultiplyAlpha, Shader(vertexShaderSource + texturePremultiplyAlphaShaderSource,
+                                                             "Render::Texture"));
+    shaders_.emplace(Render::TextureFlippedY, Shader(vertexShaderSource + textureShaderSource, "Render::TextureFlippedY"));
+    shaders_.emplace(Render::CircleColor, Shader(vertexShaderSource + circleColorShaderSource, "Render::CircleColor"));
+    shaders_.emplace(Render::CircleTexture, Shader(vertexShaderSource + circleTextureShaderSource, "Render::CircleTexture"));
+    shaders_.emplace(Render::Font, Shader(vertexShaderSource + fontShaderSource, "Render::Font"));
+
     instances_.resize(100000);
 
-    batches_.reserve(100);
+    glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    batches_.reserve(100);
     batches_.emplace_back();
 
     {
         auto& first = batches_.front();
-        first.shader = &shaderColor_;
-        first.texture = nullptr;
+        first.shader = &shaders_.at(Render::Color);
         first.start = 0;
         first.count = 0;
-        first.srcAlpha = GL_SRC_ALPHA;
+        first.startTexUnit = 0;
+        first.countTexUnit = 0;
+        first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
     }
 
+    texUnits_.reserve(100);
+    texUnits_.emplace_back();
+
+    {
+        auto& first = texUnits_.front();
+        first.unit = 0;
+        first.texture = &texDummy;
+        first.sampler = &samplerLinear;
+    }
+
     glEnable(GL_BLEND);
+    glEnable(GL_SCISSOR_TEST);
 
     float vertices[] =
     {
@@ -248,7 +274,7 @@ Renderer::Renderer():
     glVertexAttribDivisor(1, 1);
 
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
-                          reinterpret_cast<const void*>(offsetof(Instance, texCoords)));
+                          reinterpret_cast<const void*>(offsetof(Instance, normTexRect)));
     glEnableVertexAttribArray(2);
     glVertexAttribDivisor(2, 1);
 
@@ -277,55 +303,100 @@ Renderer::Renderer():
                           + 3 * sizeof(glm::vec4)));
 }
 
-void Renderer::setViewport(glm::ivec2 pos, glm::ivec2 size, glm::ivec2 framebufferSize)
+void Renderer::setViewport(glm::ivec4 viewport)
 {
-    auto& batch = getTargetBatch();
-    batch.viewportCoords = {pos.x, framebufferSize.y - pos.y - size.y, size.x, size.y};
+    viewport.y = App::getFrame().framebufferSize.y - viewport.y - viewport.w;
+    auto& batch = getBatchToUpdate();
+    batch.viewport = viewport;
 }
 
 void Renderer::setViewport(const Scene& scene)
 {
-    setViewport(scene.properties_.pos, scene.properties_.size,
-                scene.frame_.framebufferSize);
+    setViewport({scene.properties_.pos, scene.properties_.size});
 }
 
-void Renderer::setViewport(glm::ivec2 framebufferSize)
+void Renderer::setScissor(glm::ivec4 scissor)
 {
-    setViewport({0, 0}, framebufferSize, framebufferSize);
+    scissor.y = App::getFrame().framebufferSize.y - scissor.y - scissor.w;
+    auto& batch = getBatchToUpdate();
+    batch.scissor = scissor;
 }
 
-
-void Renderer::setProjection(const Space& space)
+void Renderer::setScissor(const Scene& scene)
 {
-    auto& batch = getTargetBatch();
-    batch.projection = glm::ortho(space.pos.x, space.pos.x + space.size.x,
-                                  space.pos.y + space.size.y, space.pos.y);
+    setScissor({scene.properties_.pos, scene.properties_.size});
+}
+
+void Renderer::setProjection(Space projection)
+{
+    auto& batch = getBatchToUpdate();
+    batch.projection = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
+                                  projection.pos.y + projection.size.y, projection.pos.y);
 }
 
 void Renderer::setShader(Shader& shader)
 {
-    auto& batch = getTargetBatch();
+    auto& batch = getBatchToUpdate();
     batch.shader = &shader;
 }
 
-void Renderer::setTexture(Texture& texture)
+void Renderer::setTexture(Texture& texture, GLenum unit)
 {
-    auto& batch = getTargetBatch();
-    batch.texture = &texture;
+    auto& batch = getBatchToUpdate();
+
+    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.count; ++i)
+    {
+        if(texUnits_[i].unit == unit)
+        {
+            texUnits_[i].texture = &texture;
+            return;
+        }
+    }
+
+    texUnits_.emplace_back();
+
+    auto& last = texUnits_.back();
+
+    last.unit = unit;
+    last.texture = &texture;
+    last.sampler = (texUnits_.end() - 2)->sampler;
+
+    ++batch.countTexUnit;
 }
 
-void Renderer::setShader(RenderMode mode)
+void Renderer::setSampler(GLsampler& sampler, GLenum unit)
 {
-    auto& batch = getTargetBatch();
-    switch(mode)
+    auto& batch = getBatchToUpdate();
+
+    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.count; ++i)
     {
-    case RenderMode::color: batch.shader = &shaderColor_; break;
-    case RenderMode::circleColor: batch.shader = &shaderCircleColor_; break;
-    case RenderMode::circleTexture: batch.shader = &shaderCircleTexture_; break;
-    case RenderMode::flippedY: batch.shader = &shaderFlipped_; break;
-    case RenderMode::font: batch.shader = &shaderFont_; break;
-    case RenderMode::texture: batch.shader = &shaderTexture_; break;
+        if(texUnits_[i].unit == unit)
+        {
+            texUnits_[i].sampler = &sampler;
+            return;
+        }
     }
+
+    texUnits_.emplace_back();
+
+    auto& last = texUnits_.back();
+
+    last.unit = unit;
+    last.sampler = &sampler;
+    last.texture = (texUnits_.end() - 2)->texture;
+
+    ++batch.countTexUnit;
+}
+
+void Renderer::setSampler(Sample mode, GLenum unit)
+{
+    setSampler(mode == Sample::Linear ? samplerLinear : samplerNearest, unit);
+}
+
+void Renderer::setShader(Render mode)
+{
+    auto& batch = getBatchToUpdate();
+    batch.shader = &shaders_.at(mode);
 }
 
 void Renderer::cache(const Sprite& sprite)
@@ -351,18 +422,14 @@ void Renderer::cache(const Sprite& sprite)
 
     i.matrix = glm::scale(i.matrix, glm::vec3(sprite.size, 1.f));
 
+    auto texSize = texUnits_.back().texture->getSize();
+
+    i.normTexRect.x = sprite.texRect.x / texSize.x;
+    i.normTexRect.y = sprite.texRect.y / texSize.y;
+    i.normTexRect.z = sprite.texRect.z / texSize.x;
+    i.normTexRect.w = sprite.texRect.w / texSize.y;
+
     auto& batch = batches_.back();
-
-    if(batch.texture)
-    {
-        auto texSize = batch.texture->getSize();
-
-        i.texCoords.x = sprite.texCoords.x / texSize.x;
-        i.texCoords.y = sprite.texCoords.y / texSize.y;
-        i.texCoords.z = sprite.texCoords.z / texSize.x;
-        i.texCoords.w = sprite.texCoords.w / texSize.y;
-    }
-
 
     auto index = batch.start + batch.count;
 
@@ -374,43 +441,47 @@ void Renderer::cache(const Sprite& sprite)
     ++batch.count;
 }
 
-int Renderer::flush()
+void Renderer::flush()
 {
-    auto numToRender = batches_.back().start + batches_.back().count;
-
-    if(!numToRender)
-        return 0;
+    auto count = batches_.back().start + batches_.back().count;
 
     glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
 
-    glBufferData(GL_ARRAY_BUFFER, numToRender * sizeof(Instance), instances_.data(),
+    glBufferData(GL_ARRAY_BUFFER, count * sizeof(Instance), instances_.data(),
                  GL_STREAM_DRAW);
 
     glBindVertexArray(vao_.getId());
 
     for(auto& batch: batches_)
     {
-        glViewport(batch.viewportCoords.x, batch.viewportCoords.y,
-                   batch.viewportCoords.z, batch.viewportCoords.w);
+        glScissor(batch.scissor.x, batch.scissor.y,
+                   batch.scissor.z, batch.scissor.w);
+
+        glViewport(batch.viewport.x, batch.viewport.y,
+                   batch.viewport.z, batch.viewport.w);
 
         batch.shader->bind();
 
         glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE,
                            &batch.projection[0][0]);
 
-        if(batch.texture)
-            batch.texture->bind();
+        for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.countTexUnit; ++i)
+        {
+            auto& unit = texUnits_[i];
+            unit.texture->bind(unit.unit);
+            glBindSampler(unit.unit, unit.sampler->getId());
+        }
 
         glBlendFunc(batch.srcAlpha, batch.dstAlpha);
 
         glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.count, batch.start);
     }
-    
+
+    texUnits_.erase(texUnits_.begin(), texUnits_.end() - batches_.back().countTexUnit);
     batches_.erase(batches_.begin(), batches_.end() - 1);
     batches_.front().start = 0;
     batches_.front().count = 0;
-
-    return numToRender;
+    batches_.front().startTexUnit = 0;
 }
 
 void Renderer::cache(const Text& text)
@@ -446,21 +517,21 @@ void Renderer::cache(const Text& text)
         i.matrix = glm::translate(i.matrix, glm::vec3(penPos
                     + glm::vec2(glyph.offset) * text.scale, 0.f));
         
-        i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2{glyph.texCoords.z,
-                                                   glyph.texCoords.w}
+        i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2{glyph.texRect.z,
+                                                   glyph.texRect.w}
                                                    * text.scale, 1.f));
-        
-        auto texSize = batch.texture->getSize();
 
-        i.texCoords.x = float(glyph.texCoords.x) / texSize.x;
-        i.texCoords.y = float(glyph.texCoords.y) / texSize.y;
-        i.texCoords.z = float(glyph.texCoords.z) / texSize.x;
-        i.texCoords.w = float(glyph.texCoords.w) / texSize.y;
+        auto texSize = texUnits_.back().texture->getSize();
+
+        i.normTexRect.x = float(glyph.texRect.x) / texSize.x;
+        i.normTexRect.y = float(glyph.texRect.y) / texSize.y;
+        i.normTexRect.z = float(glyph.texRect.z) / texSize.x;
+        i.normTexRect.w = float(glyph.texRect.w) / texSize.y;
 
         instances_[index] = i;
         ++index;
         penPos.x += glyph.advance * text.scale;
-    };
+    }
 }
 
 void Renderer::cache(const Circle& circle)
@@ -478,17 +549,14 @@ void Renderer::cache(const Circle& circle)
     i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2(circle.radius,
                                                         circle.radius) * 2.f, 1.f));
 
+    auto texSize = texUnits_.back().texture->getSize();
+
+    i.normTexRect.x = circle.texRect.x / texSize.x;
+    i.normTexRect.y = circle.texRect.y / texSize.y;
+    i.normTexRect.z = circle.texRect.z / texSize.x;
+    i.normTexRect.w = circle.texRect.w / texSize.y;
+
     auto& batch = batches_.back();
-
-    if(batch.texture)
-    {
-        auto texSize = batch.texture->getSize();
-
-        i.texCoords.x = circle.texCoords.x / texSize.x;
-        i.texCoords.y = circle.texCoords.y / texSize.y;
-        i.texCoords.z = circle.texCoords.z / texSize.x;
-        i.texCoords.w = circle.texCoords.w / texSize.y;
-    }
 
     auto index = batch.start + batch.count;
 
@@ -502,12 +570,12 @@ void Renderer::cache(const Circle& circle)
 
 void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
 {
-    auto& batch = getTargetBatch();
+    auto& batch = getBatchToUpdate();
     batch.srcAlpha = srcAlpha;
     batch.dstAlpha = dstAlpha;
 }
 
-Renderer::Batch& Renderer::getTargetBatch()
+Renderer::Batch& Renderer::getBatchToUpdate()
 {
     {
         auto& current = batches_.back();

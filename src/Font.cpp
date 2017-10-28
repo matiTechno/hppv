@@ -31,7 +31,7 @@ Font::Font(const std::string& filename)
     if(!file)
     {
         std::cout << "Font, could not open file: " << filename << std::endl;
-        texture_ = std::make_unique<Texture>("");
+        texture_ = Texture("");
         return;
     }
 
@@ -48,7 +48,7 @@ Font::Font(const std::string& filename)
 
     std::getline(file, line);
 
-    texture_ = std::make_unique<Texture>(getValue(line, 0, '"', '"').str);
+    texture_ = Texture(getValue(line, 0, '"', '"').str);
 
     std::getline(file, line);
 
@@ -62,16 +62,16 @@ Font::Font(const std::string& filename)
         auto& glyph = glyphs_[value.value];
 
         value = getValue(line, value.posNext);
-        glyph.texCoords.x = value.value;
+        glyph.texRect.x = value.value;
         
         value = getValue(line, value.posNext);
-        glyph.texCoords.y = value.value;
+        glyph.texRect.y = value.value;
 
         value = getValue(line, value.posNext);
-        glyph.texCoords.z = value.value;
+        glyph.texRect.z = value.value;
 
         value = getValue(line, value.posNext);
-        glyph.texCoords.w = value.value;
+        glyph.texRect.w = value.value;
 
         value = getValue(line, value.posNext);
         glyph.offset.x = value.value;
@@ -83,6 +83,13 @@ Font::Font(const std::string& filename)
         glyph.advance = value.value;
     }
 }
+
+Font::Font(Texture texture, std::map<int, Glyph> glyphs, int ascent, int lineHeight):
+    texture_(std::move(texture)),
+    glyphs_(std::move(glyphs)),
+    ascent_(ascent),
+    lineHeight_(lineHeight)
+{}
 
 Glyph Font::getGlyph(int code) const
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <map>
 
 #include <glm/vec2.hpp>
@@ -11,11 +12,11 @@
 #include "Shader.hpp"
 #include "Font.hpp"
 #include "Space.hpp"
+#include "Texture.hpp"
 
 namespace hppv
 {
 
-class Texture;
 class Scene;
 
 struct Text
@@ -63,6 +64,7 @@ enum class Render
 {
     Color,
     Texture,
+    TexturePremultiplyAlpha,
     TextureFlippedY, // use when rendering to framebuffer
     CircleColor,
     CircleTexture,
@@ -108,8 +110,6 @@ public:
 
     void setTexture(Texture& texture, GLenum unit = 0);
 
-    void setTexture(Font& font);
-
     // -----
 
     void setSampler(GLsampler& sampler, GLenum unit = 0);
@@ -129,11 +129,11 @@ public:
 
     void cache(const Text& text);
 
-    void cache(const Sprite* sprites, int count);
+    //void cache(const Sprite* sprites, int count);
 
-    void cache(const Circle* circles, int count);
+    //void cache(const Circle* circles, int count);
 
-    void cache(const Text* texts, int count);
+    //void cache(const Text* texts, int count);
 
     // -----
 
@@ -141,22 +141,22 @@ public:
 
     // -----
 
-    Font* getFont() {return &font_;}
+    //Font* getFont() {return &font_;}
 
     // input:
-    // layout(location = 0) in vec4 vertex; // pos + texCoords
-    // layout(location = 1) in vec4 color;
-    // layout(location = 2) in vec4 texRect;
-    // layout(location = 3) in mat4 matrix;
-    // uniform mat4 projection;
-    //
-    // output:
-    // out vec4 vColor;
-    // out vec2 vTexCoord;
-    // out vec2 vPos; // range: 0 - 1; used for circle shading
+    //layout(location = 0) in vec4 vertex;
+    //layout(location = 1) in vec4 color;
+    //layout(location = 2) in vec4 normTexRect;
+    //layout(location = 3) in mat4 matrix;
+    //uniform mat4 projection;
 
-    static const char* vertexShaderSource;
-    static const char* vertexShaderFlippedYSource;
+    // output:
+    //out vec4 vColor;
+    //out vec2 vTexCoords;
+    //out vec2 vPosition; // range: 0 - 1; used for circle shading
+
+    static const std::string vertexShaderSource;
+    static const std::string vertexShaderTextureFlippedYSource;
 
 private:
     GLvao vao_;
@@ -165,13 +165,14 @@ private:
     std::map<Render, Shader> shaders_;
     GLsampler samplerLinear;
     GLsampler samplerNearest;
-    Font font_;
+    Texture texDummy;
+    //Font font_;
 
     struct Instance
     {
         glm::mat4 matrix;
         glm::vec4 color;
-        glm::vec4 texRect;
+        glm::vec4 normTexRect;
     };
 
     struct TexUnit
@@ -184,15 +185,15 @@ private:
     struct Batch
     {
         glm::ivec4 viewport;
-        glm::ivec4 scissor;
-        Space projection;
+        glm::ivec4 scissor; // *
+        glm::mat4 projection;
         Shader* shader;
         GLenum srcAlpha;
         GLenum dstAlpha;
-        int startInstances;
-        int countInstances;
-        int startTexUnits;
-        int countTexUnits;
+        int start;
+        int count;
+        int startTexUnit;
+        int countTexUnit;
     };
 
     std::vector<Instance> instances_;

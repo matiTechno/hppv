@@ -11,7 +11,7 @@ namespace hppv
 class PrototypeScene: public Scene
 {
 public:
-    PrototypeScene(glm::ivec4 world, float zoomFactor, bool alwaysZoomToCursor);
+    PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor);
 
     void processInput(bool hasInput) final override;
     void render(Renderer& renderer)  final override;
@@ -19,9 +19,8 @@ public:
 protected:
     struct
     {
-        const Space initialWorld;
-        Space world;
-        Space projection;
+        const Space initialSpace;
+        Space space;
     }
     prototype_;
 
@@ -38,7 +37,13 @@ private:
     float averageFrameTimeMs_ = 0.f;
     int averageFps_ = 0;
     bool vsync_ = true;
-    std::pair<bool, glm::vec2> rmb_;
+
+    struct
+    {
+        bool pressed;
+        glm::vec2 pos;
+    }
+    rmb_;
 };
 
 } // namespace hppv
