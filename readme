@@ -3,13 +3,15 @@ high performance physics visualization
 
 todo:
 
+* clean Renderer api (it's a mess)
+* Shader::Shader(source1, source2, source3); std::string_view
 * implementation & interface polishing
+* update examples
+
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * Shader uniform setting functions
-* Shader::Shader(source1, source2, source3)
-* update externals
 
 external dependencies:
 

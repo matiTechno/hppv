@@ -231,7 +231,7 @@ Renderer::Renderer()
         first.start = 0;
         first.count = 0;
         first.startTexUnit = 0;
-        first.countTexUnit = 0;
+        first.countTexUnit = 1;
         first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
     }
