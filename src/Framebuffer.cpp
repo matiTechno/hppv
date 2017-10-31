@@ -10,16 +10,16 @@ namespace hppv
 Framebuffer::Framebuffer(GLenum textureFormat, int numAttachments):
     textureFormat_(textureFormat)
 {
-    assert(numAttachments > 0);
+    assert(numAttachments > 0 && numAttachments <= MaxAttachments);
 
     bind();
 
-    std::vector<GLenum> attachments(numAttachments);
+    GLenum attachments[MaxAttachments];
 
     for(int i = 0; i < numAttachments; ++i)
         attachments[i] = GL_COLOR_ATTACHMENT0 + i;
 
-    glDrawBuffers(numAttachments, attachments.data());
+    glDrawBuffers(numAttachments, attachments);
 
     unbind();
 

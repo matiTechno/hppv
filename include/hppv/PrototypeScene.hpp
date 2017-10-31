@@ -21,6 +21,7 @@ protected:
     {
         const Space initialSpace;
         Space space;
+        bool renderImgui = true;
     }
     prototype_;
 
@@ -30,8 +31,8 @@ private:
     // projection is already set
     virtual void prototypeRender(Renderer& renderer) {(void)renderer;}
 
-    float zoomFactor_;
-    bool alwaysZoomToCursor_;
+    const float zoomFactor_;
+    const bool alwaysZoomToCursor_;
     float accumulator_ = 0.f;
     int frameCount_ = 0;
     float averageFrameTimeMs_ = 0.f;

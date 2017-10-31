@@ -86,15 +86,15 @@ public:
 
     // -----
 
-    void setViewport(glm::ivec4 viewport);
-
-    void setViewport(const Scene& scene);
-
-    // -----
-
     void setScissor(glm::ivec4 scissor);
 
     void setScissor(const Scene& scene);
+
+    // -----
+
+    void setViewport(glm::ivec4 viewport);
+
+    void setViewport(const Scene& scene);
 
     // -----
 
@@ -138,10 +138,6 @@ public:
 
     void flush();
 
-    // -----
-
-    //Font* getFont() {return &font_;}
-
     // input:
     //layout(location = 0) in vec4 vertex;
     //layout(location = 1) in vec4 color;
@@ -154,10 +150,17 @@ public:
     //out vec2 vTexCoords;
     //out vec2 vPosition; // range: 0 - 1; used for circle shading
 
-    static const std::string vertexShaderSource;
-    static const std::string vertexShaderTextureFlippedYSource;
+    static const char* vertexShaderSource;
+    static const char* vertexShaderTextureFlippedYSource;
 
 private:
+    enum
+    {
+        ReservedInstances = 100000,
+        ReservedTexUnits = 50,
+        ReservedBatches = 50
+    };
+
     GLvao vao_;
     GLbo boQuad_;
     GLbo boInstances_;
@@ -165,7 +168,6 @@ private:
     GLsampler samplerLinear;
     GLsampler samplerNearest;
     Texture texDummy;
-    //Font font_;
 
     struct Instance
     {
@@ -189,10 +191,10 @@ private:
         Shader* shader;
         GLenum srcAlpha;
         GLenum dstAlpha;
-        int start;
-        int count;
-        int startTexUnit;
-        int countTexUnit;
+        int startInstances;
+        int countInstances;
+        int startTexUnits;
+        int countTexUnits;
     };
 
     std::vector<Instance> instances_;

@@ -40,11 +40,12 @@ namespace fs = std::experimental::filesystem;
 class Shader
 {
 public:
+    enum class HotReload {Off = 0, On = 1};
     using GLint = int;
     using GLuint = unsigned int;
 
-    explicit Shader(const std::string& filename, bool hotReload = false);
-    Shader(const std::string& source, const char* id);
+    explicit Shader(const std::string& filename, HotReload hotReload = HotReload::Off);
+    Shader(std::initializer_list<const char*> sources, std::string id);
 
     bool isValid() const {return program_.getId();}
 
@@ -161,9 +162,9 @@ fs::file_time_type getFileLastWriteTime(const std::string& filename)
     return time;
 }
 
-Shader::Shader(const std::string& filename, bool hotReload):
+Shader::Shader(const std::string& filename, HotReload hotReload):
     id_(filename),
-    hotReload_(hotReload)
+    hotReload_(static_cast<bool>(hotReload))
 {
     fileLastWriteTime_ = getFileLastWriteTime(filename);
 
@@ -171,10 +172,15 @@ Shader::Shader(const std::string& filename, bool hotReload):
         swapProgram(source);
 }
 
-Shader::Shader(const std::string& source, const char* id):
-    id_(id),
+Shader::Shader(std::initializer_list<const char*> sources, std::string id):
+    id_(std::move(id)),
     hotReload_(false)
 {
+    std::string source;
+
+    for(auto& str: sources)
+        source += str;
+
     swapProgram(source);
 }
 

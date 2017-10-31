@@ -95,6 +95,9 @@ void PrototypeScene::render(Renderer& renderer)
         accumulator_ = 0.f;
     }
 
+    if(!prototype_.renderImgui)
+        return;
+
     ImGui::Begin("PrototypeScene", nullptr,
                  ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
     {

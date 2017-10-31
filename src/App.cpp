@@ -87,10 +87,9 @@ bool App::initialize(bool printDebugInfo)
     glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
                                     &frame_.framebufferSize.y);
 
-    frame_.events.reserve(20);
-
-    scenes_.reserve(10);
-    scenesToRender_.reserve(10);
+    scenes_.reserve(ReservedScenes);
+    scenesToRender_.reserve(ReservedScenes);
+    frame_.events.reserve(ReservedEvents);
 
     return true;
 }

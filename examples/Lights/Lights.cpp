@@ -4,14 +4,14 @@
 #include <hppv/Texture.hpp>
 #include <hppv/Shader.hpp>
 #include <hppv/Framebuffer.hpp>
-#include <hppv/glad.h>
+#include <hppv/external/glad.h>
 #include <hppv/Space.hpp>
 
 #include <glm/trigonometric.hpp>
 
 static const char* circleTextureShaderSource = R"(
 
-FRAGMENT
+#fragment
 #version 330
 
 out vec4 color;
@@ -20,7 +20,7 @@ in vec4 vColor;
 
 in vec2 vPosition;
 
-in vec2 vTexCoord;
+in vec2 vTexCoords;
 
 uniform float radius = 0.5;
 uniform vec2 center = vec2(0.5, 0.5);
@@ -35,7 +35,7 @@ void main()
                              radius,
                              distanceFromCenter);
 
-    color = texture(sampler, vTexCoord) * vec4(vColor.rgb, vColor.a * (1 - alpha) * (radius - distanceFromCenter ));
+    color = texture(sampler, vTexCoords) * vec4(vColor.rgb, vColor.a * (1 - alpha) * (radius - distanceFromCenter ));
 }
 
 )";
@@ -47,7 +47,7 @@ public:
         hppv::PrototypeScene(hppv::Space(0.f, 0.f, 100.f, 100.f), 1.1f, false),
         texture_("mandrill.png"),
         framebuffer_(GL_RGBA8, 1),
-        shader_(hppv::Renderer::vertexShaderSource + std::string(circleTextureShaderSource), "circle")
+        shader_({hppv::Renderer::vertexShaderSource, circleTextureShaderSource}, "circle")
     {
     }
 
@@ -61,51 +61,53 @@ private:
     {
         time_ += frame_.frameTime;
 
-        renderer.setProjection(hppv::Space({0.f, 0.f}, frame_.framebufferSize));
-
         framebuffer_.bind();
-        framebuffer_.setSize(frame_.framebufferSize);
+        framebuffer_.setSize(properties_.size);
         framebuffer_.clear();
 
         {
-            hppv::Sprite sprite;
-            sprite.pos = {0.f, 0.f};
-            sprite.size = frame_.framebufferSize;
-            sprite.texCoords = {0.f, 0.f, texture_.getSize()};
-
-            renderer.setShader(hppv::RenderMode::flippedY);
+            renderer.setShader(hppv::Render::TextureFlippedY);
             renderer.setTexture(texture_);
+
+            hppv::Sprite sprite;
+            sprite.pos = prototype_.space.pos;
+            sprite.size = prototype_.space.size;
+            sprite.texRect = {0.f, 0.f, texture_.getSize()};
+
             renderer.cache(sprite);
         }
-
 
         renderer.flush();
         framebuffer_.unbind();
 
+        auto projection = hppv::expandToMatchAspectRatio(prototype_.space, frame_.framebufferSize);
 
         {
-            renderer.setShader(hppv::RenderMode::texture);
+            renderer.setShader(hppv::Render::Texture);
+            renderer.setTexture(framebuffer_.getTexture(0));
+
             hppv::Sprite sprite;
-            sprite.pos = {0.f, 0.f};
-            sprite.size = frame_.framebufferSize;
+            sprite.pos = prototype_.initialSpace.pos;
+            sprite.size = prototype_.initialSpace.size;
             sprite.color.a = 0.05f;
-            sprite.texCoords = {sprite.pos, sprite.size};
+            sprite.color.b = 0.f;
+            sprite.texRect = hppv::mapToScene({sprite.pos, sprite.size}, projection, *this);
             renderer.cache(sprite);
+        }
+
+        {
+           // renderer.setShader(shader_);
+
             hppv::Circle circle;
             circle.center.x = 300.f + glm::sin(time_ / 2.f) * 150.f;
             circle.center.y = 300.f + glm::cos(time_ / 2.f) * 150.f;
             circle.radius = 100.f;
-
             circle.color = {1.f, 1.f, 0.f, 1.f};
+            //circle.color.a = glm::sin(time_) / 2.f + 1.f;
+            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)},
+                                                projection, *this);
 
-            circle.color.a = glm::sin(time_) / 2.f + 1.f;
-
-            circle.texCoords = {circle.center - circle.radius, glm::vec2(circle.radius * 2.f)};
-
-            renderer.setShader(shader_);
-            renderer.setTexture(framebuffer_.getTexture(0));
-            renderer.cache(circle);
-
+            //renderer.cache(circle);
         }
     }
 };

@@ -39,6 +39,12 @@ public:
     static GLFWwindow* getWindow() {return window_;}
 
 private:
+    enum
+    {
+        ReservedScenes = 10,
+        ReservedEvents = 100
+    };
+
     Deleter deleterGlfw_;
     Deleter deleterImgui_;
     std::unique_ptr<Renderer> renderer_;

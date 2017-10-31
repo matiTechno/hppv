@@ -3,15 +3,14 @@ high performance physics visualization
 
 todo:
 
-* Shader::Shader(source1, source2, source3); std::string_view
-* implementation & interface polishing;
-* use std algorithms
-* update examples
-
+* implementation & interface polishing; std algorithms / string_view / size_type
+* optimize allocations (e.g. strings in Shader, replace with string_view)
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * Shader uniform setting functions
+* stack allocator
+* core library satellites
 
 external dependencies:
 

@@ -16,7 +16,7 @@
 namespace hppv
 {
 
-const std::string Renderer::vertexShaderSource = R"(
+const char* Renderer::vertexShaderSource = R"(
 
 #vertex
 #version 330
@@ -42,7 +42,7 @@ void main()
 
 )";
 
-const std::string Renderer::vertexShaderTextureFlippedYSource = R"(
+const char* Renderer::vertexShaderTextureFlippedYSource = R"(
 
 #vertex
 #version 330
@@ -208,42 +208,41 @@ void main()
 
 Renderer::Renderer()
 {
-    shaders_.emplace(Render::Color, Shader(vertexShaderSource + colorShaderSource, "Render::Color"));
-    shaders_.emplace(Render::Texture, Shader(vertexShaderSource + textureShaderSource, "Render::Texture"));
-    shaders_.emplace(Render::TexturePremultiplyAlpha, Shader(vertexShaderSource + texturePremultiplyAlphaShaderSource,
+    shaders_.emplace(Render::Color, Shader({vertexShaderSource, colorShaderSource}, "Render::Color"));
+    shaders_.emplace(Render::Texture, Shader({vertexShaderSource, textureShaderSource}, "Render::Texture"));
+    shaders_.emplace(Render::TexturePremultiplyAlpha, Shader({vertexShaderSource, texturePremultiplyAlphaShaderSource},
                                                              "Render::Texture"));
-    shaders_.emplace(Render::TextureFlippedY, Shader(vertexShaderSource + textureShaderSource, "Render::TextureFlippedY"));
-    shaders_.emplace(Render::CircleColor, Shader(vertexShaderSource + circleColorShaderSource, "Render::CircleColor"));
-    shaders_.emplace(Render::CircleTexture, Shader(vertexShaderSource + circleTextureShaderSource, "Render::CircleTexture"));
-    shaders_.emplace(Render::Font, Shader(vertexShaderSource + fontShaderSource, "Render::Font"));
+    shaders_.emplace(Render::TextureFlippedY, Shader({vertexShaderTextureFlippedYSource, textureShaderSource},
+                                                     "Render::TextureFlippedY"));
+    shaders_.emplace(Render::CircleColor, Shader({vertexShaderSource, circleColorShaderSource}, "Render::CircleColor"));
+    shaders_.emplace(Render::CircleTexture, Shader({vertexShaderSource, circleTextureShaderSource}, "Render::CircleTexture"));
+    shaders_.emplace(Render::Font, Shader({vertexShaderSource, fontShaderSource}, "Render::Font"));
 
-    instances_.resize(100000);
+    instances_.resize(ReservedInstances);
+    texUnits_.reserve(ReservedTexUnits);
+    batches_.reserve(ReservedBatches);
 
     glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    batches_.reserve(100);
-    batches_.emplace_back();
-
-    {
-        auto& first = batches_.front();
-        first.shader = &shaders_.at(Render::Color);
-        first.start = 0;
-        first.count = 0;
-        first.startTexUnit = 0;
-        first.countTexUnit = 1;
-        first.srcAlpha = GL_ONE;
-        first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
-    }
-
-    texUnits_.reserve(100);
     texUnits_.emplace_back();
-
     {
         auto& first = texUnits_.front();
         first.unit = 0;
         first.texture = &texDummy;
         first.sampler = &samplerLinear;
+    }
+
+    batches_.emplace_back();
+    {
+        auto& first = batches_.front();
+        first.shader = &shaders_.at(Render::Color);
+        first.startInstances = 0;
+        first.countInstances = 0;
+        first.startTexUnits = 0;
+        first.countTexUnits = 1;
+        first.srcAlpha = GL_ONE;
+        first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
     }
 
     glEnable(GL_BLEND);
@@ -344,7 +343,7 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.countTexUnit; ++i)
+    for(int i = batch.startTexUnits; i < batch.startTexUnits + batch.countTexUnits; ++i)
     {
         if(texUnits_[i].unit == unit)
         {
@@ -361,14 +360,14 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
     last.texture = &texture;
     last.sampler = (texUnits_.end() - 2)->sampler;
 
-    ++batch.countTexUnit;
+    ++batch.countTexUnits;
 }
 
 void Renderer::setSampler(GLsampler& sampler, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.countTexUnit; ++i)
+    for(int i = batch.startTexUnits; i < batch.startTexUnits + batch.countTexUnits; ++i)
     {
         if(texUnits_[i].unit == unit)
         {
@@ -385,7 +384,7 @@ void Renderer::setSampler(GLsampler& sampler, GLenum unit)
     last.sampler = &sampler;
     last.texture = (texUnits_.end() - 2)->texture;
 
-    ++batch.countTexUnit;
+    ++batch.countTexUnits;
 }
 
 void Renderer::setSampler(Sample mode, GLenum unit)
@@ -431,23 +430,23 @@ void Renderer::cache(const Sprite& sprite)
 
     auto& batch = batches_.back();
 
-    auto index = batch.start + batch.count;
+    auto index = batch.startInstances + batch.countInstances;
 
     if(index + 1 > static_cast<int>(instances_.size()))
         instances_.emplace_back();
 
     instances_[index] = i;
 
-    ++batch.count;
+    ++batch.countInstances;
 }
 
 void Renderer::flush()
 {
-    auto count = batches_.back().start + batches_.back().count;
+    auto numInstances = batches_.back().startInstances + batches_.back().countInstances;
 
     glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
 
-    glBufferData(GL_ARRAY_BUFFER, count * sizeof(Instance), instances_.data(),
+    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(),
                  GL_STREAM_DRAW);
 
     glBindVertexArray(vao_.getId());
@@ -465,7 +464,7 @@ void Renderer::flush()
         glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE,
                            &batch.projection[0][0]);
 
-        for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.countTexUnit; ++i)
+        for(int i = batch.startTexUnits; i < batch.startTexUnits + batch.countTexUnits; ++i)
         {
             auto& unit = texUnits_[i];
             unit.texture->bind(unit.unit);
@@ -474,28 +473,28 @@ void Renderer::flush()
 
         glBlendFunc(batch.srcAlpha, batch.dstAlpha);
 
-        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.count, batch.start);
+        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.countInstances, batch.startInstances);
     }
 
-    texUnits_.erase(texUnits_.begin(), texUnits_.end() - batches_.back().countTexUnit);
+    texUnits_.erase(texUnits_.begin(), texUnits_.end() - batches_.back().countTexUnits);
     batches_.erase(batches_.begin(), batches_.end() - 1);
-    batches_.front().start = 0;
-    batches_.front().count = 0;
-    batches_.front().startTexUnit = 0;
+    batches_.front().startInstances = 0;
+    batches_.front().countInstances = 0;
+    batches_.front().startTexUnits = 0;
 }
 
 void Renderer::cache(const Text& text)
 {
     auto& batch = batches_.back();
 
-    auto numInstances = batch.start + batch.count + text.text.size();
+    auto numInstances = batch.startInstances + batch.countInstances + text.text.size();
     if(numInstances > instances_.size())
         instances_.resize(numInstances);
 
     auto penPos = text.pos;
-    auto index = batch.start + batch.count;
+    auto index = batch.startInstances + batch.countInstances;
 
-    batch.count += text.text.size();
+    batch.countInstances += text.text.size();
 
     for(auto c: text.text)
     {
@@ -558,14 +557,14 @@ void Renderer::cache(const Circle& circle)
 
     auto& batch = batches_.back();
 
-    auto index = batch.start + batch.count;
+    auto index = batch.startInstances + batch.countInstances;
 
     if(index + 1 > static_cast<int>(instances_.size()))
         instances_.emplace_back();
 
     instances_[index] = i;
 
-    ++batch.count;
+    ++batch.countInstances;
 }
 
 void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
@@ -579,7 +578,7 @@ Renderer::Batch& Renderer::getBatchToUpdate()
 {
     {
         auto& current = batches_.back();
-        if(!current.count)
+        if(!current.countInstances)
             return current;
     }
 
@@ -587,10 +586,10 @@ Renderer::Batch& Renderer::getBatchToUpdate()
     auto& current = batches_.back();
     current = *(batches_.end() - 2);
 
-    current.start += current.count;
-    current.count = 0;
-    current.startTexUnit += current.countTexUnit;
-    current.countTexUnit = 0;
+    current.startInstances += current.countInstances;
+    current.countInstances = 0;
+    current.startTexUnits += current.countTexUnits;
+    current.countTexUnits = 0;
 
     return current;
 }
