@@ -13,7 +13,7 @@ class TestScene: public hppv::PrototypeScene
 public:
     TestScene():
         PrototypeScene(hppv::Space(0.f, 0.f, 100.f, 100.f), 1.1f, false),
-        texture_("gnud.png"),
+        texture_("gnu.png"),
         font_("/home/mati/font.fnt")
     {
         properties_.pos = {100, 100};

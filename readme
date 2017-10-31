@@ -3,9 +3,9 @@ high performance physics visualization
 
 todo:
 
-* clean Renderer api (it's a mess)
 * Shader::Shader(source1, source2, source3); std::string_view
-* implementation & interface polishing
+* implementation & interface polishing;
+* use std algorithms
 * update examples
 
 * App init parameters

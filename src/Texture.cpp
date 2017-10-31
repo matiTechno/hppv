@@ -56,7 +56,7 @@ void Texture::createDefault()
 
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, size_.x, size_.y);
 
-    unsigned char pixel[] = {0xff, 0xc0, 0xcb, 0xff};
+    unsigned char pixel[] = {0, 255, 0, 255};
 
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size_.x, size_.y, GL_RGBA,
                     GL_UNSIGNED_BYTE, pixel);

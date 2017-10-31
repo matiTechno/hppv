@@ -21,11 +21,11 @@ class Scene;
 
 struct Text
 {
-    glm::vec2 pos; // top left corner;
+    glm::vec2 pos; // top left corner
     float scale = 1.f;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
-    glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
+    glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the center
     Font* font;
     std::string text;
 
@@ -43,7 +43,7 @@ struct Sprite
         rotationPoint(text.rotationPoint)
     {}
 
-    glm::vec2 pos; // top left corner;
+    glm::vec2 pos; // top left corner
     glm::vec2 size;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
@@ -118,8 +118,7 @@ public:
 
     // -----
 
-    // default is GL_ONE, GL_ONE_MINUS_SRC_ALPHA
-    void setBlend(GLenum srcAlpha, GLenum dstAlpha);
+    void setBlend(GLenum srcAlpha, GLenum dstAlpha); // default is GL_ONE, GL_ONE_MINUS_SRC_ALPHA
 
     // -----
 
@@ -185,7 +184,7 @@ private:
     struct Batch
     {
         glm::ivec4 viewport;
-        glm::ivec4 scissor; // *
+        glm::ivec4 scissor;
         glm::mat4 projection;
         Shader* shader;
         GLenum srcAlpha;

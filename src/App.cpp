@@ -153,6 +153,8 @@ void App::run()
                break;
        }
 
+       renderer_->setScissor({0, 0, frame_.framebufferSize});
+
        glClear(GL_COLOR_BUFFER_BIT);
 
        // borders

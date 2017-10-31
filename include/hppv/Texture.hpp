@@ -15,7 +15,6 @@ using GLuint = unsigned int;
 class Texture
 {
 public:
-    // call bind()
     Texture();
     explicit Texture(const std::string& filename);
     Texture(GLenum format, glm::ivec2 size);

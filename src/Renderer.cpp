@@ -344,7 +344,7 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.count; ++i)
+    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.countTexUnit; ++i)
     {
         if(texUnits_[i].unit == unit)
         {
@@ -368,7 +368,7 @@ void Renderer::setSampler(GLsampler& sampler, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.count; ++i)
+    for(int i = batch.startTexUnit; i < batch.startTexUnit + batch.countTexUnit; ++i)
     {
         if(texUnits_[i].unit == unit)
         {
@@ -455,7 +455,7 @@ void Renderer::flush()
     for(auto& batch: batches_)
     {
         glScissor(batch.scissor.x, batch.scissor.y,
-                   batch.scissor.z, batch.scissor.w);
+                  batch.scissor.z, batch.scissor.w);
 
         glViewport(batch.viewport.x, batch.viewport.y,
                    batch.viewport.z, batch.viewport.w);
@@ -584,11 +584,14 @@ Renderer::Batch& Renderer::getBatchToUpdate()
     }
 
     batches_.emplace_back();
-
     auto& current = batches_.back();
     current = *(batches_.end() - 2);
+
     current.start += current.count;
     current.count = 0;
+    current.startTexUnit += current.countTexUnit;
+    current.countTexUnit = 0;
+
     return current;
 }
 
