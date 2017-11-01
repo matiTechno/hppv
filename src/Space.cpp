@@ -46,19 +46,25 @@ glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene& scene)
     return projection.pos + (projection.size / glm::vec2(scene.properties_.size)) * pos;
 }
 
-glm::ivec4 mapToScene(glm::vec4 rect, Space projection, const Scene& scene)
+glm::vec4 mapToSceneF(glm::vec4 rect, Space projection, const Scene& scene)
 {
+
     auto newPos = (glm::vec2(scene.properties_.size) / projection.size)
                   * (glm::vec2(rect.x, rect.y) - projection.pos);
 
     auto newSize = glm::vec2(rect.z, rect.w) * (glm::vec2(scene.properties_.size) / projection.size);
 
-    return {newPos + 0.5f, newSize + 0.5f};
+    return {newPos, newSize};
 }
 
-glm::ivec4 mapToWindow(glm::vec4 rect, Space projection, const Scene& scene)
+glm::ivec4 mapToSceneI(glm::vec4 rect, Space projection, const Scene& scene)
 {
-    auto mapped = mapToScene(rect, projection, scene);
+    return mapToSceneF(rect, projection, scene) +  0.5f;
+}
+
+glm::ivec4 mapToWindowI(glm::vec4 rect, Space projection, const Scene& scene)
+{
+    auto mapped = mapToSceneI(rect, projection, scene);
     mapped.x += scene.properties_.pos.x;
     mapped.y += scene.properties_.pos.y;
     return mapped;

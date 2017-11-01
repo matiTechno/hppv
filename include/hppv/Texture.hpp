@@ -21,7 +21,7 @@ public:
 
     glm::ivec2 getSize() const {return size_;}
 
-    void bind(GLenum unit = 0);
+    void bind(GLuint unit = 0);
 
     GLuint getId() {return texture_.getId();}
 

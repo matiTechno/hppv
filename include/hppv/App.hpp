@@ -3,8 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include <glm/vec2.hpp>
-
 #include "Frame.hpp"
 #include "Deleter.hpp"
 

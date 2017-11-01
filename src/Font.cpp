@@ -1,8 +1,7 @@
-#include <hppv/Font.hpp>
-
 #include <iostream>
 #include <fstream>
-#include <string>
+
+#include <hppv/Font.hpp>
 
 namespace hppv
 {
@@ -83,13 +82,6 @@ Font::Font(const std::string& filename)
         glyph.advance = value.value;
     }
 }
-
-Font::Font(Texture texture, std::map<int, Glyph> glyphs, int ascent, int lineHeight):
-    texture_(std::move(texture)),
-    glyphs_(std::move(glyphs)),
-    ascent_(ascent),
-    lineHeight_(lineHeight)
-{}
 
 Glyph Font::getGlyph(int code) const
 {

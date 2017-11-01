@@ -3,259 +3,90 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <hppv/external/glad.h>
+#include <hppv/glad.h>
 #define SHADER_IMPLEMENTATION
-#include <hppv/Shader.hpp>
-#include <hppv/Renderer.hpp>
-#include <hppv/Space.hpp>
-#include <hppv/Scene.hpp>
-#include <hppv/Texture.hpp>
-#include <hppv/Font.hpp>
+#include <hppv/Shader.hpp> // must be included before Renderer.hpp
 #include <hppv/App.hpp>
+#include <hppv/Renderer.hpp>
+#include <hppv/Scene.hpp>
+#include <hppv/Font.hpp>
+#include <hppv/Framebuffer.hpp>
+
+#include "Shaders.hpp"
 
 namespace hppv
 {
 
-const char* Renderer::vertexShaderSource = R"(
-
-#vertex
-#version 330
-
-layout(location = 0) in vec4 vertex;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec4 normTexRect;
-layout(location = 3) in mat4 matrix;
-
-uniform mat4 projection;
-
-out vec4 vColor;
-out vec2 vTexCoords;
-out vec2 vPosition;
-
-void main()
+glm::vec2 Text::getSize() const
 {
-    gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
-    vColor = color;
-    vTexCoords = vertex.zw * normTexRect.zw + normTexRect.xy;
-    vPosition = vertex.xy;
+    auto x = 0.f;
+    glm::vec2 size(0.f);
+
+    auto lineHeight = font->getLineHeight() * scale;
+
+    size.y += lineHeight;
+
+    for(auto c: text)
+    {
+        if(c == '\n')
+        {
+            size.x = std::max(size.x, x);
+            x = 0.f;
+            size.y += lineHeight;
+            continue;
+        }
+
+        auto glyph = font->getGlyph(c);
+        x += glyph.advance * scale;
+    }
+
+    size.x = std::max(size.x, x);
+    return size;
 }
-
-)";
-
-const char* Renderer::vertexShaderTextureFlippedYSource = R"(
-
-#vertex
-#version 330
-
-layout(location = 0) in vec4 vertex;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec4 normTexRect;
-layout(location = 3) in mat4 matrix;
-
-uniform mat4 projection;
-
-out vec4 vColor;
-out vec2 vTexCoords;
-out vec2 vPosition;
-
-void main()
-{
-    gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
-    vColor = color;
-
-    vec2 texCoords = vertex.zw;
-    texCoords.y = (vertex.y - 1) * -1;
-    vTexCoords = texCoords.xy * normTexRect.zw + normTexRect.xy;
-
-    vPosition = vertex.xy;
-}
-
-)";
-
-static const char* colorShaderSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-
-out vec4 color;
-
-void main()
-{
-    color = vColor;
-}
-
-)";
-
-static const char* textureShaderSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-out vec4 color;
-
-void main()
-{
-    color = texture(sampler, vTexCoords) * vColor;
-}
-
-)";
-
-static const char* texturePremultiplyAlphaShaderSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-out vec4 color;
-
-void main()
-{
-    vec4 sample = texture(sampler, vTexCoords);
-    color = vec4(sample.rgb * sample.a, sample.a) * vColor;
-}
-
-)";
-
-static const char* circleColorShaderSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-
-const float radius = 0.5;
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
-
-void main()
-{
-    float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter);
-    float alpha = 1 - smoothstep(radius - delta * 2,
-                                 radius,
-                                 distanceFromCenter);
-
-    color = vColor * alpha;
-}
-
-)";
-
-static const char* circleTextureShaderSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-const float radius = 0.5;
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
-
-void main()
-{
-    float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter);
-    float alpha = 1 - smoothstep(radius - delta * 2,
-                                 radius,
-                                 distanceFromCenter);
-
-    vec4 sample = texture(sampler, vTexCoords);
-    color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
-}
-
-)";
-
-static const char* fontShaderSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-const float smoothing = 1.0 / 16.0;
-
-out vec4 color;
-
-void main()
-{
-    float distance = texture(sampler, vTexCoords).a;
-    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    color = vColor * alpha;
-}
-
-)";
 
 Renderer::Renderer()
 {
-    shaders_.emplace(Render::Color, Shader({vertexShaderSource, colorShaderSource}, "Render::Color"));
-    shaders_.emplace(Render::Texture, Shader({vertexShaderSource, textureShaderSource}, "Render::Texture"));
-    shaders_.emplace(Render::TexturePremultiplyAlpha, Shader({vertexShaderSource, texturePremultiplyAlphaShaderSource},
-                                                             "Render::Texture"));
-    shaders_.emplace(Render::TextureFlippedY, Shader({vertexShaderTextureFlippedYSource, textureShaderSource},
-                                                     "Render::TextureFlippedY"));
-    shaders_.emplace(Render::CircleColor, Shader({vertexShaderSource, circleColorShaderSource}, "Render::CircleColor"));
-    shaders_.emplace(Render::CircleTexture, Shader({vertexShaderSource, circleTextureShaderSource}, "Render::CircleTexture"));
-    shaders_.emplace(Render::Font, Shader({vertexShaderSource, fontShaderSource}, "Render::Font"));
+    glEnable(GL_BLEND);
+
+    shaders_.emplace(Render::Color, Shader({vertexSource, colorSource}, "Render::Color"));
+    shaders_.emplace(Render::Tex, Shader({vertexSource, texSource}, "Render::Tex"));
+    shaders_.emplace(Render::TexPremultiplyAlpha, Shader({vertexSource, texPremultiplyAlphaSource}, "Render::TexPremultiplyAlpha"));
+    shaders_.emplace(Render::CircleColor, Shader({vertexSource, circleColorSource}, "Render::CircleColor"));
+    shaders_.emplace(Render::CircleTex, Shader({vertexSource, circleTexSource}, "Render::CircleTex"));
+    shaders_.emplace(Render::CircleTexPremultiplyAlpha, Shader({vertexSource, circleTexPremultiplyAlphaSource},
+                                                               "Render::CircleTexPremultiplyAlpha"));
+    shaders_.emplace(Render::Font, Shader({vertexSource, fontSource}, "Render::Font"));
+
+    glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     instances_.resize(ReservedInstances);
     texUnits_.reserve(ReservedTexUnits);
     batches_.reserve(ReservedBatches);
 
-    glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    texUnits_.emplace_back();
-    {
-        auto& first = texUnits_.front();
-        first.unit = 0;
-        first.texture = &texDummy;
-        first.sampler = &samplerLinear;
-    }
+    setTexUnitsDefault();
 
     batches_.emplace_back();
     {
         auto& first = batches_.front();
+        first.scissorEnabled = false;
         first.shader = &shaders_.at(Render::Color);
-        first.startInstances = 0;
-        first.countInstances = 0;
-        first.startTexUnits = 0;
-        first.countTexUnits = 1;
         first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
+        first.startInstances = 0;
+        first.countInstances = 0;
+        first.startTexUnits = 1; // first texUnits is omitted, it exists only for texUnits_.back().texture->getSize()
+        first.countTexUnits = 0;
     }
-
-    glEnable(GL_BLEND);
-    glEnable(GL_SCISSOR_TEST);
 
     float vertices[] =
     {
-        0.f, 0.f, 0.f, 0.f,
-        1.f, 0.f, 1.f, 0.f,
-        1.f, 1.f, 1.f, 1.f,
-        1.f, 1.f, 1.f, 1.f,
-        0.f, 1.f, 0.f, 1.f,
-        0.f, 0.f, 0.f, 0.f
+        0.f, 0.f, 0.f, 1.f,
+        1.f, 0.f, 1.f, 1.f,
+        1.f, 1.f, 1.f, 0.f,
+        1.f, 1.f, 1.f, 0.f,
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 0.f, 1.f
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, boQuad_.getId());
@@ -302,6 +133,20 @@ Renderer::Renderer()
                           + 3 * sizeof(glm::vec4)));
 }
 
+void Renderer::setScissor(glm::ivec4 scissor)
+{
+    scissor.y = App::getFrame().framebufferSize.y - scissor.y - scissor.w;
+    auto& batch = getBatchToUpdate();
+    batch.scissor = scissor;
+    batch.scissorEnabled = true;
+}
+
+void Renderer::disableScissor()
+{
+    auto& batch = getBatchToUpdate();
+    batch.scissorEnabled = false;
+}
+
 void Renderer::setViewport(glm::ivec4 viewport)
 {
     viewport.y = App::getFrame().framebufferSize.y - viewport.y - viewport.w;
@@ -309,21 +154,15 @@ void Renderer::setViewport(glm::ivec4 viewport)
     batch.viewport = viewport;
 }
 
-void Renderer::setViewport(const Scene& scene)
+void Renderer::setViewport(const Scene* scene)
 {
-    setViewport({scene.properties_.pos, scene.properties_.size});
+    setViewport({scene->properties_.pos, scene->properties_.size});
 }
 
-void Renderer::setScissor(glm::ivec4 scissor)
+void Renderer::setViewport(const Framebuffer& framebuffer)
 {
-    scissor.y = App::getFrame().framebufferSize.y - scissor.y - scissor.w;
     auto& batch = getBatchToUpdate();
-    batch.scissor = scissor;
-}
-
-void Renderer::setScissor(const Scene& scene)
-{
-    setScissor({scene.properties_.pos, scene.properties_.size});
+    batch.viewport = {0, 0, framebuffer.getSize()};
 }
 
 void Renderer::setProjection(Space projection)
@@ -339,11 +178,20 @@ void Renderer::setShader(Shader& shader)
     batch.shader = &shader;
 }
 
+void Renderer::setShader(Render mode)
+{
+    auto& batch = getBatchToUpdate();
+    batch.shader = &shaders_.at(mode);
+}
+
 void Renderer::setTexture(Texture& texture, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    for(int i = batch.startTexUnits; i < batch.startTexUnits + batch.countTexUnits; ++i)
+    const auto start = batch.startTexUnits;
+    const auto count = batch.countTexUnits;
+
+    for(auto i = start; i < start + count; ++i)
     {
         if(texUnits_[i].unit == unit)
         {
@@ -353,13 +201,10 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
     }
 
     texUnits_.emplace_back();
-
     auto& last = texUnits_.back();
-
     last.unit = unit;
     last.texture = &texture;
-    last.sampler = (texUnits_.end() - 2)->sampler;
-
+    last.sampler = (&last - 1)->sampler;
     ++batch.countTexUnits;
 }
 
@@ -367,7 +212,10 @@ void Renderer::setSampler(GLsampler& sampler, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    for(int i = batch.startTexUnits; i < batch.startTexUnits + batch.countTexUnits; ++i)
+    const auto start = batch.startTexUnits;
+    const auto count = batch.countTexUnits;
+
+    for(auto i = start; i < start + count; ++i)
     {
         if(texUnits_[i].unit == unit)
         {
@@ -377,13 +225,10 @@ void Renderer::setSampler(GLsampler& sampler, GLenum unit)
     }
 
     texUnits_.emplace_back();
-
     auto& last = texUnits_.back();
-
     last.unit = unit;
     last.sampler = &sampler;
-    last.texture = (texUnits_.end() - 2)->texture;
-
+    last.texture = (&last - 1)->texture;
     ++batch.countTexUnits;
 }
 
@@ -392,109 +237,56 @@ void Renderer::setSampler(Sample mode, GLenum unit)
     setSampler(mode == Sample::Linear ? samplerLinear : samplerNearest, unit);
 }
 
-void Renderer::setShader(Render mode)
+void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
 {
     auto& batch = getBatchToUpdate();
-    batch.shader = &shaders_.at(mode);
+    batch.srcAlpha = srcAlpha;
+    batch.dstAlpha = dstAlpha;
 }
 
-void Renderer::cache(const Sprite& sprite)
+void Renderer::cache(const Sprite* sprite, std::size_t count)
 {
-    Instance i;
-
-    i.color = sprite.color;
-
-    i.matrix = glm::mat4(1.f);
-
-    i.matrix = glm::translate(i.matrix, glm::vec3(sprite.pos, 0.f));
-
-    if(sprite.rotation != 0.f)
-    {
-        i.matrix = glm::translate(i.matrix, glm::vec3(sprite.size / 2.f
-                                                      + sprite.rotationPoint, 0.f));
-
-        i.matrix = glm::rotate(i.matrix, sprite.rotation, glm::vec3(0.f, 0.f, -1.f));
-
-        i.matrix = glm::translate(i.matrix, glm::vec3(-sprite.size / 2.f
-                                                      - sprite.rotationPoint, 0.f));
-    }
-
-    i.matrix = glm::scale(i.matrix, glm::vec3(sprite.size, 1.f));
-
-    auto texSize = texUnits_.back().texture->getSize();
-
-    i.normTexRect.x = sprite.texRect.x / texSize.x;
-    i.normTexRect.y = sprite.texRect.y / texSize.y;
-    i.normTexRect.z = sprite.texRect.z / texSize.x;
-    i.normTexRect.w = sprite.texRect.w / texSize.y;
-
     auto& batch = batches_.back();
+    const auto start = batch.startInstances + batch.countInstances;
+    batch.countInstances += count;
+    const auto end = batch.startInstances + batch.countInstances;
+    if(end > instances_.size())
+        instances_.resize(end);
 
-    auto index = batch.startInstances + batch.countInstances;
-
-    if(index + 1 > static_cast<int>(instances_.size()))
-        instances_.emplace_back();
-
-    instances_[index] = i;
-
-    ++batch.countInstances;
+    for(auto i = start; i < end; ++i, ++sprite)
+    {
+        instances_[i] = createInstance(sprite->pos, sprite->size, sprite->rotation, sprite->rotationPoint,
+                                       sprite->color, sprite->texRect);
+    }
 }
 
-void Renderer::flush()
+void Renderer::cache(const Circle* circle, std::size_t count)
 {
-    auto numInstances = batches_.back().startInstances + batches_.back().countInstances;
+    auto& batch = batches_.back();
+    const auto start = batch.startInstances + batch.countInstances;
+    batch.countInstances += count;
+    const auto end = batch.startInstances + batch.countInstances;
+    if(end > instances_.size())
+        instances_.resize(end);
 
-    glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
-
-    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(),
-                 GL_STREAM_DRAW);
-
-    glBindVertexArray(vao_.getId());
-
-    for(auto& batch: batches_)
+    for(auto i = start; i < end; ++i, ++circle)
     {
-        glScissor(batch.scissor.x, batch.scissor.y,
-                  batch.scissor.z, batch.scissor.w);
-
-        glViewport(batch.viewport.x, batch.viewport.y,
-                   batch.viewport.z, batch.viewport.w);
-
-        batch.shader->bind();
-
-        glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE,
-                           &batch.projection[0][0]);
-
-        for(int i = batch.startTexUnits; i < batch.startTexUnits + batch.countTexUnits; ++i)
-        {
-            auto& unit = texUnits_[i];
-            unit.texture->bind(unit.unit);
-            glBindSampler(unit.unit, unit.sampler->getId());
-        }
-
-        glBlendFunc(batch.srcAlpha, batch.dstAlpha);
-
-        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.countInstances, batch.startInstances);
+        instances_[i] = createInstance(circle->center - circle->radius, glm::vec2(circle->radius * 2.f), 0.f, {},
+                                       circle->color, circle->texRect);
     }
-
-    texUnits_.erase(texUnits_.begin(), texUnits_.end() - batches_.back().countTexUnits);
-    batches_.erase(batches_.begin(), batches_.end() - 1);
-    batches_.front().startInstances = 0;
-    batches_.front().countInstances = 0;
-    batches_.front().startTexUnits = 0;
 }
 
 void Renderer::cache(const Text& text)
 {
     auto& batch = batches_.back();
-
-    auto numInstances = batch.startInstances + batch.countInstances + text.text.size();
-    if(numInstances > instances_.size())
-        instances_.resize(numInstances);
+    auto maxInstances = batch.startInstances + batch.countInstances + text.text.size();
+    if(maxInstances > instances_.size())
+        instances_.resize(maxInstances);
 
     auto penPos = text.pos;
-    auto index = batch.startInstances + batch.countInstances;
+    auto i = batch.startInstances + batch.countInstances;
 
-    batch.countInstances += text.text.size();
+    const auto halfTextSize = text.getSize() / 2.f;
 
     for(auto c: text.text)
     {
@@ -507,71 +299,79 @@ void Renderer::cache(const Text& text)
 
         auto glyph = text.font->getGlyph(c);
 
-        Instance i;
-        
-        i.color = text.color;
+        auto pos = penPos + glm::vec2(glyph.offset) * text.scale;
+        auto size = glm::vec2(glyph.texRect.z, glyph.texRect.w) * text.scale;
 
-        i.matrix = glm::mat4(1.f);
+        instances_[i] = createInstance(pos, size, text.rotation, text.rotationPoint + text.pos + halfTextSize - pos
+                                       - size / 2.f, // this correction is needed, see createInstance
+                                       text.color, glyph.texRect);
 
-        i.matrix = glm::translate(i.matrix, glm::vec3(penPos
-                    + glm::vec2(glyph.offset) * text.scale, 0.f));
-        
-        i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2{glyph.texRect.z,
-                                                   glyph.texRect.w}
-                                                   * text.scale, 1.f));
-
-        auto texSize = texUnits_.back().texture->getSize();
-
-        i.normTexRect.x = float(glyph.texRect.x) / texSize.x;
-        i.normTexRect.y = float(glyph.texRect.y) / texSize.y;
-        i.normTexRect.z = float(glyph.texRect.z) / texSize.x;
-        i.normTexRect.w = float(glyph.texRect.w) / texSize.y;
-
-        instances_[index] = i;
-        ++index;
         penPos.x += glyph.advance * text.scale;
+        ++i;
+        ++batch.countInstances;
     }
 }
 
-void Renderer::cache(const Circle& circle)
+void Renderer::flush()
 {
+    auto numInstances = batches_.back().startInstances + batches_.back().countInstances;
 
-    Instance i;
+    glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
 
-    i.color = circle.color;
+    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(), GL_STREAM_DRAW);
 
-    i.matrix = glm::mat4(1.f);
+    glBindVertexArray(vao_.getId());
 
-    i.matrix = glm::translate(i.matrix, glm::vec3(circle.center - circle.radius, 0.f));
+    for(auto& batch: batches_)
+    {
+        if(batch.scissorEnabled)
+        {
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(batch.scissor.x, batch.scissor.y, batch.scissor.z, batch.scissor.w);
+        }
+        else
+        {
+            glDisable(GL_SCISSOR_TEST);
+        }
 
+        glViewport(batch.viewport.x, batch.viewport.y, batch.viewport.z, batch.viewport.w);
 
-    i.matrix = glm::scale(i.matrix, glm::vec3(glm::vec2(circle.radius,
-                                                        circle.radius) * 2.f, 1.f));
+        batch.shader->bind();
 
-    auto texSize = texUnits_.back().texture->getSize();
+        glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE, &batch.projection[0][0]);
 
-    i.normTexRect.x = circle.texRect.x / texSize.x;
-    i.normTexRect.y = circle.texRect.y / texSize.y;
-    i.normTexRect.z = circle.texRect.z / texSize.x;
-    i.normTexRect.w = circle.texRect.w / texSize.y;
+        const auto start = batch.startTexUnits;
+        const auto count = batch.countTexUnits;
 
-    auto& batch = batches_.back();
+        for(auto i = start; i < start + count; ++i)
+        {
+            auto& unit = texUnits_[i];
+            unit.texture->bind(unit.unit);
+            glBindSampler(unit.unit, unit.sampler->getId());
+        }
 
-    auto index = batch.startInstances + batch.countInstances;
+        glBlendFunc(batch.srcAlpha, batch.dstAlpha);
 
-    if(index + 1 > static_cast<int>(instances_.size()))
-        instances_.emplace_back();
+        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.countInstances, batch.startInstances);
+    }
 
-    instances_[index] = i;
+    batches_.erase(batches_.begin(), batches_.end() - 1);
+    batches_.front().startInstances = 0;
+    batches_.front().countInstances = 0;
+    batches_.front().startTexUnits = 1;
+    batches_.front().countTexUnits = 0;
 
-    ++batch.countInstances;
+    setTexUnitsDefault();
 }
 
-void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
+void Renderer::setTexUnitsDefault()
 {
-    auto& batch = getBatchToUpdate();
-    batch.srcAlpha = srcAlpha;
-    batch.dstAlpha = dstAlpha;
+    texUnits_.clear();
+    texUnits_.emplace_back();
+    auto& first = texUnits_.front();
+    first.unit = 0;
+    first.texture = &texDummy;
+    first.sampler = &samplerLinear;
 }
 
 Renderer::Batch& Renderer::getBatchToUpdate()
@@ -584,7 +384,7 @@ Renderer::Batch& Renderer::getBatchToUpdate()
 
     batches_.emplace_back();
     auto& current = batches_.back();
-    current = *(batches_.end() - 2);
+    current = *(&current - 1);
 
     current.startInstances += current.countInstances;
     current.countInstances = 0;
@@ -594,31 +394,34 @@ Renderer::Batch& Renderer::getBatchToUpdate()
     return current;
 }
 
-glm::vec2 Text::getSize() const
+Renderer::Instance Renderer::createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
+                                            glm::vec4 color, glm::vec4 texRect)
 {
-    float x = 0.f;
-    glm::vec2 size = {0.f, 0.f};
+    Instance i;
 
-    auto lineHeight = font->getLineHeight() * scale;
+    i.matrix = glm::mat4(1.f);
 
-    size.y += lineHeight;
+    i.matrix = glm::translate(i.matrix, glm::vec3(pos, 0.f));
 
-    for(auto c: text)
+    if(rotation != 0.f)
     {
-        if(c == '\n')
-        {
-            size.x = std::max(size.x, x);
-            x = 0.f;
-            size.y += lineHeight;
-            continue;
-        }
-
-        auto glyph = font->getGlyph(c);
-        x += glyph.advance * scale;
+        i.matrix = glm::translate(i.matrix, glm::vec3(size / 2.f + rotationPoint, 0.f));
+        i.matrix = glm::rotate(i.matrix, rotation, glm::vec3(0.f, 0.f, -1.f));
+        i.matrix = glm::translate(i.matrix, glm::vec3(-size / 2.f - rotationPoint, 0.f));
     }
 
-    size.x = std::max(size.x, x);
-    return size;
+    i.matrix = glm::scale(i.matrix, glm::vec3(size, 1.f));
+
+    i.color = color;
+
+    auto texSize = texUnits_.back().texture->getSize();
+
+    i.normTexRect.x = texRect.x / texSize.x;
+    i.normTexRect.z = texRect.z / texSize.x;
+    i.normTexRect.w = texRect.w / texSize.y;
+    i.normTexRect.y = 1.f - texRect.y / texSize.y - i.normTexRect.w;
+
+    return i;
 }
 
 } // namespace hppv

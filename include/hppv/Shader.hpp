@@ -1,5 +1,3 @@
-// made by   m a t i T e c h n o
-// compiles with gcc 7.2.0
 // in the implementation file:
 
 // #define SHADER_IMPLEMENTATION
@@ -30,6 +28,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <initializer_list>
 #include <experimental/filesystem>
 
 namespace hppv
@@ -107,6 +106,7 @@ private:
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <vector>
 
 namespace hppv
 {

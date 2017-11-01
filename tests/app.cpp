@@ -1,6 +1,6 @@
-#include <hppv/external/catch.hpp>
-
 #include <hppv/App.hpp>
+
+#include "catch.hpp"
 
 TEST_CASE("App initialization")
 {

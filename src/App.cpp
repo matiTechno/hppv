@@ -1,17 +1,16 @@
 #include <iostream>
 #include <cassert>
 
-#include <hppv/external/glad.h> // must be included before glfw3.hpp
-#include <glm/vec2.hpp>
+#include <hppv/glad.h> // must be included before glfw3.hpp
 #include <GLFW/glfw3.h>
 
 #include <hppv/App.hpp>
 #include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Space.hpp>
-#include <hppv/external/imgui.h>
+#include <hppv/imgui.h>
 
-#include "external/imgui/imgui_impl_glfw_gl3.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 namespace hppv
 {
@@ -57,7 +56,7 @@ bool App::initialize(bool printDebugInfo)
 
     glfwMakeContextCurrent(window_);
 
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if(!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
         return false;
 
     if(printDebugInfo)
@@ -152,8 +151,6 @@ void App::run()
                break;
        }
 
-       renderer_->setScissor({0, 0, frame_.framebufferSize});
-
        glClear(GL_COLOR_BUFFER_BIT);
 
        // borders
@@ -185,7 +182,7 @@ void App::run()
 
        for(auto scene: scenesToRender_)
        {
-           renderer_->setViewport(*scene);
+           renderer_->setViewport(&*scene);
 
            scene->render(*renderer_);
 

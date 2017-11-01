@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <glm/vec2.hpp>
+
 #include "Scene.hpp"
 #include "Space.hpp"
 

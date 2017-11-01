@@ -1,14 +1,12 @@
 #include <vector>
 #include <string>
 
-#include <hppv/external/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
+#include <hppv/glad.h>
+#include <hppv/imgui.h>
 #include <hppv/Renderer.hpp>
 #include <hppv/Shader.hpp>
-#include <hppv/external/imgui.h>
 
 #include "Shaders.hpp"
 
@@ -45,7 +43,7 @@ private:
     void addShader(const char* fragmentSource)
     {
         std::string fragment = std::string("#fragment\n") + fragmentSource;
-        shaders_.emplace_back(hppv::Shader({hppv::Renderer::vertexShaderSource, fragment.c_str()}, ""));
+        shaders_.emplace_back(hppv::Shader({hppv::Renderer::vertexSource, fragment.c_str()}, ""));
     }
 
     void prototypeRender(hppv::Renderer& renderer) override

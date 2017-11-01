@@ -1,10 +1,10 @@
 #include <iostream>
 
 #include <hppv/Texture.hpp>
-#include <hppv/external/glad.h>
+#include <hppv/glad.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "external/stb_image.h"
+#include "stb_image.h"
 
 namespace hppv
 {
@@ -18,6 +18,8 @@ Texture::Texture()
 Texture::Texture(const std::string& filename)
 {
     bind();
+
+    stbi_set_flip_vertically_on_load(true);
 
     auto* data = stbi_load(filename.c_str(), &size_.x, &size_.y, nullptr, 4);
 
@@ -44,7 +46,7 @@ Texture::Texture(GLenum format, glm::ivec2 size):
     glTexStorage2D(GL_TEXTURE_2D, 1, format, size.x, size.y);
 }
 
-void Texture::bind(GLenum unit)
+void Texture::bind(GLuint unit)
 {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture_.getId());

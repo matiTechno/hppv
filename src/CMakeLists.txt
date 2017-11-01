@@ -9,23 +9,24 @@ add_library(hppv
     PrototypeScene.cpp
     Renderer.cpp
     Scene.cpp
+    Shaders.hpp
     Space.cpp
     Texture.cpp
 
-    external/glad.c
+    glad.c
 
-    external/stb_image.h
+    stb_image.h
 
-    external/imgui/imgui.cpp
-    external/imgui/imgui_demo.cpp
-    external/imgui/imgui_draw.cpp
-    external/imgui/imgui_impl_glfw_gl3.cpp
-    external/imgui/imgui_impl_glfw_gl3.h
-    external/imgui/imgui_internal.h
-    external/imgui/stb_rect_pack.h
-    external/imgui/stb_textedit.h
-    external/imgui/stb_truetype.h
+    imgui/imgui.cpp
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_impl_glfw_gl3.cpp
+    imgui/imgui_impl_glfw_gl3.h
+    imgui/imgui_internal.h
+    imgui/stb_rect_pack.h
+    imgui/stb_textedit.h
+    imgui/stb_truetype.h
     )
 
-target_include_directories(hppv PRIVATE ../include/hppv/external)
+target_include_directories(hppv PRIVATE ../include/hppv) # for imgui and glad
 target_link_libraries(hppv PUBLIC -lglfw PRIVATE -lGL -ldl -lstdc++fs)

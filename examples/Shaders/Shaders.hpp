@@ -42,7 +42,6 @@ void main( void ) {
 	
 	gl_FragColor = vec4(color, 1.0);
 }
-
 )";
 
 const char* tunnel = R"(
@@ -675,7 +674,6 @@ void main( void ) {
 mainImage(gl_FragColor,gl_FragCoord.xy);
 
 }
-
 )";
 
 const char* explosion = R"(
@@ -977,7 +975,6 @@ void main( void )
 	gl_FragColor = vec4(sum.xyz,1.0);
 	#endif
 }
-
 )";
 
 const char* rainbow = R"(
@@ -1016,7 +1013,6 @@ void main( void ) {
 	gl_FragColor = vec4( color, 1.0 );
 
 }
-
 )";
 
 const char* hexagons = R"(
@@ -1272,7 +1268,6 @@ void main()
 	//col.x = 0.0;		
 	gl_FragColor = vec4(col, 1.0);
 	}
-
 )";
 
 const char* fractal = R"(
@@ -1468,7 +1463,6 @@ void main( void ) {
 	gl_FragColor = vec4( postProcess(col),1.);
 
 }
-
 )";
 
 const char* cubes = R"(
@@ -1853,7 +1847,6 @@ void main() {
    
     fragColor = vec4(color, 1.0);
 }
-
 )";
 
 const char* blue = R"(
@@ -1890,7 +1883,6 @@ float t = field(p);
 float v = (1. - exp((abs(uv.x) - 1.) * 6.)) * (1. - exp((abs(uv.y) - 1.) * 6.));
 gl_FragColor = mix(.4, 1., v) * vec4(0.8 * t * t * t, 1.4 * t * t, t, 1.0);
 }
-
 )";
 
 const char* lines2 = R"(
@@ -1914,7 +1906,6 @@ void main() {
 	}
 	gl_FragColor = vec4(color, 10.0);
 }
-
 )";
 
 const char* trinity = R"(
@@ -2102,7 +2093,6 @@ void main( void ) {
  
     gl_FragColor = vec4( finalColor, 1.0 );
 }
-
 )";
 
 const char* storm = R"(
@@ -2260,7 +2250,6 @@ void main()
 	
   gl_FragColor = vec4(col, 1.0);
 }
-
 )";
 
 const char* curves = R"(
@@ -2283,7 +2272,6 @@ void main()
     f = min(o.x-s,e-o.x);
     gl_FragColor = dot(clamp(f*r.y,0.,1.), 40.*(s-e)) * (s-.1) - f;
 }
-
 )";
 
 const char* waves = R"(
@@ -2305,7 +2293,7 @@ const float EPSILON	= 1e-3;
 float EPSILON_NRM	= 0.;
 
 // sea
-const int ITER_gEOMETRY = 20;
+const int ITER_GEOMETRY = 20;
 const int ITER_FRAGMENT = 4;
 const float SEA_HEIGHT = 0.6;
 const float SEA_CHOPPY = 5.0;
@@ -2376,7 +2364,7 @@ float map(vec3 p) {
     vec2 uv = p.xz; uv.x *= 0.75;
     
     float d, h = 0.0;    
-    for(int i = 0; i < ITER_gEOMETRY; i++) {        
+    for(int i = 0; i < ITER_GEOMETRY; i++) {
     	d = sea_octave((uv+SEA_TIME)*freq,choppy);
     	d += sea_octave((uv-SEA_TIME)*freq,choppy);
         h += d * amp;        
@@ -2487,7 +2475,6 @@ void main( void ) {
     // post
 	gl_FragColor = vec4(pow(color,vec3(0.75)), 1.0);
 }
-
 )";
 
 const char* fire = R"(
@@ -2712,7 +2699,6 @@ void main(  ) {
 	//
 	gl_FragColor = vec4(max(fire,sparks)+smoke,1.0);
 }
-
 )";
 
 const char* octopus = R"(
@@ -2973,5 +2959,4 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         
     fragColor = vec4( 1.-color, 1.0 );
 }
-
 )";

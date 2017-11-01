@@ -8,24 +8,25 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
+#include "Space.hpp"
 #include "GLobjects.hpp"
 #include "Shader.hpp"
-#include "Font.hpp"
-#include "Space.hpp"
 #include "Texture.hpp"
 
 namespace hppv
 {
 
+class Font;
 class Scene;
+class Framebuffer;
 
 struct Text
 {
     glm::vec2 pos; // top left corner
     float scale = 1.f;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-    float rotation = 0.f;
-    glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the center
+    float rotation = 0.f; // angle in radians
+    glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
     Font* font;
     std::string text;
 
@@ -43,14 +44,13 @@ struct Sprite
         rotationPoint(text.rotationPoint)
     {}
 
-    glm::vec2 pos; // top left corner
+    glm::vec2 pos;
     glm::vec2 size;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f};
     glm::vec4 texRect;
 };
-
 
 struct Circle
 {
@@ -63,11 +63,11 @@ struct Circle
 enum class Render
 {
     Color,
-    Texture,
-    TexturePremultiplyAlpha,
-    TextureFlippedY, // use when rendering to framebuffer
+    Tex,
+    TexPremultiplyAlpha,
     CircleColor,
-    CircleTexture,
+    CircleTex,
+    CircleTexPremultiplyAlpha,
     Font
 };
 
@@ -77,6 +77,10 @@ enum class Sample
     Nearest
 };
 
+// in all cases x-axis grows right, y-axis grows down;
+// state changes on non-empty cache will break batch unless
+// it doesn't hold any instances
+
 class Renderer
 {
 public:
@@ -84,74 +88,45 @@ public:
 
     Renderer();
 
-    // -----
-
     void setScissor(glm::ivec4 scissor);
-
-    void setScissor(const Scene& scene);
-
-    // -----
+    void disableScissor(); // on default
 
     void setViewport(glm::ivec4 viewport);
+    void setViewport(const Scene* scene);
+    void setViewport(const Framebuffer& framebuffer); // glViewport(0, 0, sizeX, sizeY)
 
-    void setViewport(const Scene& scene);
+    void setProjection(Space projection);
 
-    // -----
-
-    void setProjection(Space projection); // y grows down
-
-    // -----
-
-    void setShader(Shader& shader);
-
+    void setShader(Shader& shader); // default is Render::Color
     void setShader(Render mode);
 
-    // -----
-
+    // texture state is lost after flush
     void setTexture(Texture& texture, GLenum unit = 0);
 
-    // -----
-
     void setSampler(GLsampler& sampler, GLenum unit = 0);
-
     void setSampler(Sample mode, GLenum unit = 0); // default is Sample::Linear
-
-    // -----
 
     void setBlend(GLenum srcAlpha, GLenum dstAlpha); // default is GL_ONE, GL_ONE_MINUS_SRC_ALPHA
 
-    // -----
-
-    void cache(const Sprite& sprite);
-
-    void cache(const Circle& circle);
-
+    void cache(const Sprite& sprite) {cache(&sprite, 1);}
+    void cache(const Circle& circle) {cache(&circle, 1);}
     void cache(const Text& text);
 
-    //void cache(const Sprite* sprites, int count);
-
-    //void cache(const Circle* circles, int count);
-
-    //void cache(const Text* texts, int count);
-
-    // -----
+    void cache(const Sprite* sprite, std::size_t count);
+    void cache(const Circle* circle, std::size_t count);
 
     void flush();
 
-    // input:
+    static const char* vertexSource;
+
     //layout(location = 0) in vec4 vertex;
     //layout(location = 1) in vec4 color;
     //layout(location = 2) in vec4 normTexRect;
     //layout(location = 3) in mat4 matrix;
     //uniform mat4 projection;
-
-    // output:
     //out vec4 vColor;
     //out vec2 vTexCoords;
     //out vec2 vPosition; // range: 0 - 1; used for circle shading
-
-    static const char* vertexShaderSource;
-    static const char* vertexShaderTextureFlippedYSource;
 
 private:
     enum
@@ -165,9 +140,9 @@ private:
     GLbo boQuad_;
     GLbo boInstances_;
     std::map<Render, Shader> shaders_;
+    Texture texDummy;
     GLsampler samplerLinear;
     GLsampler samplerNearest;
-    Texture texDummy;
 
     struct Instance
     {
@@ -178,30 +153,35 @@ private:
 
     struct TexUnit
     {
-        int unit;
+        GLenum unit;
         Texture* texture;
         GLsampler* sampler;
     };
 
+    // viewport and scissor have y-axis in opengl coordinate system
     struct Batch
     {
-        glm::ivec4 viewport;
         glm::ivec4 scissor;
+        glm::ivec4 viewport;
+        bool scissorEnabled;
         glm::mat4 projection;
         Shader* shader;
+        std::size_t startTexUnits;
+        std::size_t countTexUnits;
         GLenum srcAlpha;
         GLenum dstAlpha;
-        int startInstances;
-        int countInstances;
-        int startTexUnits;
-        int countTexUnits;
+        std::size_t startInstances;
+        std::size_t countInstances;
     };
 
     std::vector<Instance> instances_;
     std::vector<TexUnit> texUnits_;
     std::vector<Batch> batches_;
 
+    void setTexUnitsDefault();
     Batch& getBatchToUpdate();
+    Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
+                            glm::vec4 color, glm::vec4 texRect);
 };
 
 } // namespace hppv

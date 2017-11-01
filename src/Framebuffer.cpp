@@ -1,8 +1,7 @@
-#include <hppv/Framebuffer.hpp>
-
 #include <cassert>
 
-#include <hppv/external/glad.h>
+#include <hppv/Framebuffer.hpp>
+#include <hppv/glad.h>
 
 namespace hppv
 {

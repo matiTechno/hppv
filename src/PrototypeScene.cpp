@@ -3,9 +3,9 @@
 #include <GLFW/glfw3.h>
 
 #include <hppv/PrototypeScene.hpp>
-#include <hppv/external/imgui.h>
-#include <hppv/Renderer.hpp>
 #include <hppv/App.hpp>
+#include <hppv/Renderer.hpp>
+#include <hppv/imgui.h>
 
 namespace hppv
 {
@@ -17,6 +17,10 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
 {
     properties_.maximize = true;
     rmb_.pressed = false;
+
+    glm::dvec2 cursorPos;
+    glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
+    rmb_.pos = cursorPos;
 }
 
 void PrototypeScene::processInput(bool hasInput)

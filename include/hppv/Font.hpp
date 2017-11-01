@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -23,7 +24,6 @@ class Font
 {
 public:
     explicit Font(const std::string& filename);
-    Font(Texture texture, std::map<int, Glyph> glyphs, int ascent, int lineHeight);
 
     Texture& getTexture() {return texture_;}
     Glyph getGlyph(int code) const;

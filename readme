@@ -3,18 +3,27 @@ high performance physics visualization
 
 todo:
 
+* performance test: create transformation matrix on gpu for single vertex, emit quad from geometry shader
 * implementation & interface polishing; std algorithms / string_view / size_type
-* optimize allocations (e.g. strings in Shader, replace with string_view)
+* optimize allocations (e.g. strings in Shader - replace with string_view)
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * Shader uniform setting functions
-* stack allocator
+* stack allocator / vector with static buffer
 * core library satellites
 
-external dependencies:
+included:
+
+* catch.hpp
+* dear ImGui
+* glad.c glad.h
+* stb_image.h
+
+dependencies:
 
 * glfw
 * glm
 
 compiles with gcc 7.2.0 on linux
+works with OpenGL 3.3+
