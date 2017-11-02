@@ -12,6 +12,9 @@ todo:
 * Shader uniform setting functions
 * stack allocator / vector with static buffer
 * core library satellites
+* shaders for font outlines and shadows (and a way for setting uniforms)
+* custom shapes
+* bezier curves
 
 included:
 
