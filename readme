@@ -16,6 +16,7 @@ todo:
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * Shader uniform setting functions
+* texture move operations bug?
 
 included:
 
