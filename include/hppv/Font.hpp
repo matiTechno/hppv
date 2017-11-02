@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include <string>
+#include <string_view>
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -23,7 +23,7 @@ struct Glyph
 class Font
 {
 public:
-    explicit Font(const std::string& filename);
+    explicit Font(std::string_view filename);
 
     Texture& getTexture() {return texture_;}
     Glyph getGlyph(int code) const;

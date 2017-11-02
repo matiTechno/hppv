@@ -1,5 +1,4 @@
 #include <vector>
-#include <string>
 
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
@@ -42,22 +41,23 @@ private:
 
     void addShader(const char* fragmentSource)
     {
-        std::string fragment = std::string("#fragment\n") + fragmentSource;
-        shaders_.emplace_back(hppv::Shader({hppv::Renderer::vertexSource, fragment.c_str()}, ""));
+        shaders_.emplace_back(hppv::Shader({hppv::Renderer::vertexSource, fragmentSource}, ""));
     }
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
         time_ += frame_.frameTime;
 
-        ImGui::Begin("next", nullptr,
-                     ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("all the shaders come from glslsandbox.com");
-        if(ImGui::Button("Next !!!"))
+        ImGui::Begin("next", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
         {
-            ++activeShader_;
-            if(activeShader_ == shaders_.end())
+            ImGui::Text("all the shaders come from glslsandbox.com");
+
+            if(ImGui::Button("Next !!!"))
+            {
+                ++activeShader_;
+                if(activeShader_ == shaders_.end())
                 activeShader_ = shaders_.begin();
+            }
         }
         ImGui::End();
 

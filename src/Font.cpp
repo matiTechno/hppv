@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include <hppv/Font.hpp>
 
@@ -23,14 +24,13 @@ Value getValue(const std::string& str, std::size_t pos, char prev = '=', char en
     return {substr, std::atoi(substr.c_str()), start + count};
 }
 
-Font::Font(const std::string& filename)
+Font::Font(std::string_view filename)
 {
-    std::ifstream file(filename);
+    std::ifstream file(filename.data());
 
     if(!file)
     {
         std::cout << "Font, could not open file: " << filename << std::endl;
-        texture_ = Texture("");
         return;
     }
 
@@ -87,8 +87,8 @@ Glyph Font::getGlyph(int code) const
 {
     if(auto it = glyphs_.find(code); it != glyphs_.end())
         return it->second;
-    else
-        return glyphs_.find('?')->second;
+
+    return glyphs_.find('?')->second;
 }
 
 } // namespace hppv

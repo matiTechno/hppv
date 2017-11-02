@@ -84,8 +84,6 @@ enum class Sample
 class Renderer
 {
 public:
-    using GLenum = unsigned int;
-
     Renderer();
 
     void setScissor(glm::ivec4 scissor);
@@ -111,7 +109,6 @@ public:
     void cache(const Sprite& sprite) {cache(&sprite, 1);}
     void cache(const Circle& circle) {cache(&circle, 1);}
     void cache(const Text& text);
-
     void cache(const Sprite* sprite, std::size_t count);
     void cache(const Circle* circle, std::size_t count);
 

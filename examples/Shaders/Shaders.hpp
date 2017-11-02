@@ -1,5 +1,7 @@
 const char* lines  = R"(
 
+#fragment
+
 // author: @aadebdeb (https://twitter.com/aa_debdeb)
 
 #ifdef GL_ES
@@ -45,6 +47,8 @@ void main( void ) {
 )";
 
 const char* tunnel = R"(
+
+#fragment
 
 #ifdef GL_ES
 precision mediump float;
@@ -678,6 +682,8 @@ mainImage(gl_FragColor,gl_FragCoord.xy);
 
 const char* explosion = R"(
 
+#fragment
+
 #ifdef GL_ES
 precision highp float;
 #endif
@@ -979,6 +985,8 @@ void main( void )
 
 const char* rainbow = R"(
 
+#fragment
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -1016,6 +1024,8 @@ void main( void ) {
 )";
 
 const char* hexagons = R"(
+
+#fragment
 
 #ifdef GL_ES
 precision mediump float;
@@ -1272,6 +1282,8 @@ void main()
 
 const char* fractal = R"(
 
+#fragment
+
 // have a nice friday Kai!
 
 #ifdef GL_ES
@@ -1466,6 +1478,8 @@ void main( void ) {
 )";
 
 const char* cubes = R"(
+
+#fragment
 
 // Hauva Kukka 2014.
 #ifdef GL_ES
@@ -1851,6 +1865,8 @@ void main() {
 
 const char* blue = R"(
 
+#fragment
+
 #ifdef GL_ES
 precision highp float;
 #endif
@@ -1887,6 +1903,8 @@ gl_FragColor = mix(.4, 1., v) * vec4(0.8 * t * t * t, 1.4 * t * t, t, 1.0);
 
 const char* lines2 = R"(
 
+#fragment
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -1909,6 +1927,8 @@ void main() {
 )";
 
 const char* trinity = R"(
+
+#fragment
 
 // Trinity
 // By: Brandon Fogerty
@@ -2097,6 +2117,8 @@ void main( void ) {
 
 const char* storm = R"(
 
+#fragment
+
 //---------------------------------------------------------
 // Shader:   StormyFlight2.glsl by S.Guillitte in 2015-02-24
 //           Improved version of the lightning bolt effect.
@@ -2254,6 +2276,8 @@ void main()
 
 const char* curves = R"(
 
+#fragment
+
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -2275,6 +2299,8 @@ void main()
 )";
 
 const char* waves = R"(
+
+#fragment
 
 #ifdef GL_ES
 precision mediump float;
@@ -2478,6 +2504,8 @@ void main( void ) {
 )";
 
 const char* fire = R"(
+
+#fragment
 
 #extension GL_OES_standard_derivatives : enable
 
@@ -2702,6 +2730,8 @@ void main(  ) {
 )";
 
 const char* octopus = R"(
+
+#fragment
 
 #ifdef GL_ES
 precision highp float;
