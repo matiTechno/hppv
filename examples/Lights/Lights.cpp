@@ -7,7 +7,6 @@
 #include <hppv/Shader.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/Framebuffer.hpp>
-#include <hppv/Space.hpp>
 
 static const char* lightSource = R"(
 
