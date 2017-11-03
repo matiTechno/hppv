@@ -15,7 +15,8 @@ GLobject::~GLobject()
 }
 
 GLobject::GLobject(GLobject&& rhs):
-    id_(rhs.id_)
+    id_(rhs.id_),
+    deleter_(rhs.deleter_)
 {
     rhs.id_ = 0;
 }
