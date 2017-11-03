@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 
-#include <hppv/glad.h> // must be included before glfw3.hpp
+#include <hppv/glad.h> // must be included before glfw3.h
 #include <GLFW/glfw3.h>
 
 #include <hppv/App.hpp>
