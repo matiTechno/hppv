@@ -1,16 +1,18 @@
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <experimental/filesystem>
 
 #include <hppv/Font.hpp>
 
 namespace hppv
 {
 
+namespace fs = std::experimental::filesystem;
+
 struct Value
 {
-    std::string str;
     int value;
+    std::string str;
     std::size_t posNext;
 };
 
@@ -21,12 +23,12 @@ Value getValue(const std::string& str, std::size_t pos, char prev = '=', char en
     auto count = str.find(end, start) - start;
     auto substr = str.substr(start, count);
 
-    return {substr, std::atoi(substr.c_str()), start + count};
+    return {std::atoi(substr.c_str()), substr, start + count};
 }
 
-Font::Font(std::string_view filename)
+Font::Font(const std::string& filename)
 {
-    std::ifstream file(filename.data());
+    std::ifstream file(filename);
 
     if(!file)
     {
@@ -47,7 +49,7 @@ Font::Font(std::string_view filename)
 
     std::getline(file, line);
 
-    texture_ = Texture(getValue(line, 0, '"', '"').str);
+    texture_ = Texture(fs::path(filename).parent_path() /= getValue(line, 0, '"', '"').str);
 
     std::getline(file, line);
 

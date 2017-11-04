@@ -75,7 +75,7 @@ Renderer::Renderer()
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
         first.startInstances = 0;
         first.countInstances = 0;
-        first.startTexUnits = 1; // first texUnits is omitted, it exists only for texUnits_.back().texture->getSize()
+        first.startTexUnits = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
         first.countTexUnits = 0;
     }
 

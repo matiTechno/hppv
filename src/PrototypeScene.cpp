@@ -35,11 +35,11 @@ void PrototypeScene::processInput(bool hasInput)
                 {
                     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-                    auto newWorldPos = mapCursor(event.cursor.pos, projection, *this);
+                    auto newSpaceCoords = mapCursor(event.cursor.pos, projection, *this);
 
-                    auto prevWorldPos = mapCursor(rmb_.pos, projection, *this);
+                    auto prevSpaceCoords = mapCursor(rmb_.pos, projection, *this);
 
-                    prototype_.space.pos -= newWorldPos - prevWorldPos;
+                    prototype_.space.pos -= newSpaceCoords - prevSpaceCoords;
                 }
 
                 rmb_.pos = event.cursor.pos;
@@ -56,9 +56,9 @@ void PrototypeScene::processInput(bool hasInput)
                 {
                     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-                    auto worldPos = mapCursor(rmb_.pos, projection, *this);
+                    auto spaceCoords = mapCursor(rmb_.pos, projection, *this);
 
-                    prototype_.space = zoomToPoint(prototype_.space, zoom, worldPos);
+                    prototype_.space = zoomToPoint(prototype_.space, zoom, spaceCoords);
                 }
                 else
                 {
@@ -132,7 +132,7 @@ void PrototypeScene::render(Renderer& renderer)
 
         ImGui::Separator();
         auto spaceCoords = mapCursor(rmb_.pos, projection, *this);
-        ImGui::Text("space pos          %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+        ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
 }

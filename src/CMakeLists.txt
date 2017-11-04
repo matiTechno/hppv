@@ -28,5 +28,5 @@ add_library(hppv
     imgui/stb_truetype.h
     )
 
-target_include_directories(hppv PRIVATE ../include/hppv) # for imgui and glad
+target_include_directories(hppv PRIVATE ../include/hppv) # for imgui
 target_link_libraries(hppv PUBLIC -lglfw PRIVATE -lGL -ldl -lstdc++fs)

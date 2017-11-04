@@ -20,8 +20,10 @@
 // #fragment
 // ...
 
+// directives might be placed anywhere
+// includes only work for files and are parent path aware
+
 // code is exception free
-// warning: preprocessor parsing is naive
 
 #pragma once
 
@@ -30,21 +32,23 @@
 #include <map>
 #include <initializer_list>
 #include <experimental/filesystem>
+#include <string_view>
 
 namespace hppv
 {
 
 namespace fs = std::experimental::filesystem;
 
+struct File {};
+
 class Shader
 {
 public:
-    enum class HotReload {Off = 0, On = 1};
     using GLint = int;
     using GLuint = unsigned int;
 
-    explicit Shader(const std::string& filename, HotReload hotReload = HotReload::Off);
-    Shader(std::initializer_list<const char*> sources, std::string id);
+    Shader(File, const std::string& filename, bool hotReload = false);
+    Shader(std::initializer_list<std::string_view> sources, std::string_view id);
 
     bool isValid() const {return program_.getId();}
 
@@ -95,7 +99,7 @@ private:
     mutable std::set<std::string> inactiveUniforms_;
 
     // returns true on success
-    bool swapProgram(const std::string& source);
+    bool swapProgram(std::initializer_list<std::string_view> sources);
 };
 
 } // namespace hppv
@@ -107,19 +111,20 @@ private:
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <cassert>
 
 namespace hppv
 {
 
 Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
 
-std::string loadSourceFromFile(const std::string& filename)
+std::string loadSourceFromFile(const fs::path& path)
 {
-    std::ifstream file(filename);
+    std::ifstream file(path);
 
     if(!file.is_open())
     {
-        std::cout << "sh::Shader: could not open file = " << filename << std::endl;
+        std::cout << "sh::Shader: could not open file = " << path << std::endl;
         return {};
     }
 
@@ -127,22 +132,32 @@ std::string loadSourceFromFile(const std::string& filename)
     stringstream << file.rdbuf();
     auto source = stringstream.str();
 
-    static const std::string includeDirective = "#include";
+    const std::string_view includeDirective = "#include";
 
-    auto lineFirst = source.find(includeDirective);
-
-    if(lineFirst != std::string::npos)
+    std::size_t start = 0;
+    while((start = source.find(includeDirective, start)) != std::string::npos)
     {
-        auto lineLast = source.find('\n', lineFirst) + 1;
+        auto startQuot = source.find('"', start + includeDirective.size());
+        assert(startQuot != std::string::npos);
+        auto startPath = startQuot + 1;
+        auto endPath = source.find('"', startPath);
+        assert(endPath != std::string::npos);
+        fs::path includePath(source.substr(startPath, endPath - startPath));
+        std::string includedStr;
 
-        auto filenameFirst = source.find('"', lineFirst + includeDirective.size()) + 1;
+        if(includePath.is_absolute())
+        {
+            includedStr = loadSourceFromFile(includePath);
+        }
+        else
+        {
+            includedStr = loadSourceFromFile(path.parent_path() /= includePath);
+        }
 
-        auto filenameCount = source.find('"', filenameFirst) - filenameFirst;
-
-        source.insert(lineLast,
-                      loadSourceFromFile(source.substr(filenameFirst, filenameCount)));
-
-        source.erase(lineFirst, lineLast - lineFirst);
+        auto addSize = includedStr.size();
+        source.erase(start, endPath + 1 - start);
+        source.insert(start, std::move(includedStr));
+        start += addSize;
     }
 
     return source;
@@ -162,26 +177,21 @@ fs::file_time_type getFileLastWriteTime(const std::string& filename)
     return time;
 }
 
-Shader::Shader(const std::string& filename, HotReload hotReload):
+Shader::Shader(File, const std::string& filename, bool hotReload):
     id_(filename),
-    hotReload_(static_cast<bool>(hotReload))
+    hotReload_(hotReload)
 {
     fileLastWriteTime_ = getFileLastWriteTime(filename);
 
     if(auto source = loadSourceFromFile(filename); source.size())
-        swapProgram(source);
+        swapProgram({source});
 }
 
-Shader::Shader(std::initializer_list<const char*> sources, std::string id):
-    id_(std::move(id)),
+Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view id):
+    id_(id),
     hotReload_(false)
 {
-    std::string source;
-
-    for(auto& str: sources)
-        source += str;
-
-    swapProgram(source);
+    swapProgram(sources);
 }
 
 void Shader::bind()
@@ -193,7 +203,7 @@ void Shader::bind()
             fileLastWriteTime_ = time;
 
             if(auto source = loadSourceFromFile(id_); source.size())
-                if(swapProgram(source))
+                if(swapProgram({source}))
                     std::cout << "sh::Shader, " << id_
                               << ": hot reload succeeded" << std::endl;
         }
@@ -226,7 +236,7 @@ void Shader::reload()
         fileLastWriteTime_ = time;
 
     if(auto source = loadSourceFromFile(id_); source.size())
-        if(swapProgram(source))
+        if(swapProgram({source}))
             std::cout << "sh::Shader, " << id_ << ": reload succeeded" << std::endl;
 }
 
@@ -275,64 +285,62 @@ GLuint createAndCompileShader(GLenum type, const std::string& source)
 
 // returns 0 on error
 // when return value != 0 program must be cleaned by caller with glDeleteProgram()
-GLuint createProgram(const std::string& source, const std::string& id)
+GLuint createProgram(std::initializer_list<std::string_view> sources, const std::string& id)
 {
     struct ShaderType
     {
         GLenum value;
-        std::string name;
+        std::string_view name;
     };
 
-    static const ShaderType shaderTypes[] = {{GL_VERTEX_SHADER,   "#vertex"},
-                                             {GL_GEOMETRY_SHADER, "#geometry"},
-                                             {GL_FRAGMENT_SHADER, "#fragment"},
-                                             {GL_COMPUTE_SHADER,  "#compute"}};
+    const ShaderType shaderTypes[] = {{GL_VERTEX_SHADER,   "#vertex"},
+                                      {GL_GEOMETRY_SHADER, "#geometry"},
+                                      {GL_FRAGMENT_SHADER, "#fragment"},
+                                      {GL_COMPUTE_SHADER,  "#compute"}};
 
     struct ShaderData
     {
-        std::size_t sourceStart;
-        const ShaderType* type;
+        std::size_t start;
+        ShaderType type;
     };
 
-    std::vector<ShaderData> shaderData;
-
-    for(auto& shaderType: shaderTypes)
-    {
-        if(auto pos = source.find(shaderType.name); pos != std::string::npos)
-            shaderData.push_back({pos + shaderType.name.size(), &shaderType});
-    }
-
-    std::sort(shaderData.begin(), shaderData.end(),
-              [](ShaderData& l, ShaderData& r)
-              {return l.sourceStart < r.sourceStart;});
-
     std::vector<GLuint> shaders;
+    bool compilationError = false;
 
-    auto compilationError = false;
-
-    for(auto it = shaderData.begin(); it != shaderData.end(); ++it)
+    std::vector<ShaderData> shaderData;
+    for(auto source: sources)
     {
-        std::size_t count;
-        if(it == shaderData.end() - 1)
-            count = std::string::npos;
-        else
+        shaderData.clear();
+
+        for(auto& shaderType: shaderTypes)
         {
-            auto nextIt = it + 1;
-            count = nextIt->sourceStart - nextIt->type->name.size()
-                    - it->sourceStart;
+            if(auto pos = source.find(shaderType.name); pos != std::string::npos)
+                shaderData.push_back({pos + shaderType.name.size(), shaderType});
         }
 
-        shaders.push_back(createAndCompileShader(it->type->value,
-                                                 source.substr(it->sourceStart,
-                                                               count)));
+        std::sort(shaderData.begin(), shaderData.end(), [](ShaderData& l, ShaderData& r){return l.start < r.start;});
 
-        if(auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
+        for(auto it = shaderData.begin(); it != shaderData.end(); ++it)
         {
-            std::cout << "sh::Shader, " << id << ": " << it->type->name.c_str()
-                      << " shader compilation failed\n"
-                      << *error << std::endl;
+            std::size_t count;
+            if(it == shaderData.end() - 1)
+                count = std::string::npos;
+            else
+            {
+                auto nextIt = it + 1;
+                count = nextIt->start - nextIt->type.name.size() - it->start;
+            }
 
-            compilationError = true;
+            shaders.push_back(createAndCompileShader(it->type.value, std::string(source.substr(it->start, count))));
+
+            if(auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
+            {
+                std::cout << "sh::Shader, " << id << ": " << it->type.name
+                          << " shader compilation failed\n"
+                          << *error << std::endl;
+
+                compilationError = true;
+            }
         }
     }
 
@@ -369,9 +377,9 @@ GLuint createProgram(const std::string& source, const std::string& id)
     return program;
 }
 
-bool Shader::swapProgram(const std::string& source)
+bool Shader::swapProgram(std::initializer_list<std::string_view> sources)
 {
-    auto newProgram = createProgram(source, id_);
+    auto newProgram = createProgram(sources, id_);
     if(!newProgram)
         return false;
 

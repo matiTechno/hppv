@@ -3,19 +3,19 @@ high performance physics visualization
 
 todo:
 
-* clean Shader.hpp and Font.cpp
-* performance test: create transformation matrix on gpu for single vertex, emit quad from geometry shader
-* implementation & interface polishing; std algorithms / string_view / size_type
-* shaders for font outlines and shadows (and a way for setting uniforms)
+* shaders for font outlines and shadows (and a way for caching uniforms)
+
+* performance test: create transformation matrix on gpu for single vertex,
+  emit quad from geometry shader
+* Shader uniform setting functions
 * custom shapes
 * bezier curves
-* line width, 90?
-* stack allocator / vector with static buffer
+* stack allocator / vector with static buffer / flat map / general performance
 * core library satellites
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
-* flat_map
-* Shader uniform setting functions
+* line width (writing code)
+* replace asserts with something more robust
 
 included:
 
