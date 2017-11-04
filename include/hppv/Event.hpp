@@ -43,7 +43,7 @@ struct Event
         {
             glm::vec2 pos;
         } cursor;
-        
+
         struct
         {
             int button;
@@ -51,7 +51,7 @@ struct Event
             int mods;
         } mouseButton;
 
-        struct 
+        struct
         {
             glm::vec2 offset;
         } scroll;

@@ -110,7 +110,7 @@ private:
 
 namespace hppv
 {
-    
+
 Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
 
 std::string loadSourceFromFile(const std::string& filename)
@@ -126,7 +126,7 @@ std::string loadSourceFromFile(const std::string& filename)
     std::stringstream stringstream;
     stringstream << file.rdbuf();
     auto source = stringstream.str();
-    
+
     static const std::string includeDirective = "#include";
 
     auto lineFirst = source.find(includeDirective);
@@ -138,7 +138,7 @@ std::string loadSourceFromFile(const std::string& filename)
         auto filenameFirst = source.find('"', lineFirst + includeDirective.size()) + 1;
 
         auto filenameCount = source.find('"', filenameFirst) - filenameFirst;
-        
+
         source.insert(lineLast,
                       loadSourceFromFile(source.substr(filenameFirst, filenameCount)));
 
@@ -191,7 +191,7 @@ void Shader::bind()
         if(auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
         {
             fileLastWriteTime_ = time;
-            
+
             if(auto source = loadSourceFromFile(id_); source.size())
                 if(swapProgram(source))
                     std::cout << "sh::Shader, " << id_
@@ -287,7 +287,7 @@ GLuint createProgram(const std::string& source, const std::string& id)
                                              {GL_GEOMETRY_SHADER, "#geometry"},
                                              {GL_FRAGMENT_SHADER, "#fragment"},
                                              {GL_COMPUTE_SHADER,  "#compute"}};
-    
+
     struct ShaderData
     {
         std::size_t sourceStart;
@@ -374,9 +374,9 @@ bool Shader::swapProgram(const std::string& source)
     auto newProgram = createProgram(source, id_);
     if(!newProgram)
         return false;
-    
+
     program_ = Program(newProgram);
-    
+
     uniformLocations_.clear();
     inactiveUniforms_.clear();
 

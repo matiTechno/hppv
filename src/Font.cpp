@@ -62,7 +62,7 @@ Font::Font(std::string_view filename)
 
         value = getValue(line, value.posNext);
         glyph.texRect.x = value.value;
-        
+
         value = getValue(line, value.posNext);
         glyph.texRect.y = value.value;
 

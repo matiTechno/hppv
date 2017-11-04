@@ -38,7 +38,7 @@ void PrototypeScene::processInput(bool hasInput)
                     auto newWorldPos = mapCursor(event.cursor.pos, projection, *this);
 
                     auto prevWorldPos = mapCursor(rmb_.pos, projection, *this);
-                    
+
                     prototype_.space.pos -= newWorldPos - prevWorldPos;
                 }
 

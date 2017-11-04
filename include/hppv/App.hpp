@@ -19,7 +19,7 @@ class App
 public:
     App();
     ~App();
-    
+
     bool initialize(bool printDebugInfo);
 
     template<typename T, typename ... Args>

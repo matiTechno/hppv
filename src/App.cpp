@@ -28,7 +28,7 @@ bool App::initialize(bool printDebugInfo)
     {
         std::cout << "GLFW compile time version " << GLFW_VERSION_MAJOR
                   << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << '\n';
-        
+
         std::cout << "GLFW run time version     " << glfwGetVersionString() << '\n';
 
         std::cout << "GLM version               " << GLM_VERSION << '\n';
@@ -68,7 +68,7 @@ bool App::initialize(bool printDebugInfo)
     }
 
     glfwSwapInterval(1);
-    
+
     renderer_ = std::make_unique<Renderer>();
 
     ImGui_ImplGlfwGL3_Init(window_, false);
@@ -81,7 +81,7 @@ bool App::initialize(bool printDebugInfo)
     glfwSetMouseButtonCallback(window_, mouseButtonCallback);
     glfwSetScrollCallback(window_, scrollCallback);
     glfwSetCharCallback(window_, charCallback);
-    glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);   
+    glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
 
     glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
                                     &frame_.framebufferSize.y);
@@ -107,7 +107,7 @@ void App::run()
        float newTime = glfwGetTime();
        frame_.frameTime = newTime - time;
        time = newTime;
-       
+
        for(auto it = scenes_.begin(); it != scenes_.end() - 1; ++it)
        {
            auto& scene = **it;
@@ -117,7 +117,7 @@ void App::run()
                scene.properties_.pos = {0, 0};
                scene.properties_.size = frame_.framebufferSize;
            }
-           
+
            scene.processInput(false);
 
            if(scene.properties_.updateWhenNotTop)
@@ -130,7 +130,7 @@ void App::run()
                                   ImGui::GetIO().WantCaptureMouse;
 
            auto& topScene = *scenes_.back();
-           
+
            if(topScene.properties_.maximize)
            {
                topScene.properties_.pos = {0, 0};
@@ -141,7 +141,7 @@ void App::run()
 
            topScene.update();
        }
-       
+
        scenesToRender_.clear();
 
        for(auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
@@ -253,7 +253,7 @@ void App::keyCallback(GLFWwindow* window, int key, int scancode, int action, int
     event.key.action = action;
     event.key.mods = mods;
     frame_.events.push_back(event);
-    
+
     ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
 }
 
@@ -271,7 +271,7 @@ void App::mouseButtonCallback(GLFWwindow* window, int button, int action, int mo
     event.mouseButton.action = action;
     event.mouseButton.mods = mods;
     frame_.events.push_back(event);
-    
+
     ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
 }
 
@@ -280,7 +280,7 @@ void App::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
     Event event(Event::Scroll);
     event.scroll.offset = {xoffset, yoffset};
     frame_.events.push_back(event);
-    
+
     ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
 }
 
