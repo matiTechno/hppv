@@ -21,7 +21,7 @@
 // ...
 
 // directives might be placed anywhere
-// includes only work for files and are parent path aware
+// #include only works when loading from file
 
 // code is exception free
 
@@ -331,13 +331,32 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
                 count = nextIt->start - nextIt->type.name.size() - it->start;
             }
 
-            shaders.push_back(createAndCompileShader(it->type.value, std::string(source.substr(it->start, count))));
+            auto shaderSource = source.substr(it->start, count);
+
+            shaders.push_back(createAndCompileShader(it->type.value, std::string(shaderSource)));
 
             if(auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
             {
                 std::cout << "sh::Shader, " << id << ": " << it->type.name
                           << " shader compilation failed\n"
-                          << *error << std::endl;
+                          << *error << '\n';
+
+                {
+                    int line = 1;
+                    std::size_t end = 0;
+                    for(;;)
+                    {
+                        auto start = end;
+                        if(end = shaderSource.find('\n', end); end != std::string::npos)
+                            ++end;
+                        else
+                            break;
+
+                        std::cout << line << "  " << shaderSource.substr(start, end - start);
+                        ++line;
+                    }
+                    std::cout.flush();
+                }
 
                 compilationError = true;
             }

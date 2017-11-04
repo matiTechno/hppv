@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <functional>
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -68,7 +69,8 @@ enum class Render
     CircleColor,
     CircleTex,
     CircleTexPremultiplyAlpha,
-    Font
+    Font,
+    FontOutline // available options: vec4 outlineColor, float outlineWidth (range: 0 - 0.5)
 };
 
 enum class Sample
@@ -84,6 +86,8 @@ enum class Sample
 class Renderer
 {
 public:
+    using GLint = int;
+
     Renderer();
 
     void setScissor(glm::ivec4 scissor);
@@ -97,6 +101,13 @@ public:
 
     void setShader(Shader& shader); // default is Render::Color
     void setShader(Render mode);
+
+    template<typename Setter> // void(GLint location)
+    void setUniform(const std::string& name, Setter&& setter)
+    {
+        uniforms_.emplace_back(Uniform{name, std::forward<Setter>(setter)});
+        ++getBatchToUpdate().uniforms.count;
+    }
 
     // texture state is lost after flush
     void setTexture(Texture& texture, GLenum unit = 0);
@@ -128,9 +139,10 @@ public:
 private:
     enum
     {
+        ReservedBatches = 50,
         ReservedInstances = 100000,
         ReservedTexUnits = 50,
-        ReservedBatches = 50
+        ReservedUniforms = 50
     };
 
     GLvao vao_;
@@ -155,6 +167,12 @@ private:
         GLsampler* sampler;
     };
 
+    struct Uniform
+    {
+        std::string name;
+        std::function<void(GLint)> setter;
+    };
+
     // viewport and scissor have y-axis in opengl coordinate system
     struct Batch
     {
@@ -163,17 +181,20 @@ private:
         bool scissorEnabled;
         glm::mat4 projection;
         Shader* shader;
-        std::size_t startTexUnits;
-        std::size_t countTexUnits;
         GLenum srcAlpha;
         GLenum dstAlpha;
-        std::size_t startInstances;
-        std::size_t countInstances;
+        struct
+        {
+            std::size_t start;
+            std::size_t count;
+        }
+        instances, texUnits, uniforms;
     };
 
+    std::vector<Batch> batches_;
     std::vector<Instance> instances_;
     std::vector<TexUnit> texUnits_;
-    std::vector<Batch> batches_;
+    std::vector<Uniform> uniforms_;
 
     void setTexUnitsDefault();
     Batch& getBatchToUpdate();

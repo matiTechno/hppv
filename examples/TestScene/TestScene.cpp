@@ -78,7 +78,38 @@ private:
 
             renderer.cache(sprite);
 
-            renderer.setShader(hppv::Render::Font);
+            ImGui::Begin("font effects", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
+            {
+                struct
+                {
+                    bool on = false;
+                    float width = 0.25f;
+                    glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+                }
+                static outline;
+
+                ImGui::Checkbox("enable outline", &outline.on);
+                ImGui::SliderFloat("outline width", &outline.width, 0.f, 0.5f);
+                ImGui::Spacing();
+                ImGui::ColorPicker4("outline color", &outline.color.x, ImGuiColorEditFlags_::ImGuiColorEditFlags_AlphaBar);
+
+                if(outline.on)
+                {
+                    renderer.setShader(hppv::Render::FontOutline);
+
+                    renderer.setUniform("outlineWidth",
+                                        [width = outline.width](GLint location){glUniform1f(location, width);});
+
+                    renderer.setUniform("outlineColor",
+                                        [color = outline.color](GLint location){glUniform4fv(location, 1, &color.x);});
+                }
+                else
+                {
+                    renderer.setShader(hppv::Render::Font);
+                }
+            }
+            ImGui::End();
+
             renderer.setTexture(font_.getTexture());
             renderer.cache(text);
         }

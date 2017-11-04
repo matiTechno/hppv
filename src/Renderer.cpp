@@ -56,13 +56,15 @@ Renderer::Renderer()
     shaders_.emplace(Render::CircleTexPremultiplyAlpha, Shader({vertexSource, circleTexPremultiplyAlphaSource},
                                                                "Render::CircleTexPremultiplyAlpha"));
     shaders_.emplace(Render::Font, Shader({vertexSource, fontSource}, "Render::Font"));
+    shaders_.emplace(Render::FontOutline, Shader({vertexSource, fontOutlineSource}, "Render::FontOutline"));
 
     glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    batches_.reserve(ReservedBatches);
     instances_.resize(ReservedInstances);
     texUnits_.reserve(ReservedTexUnits);
-    batches_.reserve(ReservedBatches);
+    uniforms_.reserve(ReservedUniforms);
 
     setTexUnitsDefault();
 
@@ -73,10 +75,12 @@ Renderer::Renderer()
         first.shader = &shaders_.at(Render::Color);
         first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
-        first.startInstances = 0;
-        first.countInstances = 0;
-        first.startTexUnits = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
-        first.countTexUnits = 0;
+        first.instances.start = 0;
+        first.instances.count = 0;
+        first.texUnits.start = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
+        first.texUnits.count = 0;
+        first.uniforms.start = 0;
+        first.uniforms.count = 0;
     }
 
     float vertices[] =
@@ -188,8 +192,8 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    const auto start = batch.startTexUnits;
-    const auto count = batch.countTexUnits;
+    const auto start = batch.texUnits.start;
+    const auto count = batch.texUnits.count;
 
     for(auto i = start; i < start + count; ++i)
     {
@@ -205,15 +209,15 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
     last.unit = unit;
     last.texture = &texture;
     last.sampler = (&last - 1)->sampler;
-    ++batch.countTexUnits;
+    ++batch.texUnits.count;
 }
 
 void Renderer::setSampler(GLsampler& sampler, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
 
-    const auto start = batch.startTexUnits;
-    const auto count = batch.countTexUnits;
+    const auto start = batch.texUnits.start;
+    const auto count = batch.texUnits.count;
 
     for(auto i = start; i < start + count; ++i)
     {
@@ -229,7 +233,7 @@ void Renderer::setSampler(GLsampler& sampler, GLenum unit)
     last.unit = unit;
     last.sampler = &sampler;
     last.texture = (&last - 1)->texture;
-    ++batch.countTexUnits;
+    ++batch.texUnits.count;
 }
 
 void Renderer::setSampler(Sample mode, GLenum unit)
@@ -247,9 +251,9 @@ void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
 void Renderer::cache(const Sprite* sprite, std::size_t count)
 {
     auto& batch = batches_.back();
-    const auto start = batch.startInstances + batch.countInstances;
-    batch.countInstances += count;
-    const auto end = batch.startInstances + batch.countInstances;
+    const auto start = batch.instances.start + batch.instances.count;
+    batch.instances.count += count;
+    const auto end = batch.instances.start + batch.instances.count;
     if(end > instances_.size())
         instances_.resize(end);
 
@@ -263,9 +267,9 @@ void Renderer::cache(const Sprite* sprite, std::size_t count)
 void Renderer::cache(const Circle* circle, std::size_t count)
 {
     auto& batch = batches_.back();
-    const auto start = batch.startInstances + batch.countInstances;
-    batch.countInstances += count;
-    const auto end = batch.startInstances + batch.countInstances;
+    const auto start = batch.instances.start + batch.instances.count;
+    batch.instances.count += count;
+    const auto end = batch.instances.start + batch.instances.count;
     if(end > instances_.size())
         instances_.resize(end);
 
@@ -279,12 +283,12 @@ void Renderer::cache(const Circle* circle, std::size_t count)
 void Renderer::cache(const Text& text)
 {
     auto& batch = batches_.back();
-    auto maxInstances = batch.startInstances + batch.countInstances + text.text.size();
+    auto maxInstances = batch.instances.start + batch.instances.count + text.text.size();
     if(maxInstances > instances_.size())
         instances_.resize(maxInstances);
 
     auto penPos = text.pos;
-    auto i = batch.startInstances + batch.countInstances;
+    auto i = batch.instances.start + batch.instances.count;
 
     const auto halfTextSize = text.getSize() / 2.f;
 
@@ -308,13 +312,13 @@ void Renderer::cache(const Text& text)
 
         penPos.x += glyph.advance * text.scale;
         ++i;
-        ++batch.countInstances;
+        ++batch.instances.count;
     }
 }
 
 void Renderer::flush()
 {
-    auto numInstances = batches_.back().startInstances + batches_.back().countInstances;
+    auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
 
     glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
 
@@ -340,26 +344,40 @@ void Renderer::flush()
 
         glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE, &batch.projection[0][0]);
 
-        const auto start = batch.startTexUnits;
-        const auto count = batch.countTexUnits;
-
-        for(auto i = start; i < start + count; ++i)
         {
-            auto& unit = texUnits_[i];
-            unit.texture->bind(unit.unit);
-            glBindSampler(unit.unit, unit.sampler->getId());
+            const auto start = batch.uniforms.start;
+            const auto count = batch.uniforms.count;
+
+            for(auto i = start; i < start + count; ++i)
+                uniforms_[i].setter(batch.shader->getUniformLocation(uniforms_[i].name));
+        }
+
+        {
+            const auto start = batch.texUnits.start;
+            const auto count = batch.texUnits.count;
+
+            for(auto i = start; i < start + count; ++i)
+            {
+                auto& unit = texUnits_[i];
+                unit.texture->bind(unit.unit);
+                glBindSampler(unit.unit, unit.sampler->getId());
+            }
         }
 
         glBlendFunc(batch.srcAlpha, batch.dstAlpha);
 
-        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.countInstances, batch.startInstances);
+        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.instances.count, batch.instances.start);
     }
 
     batches_.erase(batches_.begin(), batches_.end() - 1);
-    batches_.front().startInstances = 0;
-    batches_.front().countInstances = 0;
-    batches_.front().startTexUnits = 1;
-    batches_.front().countTexUnits = 0;
+    uniforms_.clear();
+
+    batches_.front().instances.start = 0;
+    batches_.front().instances.count = 0;
+    batches_.front().texUnits.start = 1;
+    batches_.front().texUnits.count = 0;
+    batches_.front().uniforms.start = 0;
+    batches_.front().uniforms.count = 0;
 
     setTexUnitsDefault();
 }
@@ -378,7 +396,7 @@ Renderer::Batch& Renderer::getBatchToUpdate()
 {
     {
         auto& current = batches_.back();
-        if(!current.countInstances)
+        if(!current.instances.count)
             return current;
     }
 
@@ -386,10 +404,12 @@ Renderer::Batch& Renderer::getBatchToUpdate()
     auto& current = batches_.back();
     current = *(&current - 1);
 
-    current.startInstances += current.countInstances;
-    current.countInstances = 0;
-    current.startTexUnits += current.countTexUnits;
-    current.countTexUnits = 0;
+    current.instances.start += current.instances.count;
+    current.instances.count = 0;
+    current.texUnits.start += current.texUnits.count;
+    current.texUnits.count = 0;
+    current.uniforms.start += current.uniforms.count;
+    current.uniforms.count = 0;
 
     return current;
 }

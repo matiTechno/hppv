@@ -3,7 +3,9 @@ high performance physics visualization
 
 todo:
 
-* shaders for font outlines and shadows (and a way for caching uniforms)
+* reduce the number of default shaders (set special options by uniforms implicitly)
+* more font effects
+* App::setFullscreen; checkbox in PrototypeScene
 
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader

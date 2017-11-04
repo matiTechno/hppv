@@ -180,3 +180,31 @@ void main()
     color = vColor * alpha;
 }
 )";
+
+static const char* fontOutlineSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vTexCoords;
+
+uniform sampler2D sampler;
+uniform float outlineWidth = 0.2;
+uniform vec4 outlineColor = vec4(1, 0, 0, 1);
+
+const float smoothing = 1.0 / 16.0;
+
+out vec4 color;
+
+void main()
+{
+    float distance = texture(sampler, vTexCoords).a;
+
+    float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+
+    float alpha = smoothstep(outlineWidth - smoothing, outlineWidth + smoothing, distance);
+
+    color = mix(outlineColor, vColor, outlineFactor) * alpha;
+}
+)";
