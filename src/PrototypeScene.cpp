@@ -112,14 +112,11 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x,
                                                  frame_.framebufferSize.y);
 
-        std::string buttonText("vsync ");
-        if(vsync_)
-            buttonText += "off";
-        else
-            buttonText += "on";
+        if(ImGui::Checkbox("vsync", &vsync_))
+            App::setVsync(vsync_);
 
-        if(ImGui::Button(buttonText.c_str()))
-            App::setVsync(vsync_ = !vsync_);
+        if(ImGui::Checkbox("fullscreen", &fullscreen_))
+            App::setFullscreen(fullscreen_);
 
         ImGui::Separator();
         ImGui::Text("rmb      move around");

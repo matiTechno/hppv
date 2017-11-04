@@ -5,8 +5,8 @@ todo:
 
 * reduce the number of default shaders (set special options by uniforms implicitly)
 * more font effects
-* App::setFullscreen; checkbox in PrototypeScene
 
+* App keep track of window state (fullscreen / maximized / pos / ... )
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
 * Shader uniform setting functions

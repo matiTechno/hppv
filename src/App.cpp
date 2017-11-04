@@ -21,6 +21,7 @@ App::~App() = default;
 GLFWwindow* App::window_;
 Frame App::frame_;
 bool App::handleQuitEvent_ = true;
+App::WindowedState App::windowedState_;
 
 bool App::initialize(bool printDebugInfo)
 {
@@ -219,6 +220,24 @@ void App::hideCursor(bool hide)
 {
     auto mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
     glfwSetInputMode(window_, GLFW_CURSOR, mode);
+}
+
+void App::setFullscreen(bool on)
+{
+    if(on)
+    {
+        glfwGetWindowPos(window_, &windowedState_.pos.x, &windowedState_.pos.y);
+        glfwGetWindowSize(window_, &windowedState_.size.x, &windowedState_.size.y);
+
+        auto* monitor = glfwGetPrimaryMonitor();
+        const auto* mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
+    else
+    {
+        glfwSetWindowMonitor(window_, nullptr, windowedState_.pos.x, windowedState_.pos.y,
+                             windowedState_.size.x, windowedState_.size.y, 0);
+    }
 }
 
 void App::errorCallback(int, const char* description)

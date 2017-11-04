@@ -33,6 +33,7 @@ public:
     static void quit();
     static void setVsync(bool on);
     static void hideCursor(bool hide);
+    static void setFullscreen(bool on);
     static const Frame& getFrame() {return frame_;}
     static GLFWwindow* getWindow() {return window_;}
 
@@ -51,6 +52,14 @@ private:
     static GLFWwindow* window_;
     static Frame frame_;
     static bool handleQuitEvent_;
+
+    // this is not robust; temporary solution
+    struct WindowedState
+    {
+        glm::ivec2 pos;
+        glm::ivec2 size;
+    }
+    static windowedState_;
 
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);
