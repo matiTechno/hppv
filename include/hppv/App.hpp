@@ -53,14 +53,6 @@ private:
     static Frame frame_;
     static bool handleQuitEvent_;
 
-    // this is not robust; temporary solution
-    struct WindowedState
-    {
-        glm::ivec2 pos;
-        glm::ivec2 size;
-    }
-    static windowedState_;
-
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);
     static void windowFocusCallback(GLFWwindow*, int focused);

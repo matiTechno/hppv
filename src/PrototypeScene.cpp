@@ -115,6 +115,8 @@ void PrototypeScene::render(Renderer& renderer)
         if(ImGui::Checkbox("vsync", &vsync_))
             App::setVsync(vsync_);
 
+        fullscreen_ = frame_.fullscreen;
+
         if(ImGui::Checkbox("fullscreen", &fullscreen_))
             App::setFullscreen(fullscreen_);
 

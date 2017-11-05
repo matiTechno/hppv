@@ -39,9 +39,10 @@ private:
     int frameCount_ = 0;
     float averageFrameTimeMs_ = 0.f;
     int averageFps_ = 0;
-    // temporary; get initial values from App
+    bool fullscreen_ = frame_.fullscreen;
+
+    // we should get the value from App
     bool vsync_ = true;
-    bool fullscreen_ = false;
 
     struct
     {
