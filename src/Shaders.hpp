@@ -190,7 +190,7 @@ in vec4 vColor;
 in vec2 vTexCoords;
 
 uniform sampler2D sampler;
-uniform float outlineWidth = 0.2;
+uniform float outlineWidth = 0.2; // 0 - 0.5
 uniform vec4 outlineColor = vec4(1, 0, 0, 1);
 
 const float smoothing = 1.0 / 16.0;
@@ -200,11 +200,39 @@ out vec4 color;
 void main()
 {
     float distance = texture(sampler, vTexCoords).a;
-
     float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-
     float alpha = smoothstep(outlineWidth - smoothing, outlineWidth + smoothing, distance);
-
     color = mix(outlineColor, vColor, outlineFactor) * alpha;
+}
+)";
+
+static const char* fontShadowSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vTexCoords;
+
+uniform sampler2D sampler;
+uniform vec2 shadowOffset = vec2(-0.002, -0.002);
+uniform float shadowSmoothing = 0.5; // 0 - 0.5
+uniform vec4 shadowColor = vec4(1, 0, 0, 1);
+
+const float smoothing = 1.0 / 16.0;
+
+out vec4 color;
+
+void main()
+{
+    float distance = texture(sampler, vTexCoords).a;
+    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    vec4 textColor = vColor * alpha;
+
+    float shadowDistance = texture(sampler, vTexCoords - shadowOffset).a;
+    float shadowAlpha = smoothstep(0.5 - shadowSmoothing, 0.5 + shadowSmoothing, shadowDistance);
+    vec4 shadow = shadowColor * shadowAlpha;
+
+    gl_FragColor = mix(shadow, textColor, textColor.a);
 }
 )";

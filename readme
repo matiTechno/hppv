@@ -3,10 +3,10 @@ high performance physics visualization
 
 todo:
 
+* font rendering quality
 * reduce the number of default shaders (set special options by uniforms implicitly)
-* more font effects
 
-* App keep track of window state (fullscreen / maximized / pos / ... )
+* App - keep track of window state (fullscreen / maximized / pos / ... )
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
 * Shader uniform setting functions

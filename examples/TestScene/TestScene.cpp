@@ -130,6 +130,15 @@ private:
             sprite.texRect = {0.f, 0.f, texture_.getSize()};
             renderer.cache(sprite);
         }
+        {
+            renderer.setShader(hppv::Render::FontShadow);
+            renderer.setTexture(font_.getTexture());
+            hppv::Text text;
+            text.font = &font_;
+            text.text = "The quick brow fox jumps over the lazy dog.";
+            text.pos = {20.f, 70.f};
+            renderer.cache(text);
+        }
     }
 };
 

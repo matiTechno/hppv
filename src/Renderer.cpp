@@ -57,6 +57,7 @@ Renderer::Renderer()
                                                                "Render::CircleTexPremultiplyAlpha"));
     shaders_.emplace(Render::Font, Shader({vertexSource, fontSource}, "Render::Font"));
     shaders_.emplace(Render::FontOutline, Shader({vertexSource, fontOutlineSource}, "Render::FontOutline"));
+    shaders_.emplace(Render::FontShadow, Shader({vertexSource, fontShadowSource}, "Render::FontShadow"));
 
     glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);

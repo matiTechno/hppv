@@ -61,6 +61,7 @@ struct Circle
     glm::vec4 texRect;
 };
 
+// todo: texFlippedY, texFlippedX, the same for circles
 enum class Render
 {
     Color,
@@ -70,7 +71,8 @@ enum class Render
     CircleTex,
     CircleTexPremultiplyAlpha,
     Font,
-    FontOutline // available options: vec4 outlineColor, float outlineWidth (range: 0 - 0.5)
+    FontOutline, // available options: vec4 outlineColor, float outlineWidth (range: 0 - 0.5)
+    FontShadow
 };
 
 enum class Sample
