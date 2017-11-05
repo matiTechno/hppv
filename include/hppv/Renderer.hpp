@@ -61,7 +61,7 @@ struct Circle
     glm::vec4 texRect;
 };
 
-// todo: texFlippedY, texFlippedX, the same for circles
+// todo: texFlippedY, texFlippedX, same for circles
 enum class Render
 {
     Color,
