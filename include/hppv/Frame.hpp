@@ -19,8 +19,7 @@ struct Frame
 
     std::vector<Event> events;
 
-    // * * *
-    // internal use only
+    // internal use
     struct
     {
         glm::ivec2 pos;

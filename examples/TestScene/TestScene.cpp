@@ -1,11 +1,11 @@
 #include <glm/gtc/constants.hpp>
+#include <glm/trigonometric.hpp>
 
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/glad.h>
 #include <hppv/imgui.h>
 #include <hppv/Renderer.hpp>
-#include <hppv/Shader.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/Font.hpp>
 
@@ -14,129 +14,200 @@ class TestScene: public hppv::PrototypeScene
 public:
     TestScene():
         PrototypeScene(hppv::Space(0.f, 0.f, 100.f, 100.f), 1.1f, false),
-        texture_("res/gnu.png"),
-        font_("res/font.fnt")
+        sdfFont_("res/sdf.fnt"),
+        proggy_("res/proggy.fnt")
     {
-        properties_.pos = {100, 100};
-        properties_.size = {500, 200};
+        gnu_.tex = hppv::Texture("res/gnu.png");
     }
 
 private:
-    hppv::Texture texture_;
-    hppv::Font font_;
+    struct
+    {
+        glm::vec2 pos = {70.f, 70.f};
+        glm::vec2 size = {30.f, 30.f};
+        hppv::Texture tex;
+    }
+    gnu_;
+
+    hppv::Font sdfFont_, proggy_;
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
-        ImGui::ShowTestWindow();
-
+        // gnu
         {
-            renderer.setShader(hppv::Render::Color);
             hppv::Sprite sprite;
-            sprite.color = {0.05f, 0.f, 0.05f, 1.f};
-            sprite.pos = prototype_.initialSpace.pos;
-            sprite.size = prototype_.initialSpace.size;
+            sprite.pos = gnu_.pos;
+            sprite.size = gnu_.size;
+            sprite.texRect = {0.f, 0.f, gnu_.tex.getSize()};
+
+            renderer.setShader(hppv::Render::Tex);
+            renderer.setTexture(gnu_.tex);
             renderer.cache(sprite);
         }
+        // sdf font
         {
-            renderer.setShader(hppv::Render::Color);
-            hppv::Sprite sprite;
-            sprite.color = {1.f, 0.f, 0.f, 0.f};
-            sprite.pos = {0.f, 0.f};
-            sprite.size = {20.f, 20.f};
-            renderer.cache(sprite);
-        }
-        {
-            renderer.setShader(hppv::Render::TexPremultiplyAlpha);
-            renderer.setTexture(font_.getTexture());
-            hppv::Sprite sprite;
-            sprite.pos = {45.f, 45.f};
-            sprite.size = {30.f, 30.f};
-            sprite.texRect = {0, 0, font_.getTexture().getSize()};
-            renderer.cache(sprite);
-        }
-        {
-            hppv::Text text;
-            text.text = "Hula dupal\nBarcelona !!! :D";
-            text.font = &font_;
-            text.pos = {0.f, 0.f};
-            text.scale = 0.5f;
-            text.color = {1.f, 1.f, 0.f, 1.f};
-            text.rotation = glm::pi<float>() / 4.f;
-            text.rotationPoint -= text.getSize() / 2.f;
-
-            renderer.setShader(hppv::Render::Color);
-
-            hppv::Sprite sprite;
-            sprite.size = glm::vec2(2.f);
-            sprite.color = {0.f, 1.f, 0.f, 1.f};
-            sprite.pos = text.pos + text.getSize() / 2.f + text.rotationPoint;
-
-            renderer.cache(sprite);
-
-            sprite = hppv::Sprite(text);
-            sprite.color = {0.4f, 0.2f, 0.4f, 0.f};
-
-            renderer.cache(sprite);
-
-            ImGui::Begin("font effects", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
+            // todo: serialize
+            struct
             {
+                glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+                char text[256] = {"The slow red squirrel jumps over the hungry bear."};
+                float rotation = 0.f;
+                bool sprite = true;
+                glm::vec4 spriteColor = {0.1f, 0.05f, 0.05f, 0.5f};
+                int comboIndex = 1;
+                const char* shaders[5] = {"texture", "default", "outline", "glow", "shadow"};
+
                 struct
                 {
-                    bool on = false;
-                    float width = 0.25f;
                     glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+                    float width = 0.25f;
                 }
-                static outline;
+                outline;
 
-                ImGui::Checkbox("enable outline", &outline.on);
-                ImGui::SliderFloat("outline width", &outline.width, 0.f, 0.5f);
-                ImGui::Spacing();
-                ImGui::ColorPicker4("outline color", &outline.color.x, ImGuiColorEditFlags_::ImGuiColorEditFlags_AlphaBar);
-
-                if(outline.on)
+                struct
                 {
-                    renderer.setShader(hppv::Render::FontOutline);
+                    glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+                    float width = 0.5f;
+                    bool animate = true;
+                    float time = 0.f;
 
-                    renderer.setUniform("outlineWidth",
-                                        [width = outline.width](GLint location){glUniform1f(location, width);});
-
-                    renderer.setUniform("outlineColor",
-                                        [color = outline.color](GLint location){glUniform4fv(location, 1, &color.x);});
                 }
-                else
+                glow;
+
+                struct
                 {
-                    renderer.setShader(hppv::Render::Font);
+                    glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+                    float smoothing = 0.2f;
+                    glm::vec2 offset = {-0.003, -0.006};
+                    bool animate = true;
+                    float time = 0.f;
+                }
+                shadow;
+            }
+            static sdf;
+
+            // imgui
+            {
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.95f));
+                ImGui::Begin("sdf");
+                ImGui::ColorEdit4("font color", &sdf.color.x);
+                ImGui::InputTextMultiline("", sdf.text, sizeof(sdf.text) / sizeof(char));
+                ImGui::SliderFloat("rotation", &sdf.rotation, 0.f, 2 * glm::pi<float>());
+                ImGui::Checkbox("sprite", &sdf.sprite);
+                ImGui::ColorEdit4("sprite color", &sdf.spriteColor.x);
+                ImGui::Combo("shader", &sdf.comboIndex, sdf.shaders, sizeof(sdf.shaders) / sizeof(char*));
+            }
+
+            hppv::Text text(sdfFont_);
+            text.text = sdf.text;
+            text.scale = 0.4f;
+            text.pos = {50.f, 50.f};
+            text.pos -= text.getSize() / 2.f;
+            text.color = sdf.color;
+            text.rotation = sdf.rotation;
+
+            if(sdf.sprite)
+            {
+                hppv::Sprite sprite(text);
+                sprite.color = sdf.spriteColor;
+
+                renderer.setShader(hppv::Render::Color);
+                renderer.cache(sprite);
+            }
+
+            if(sdf.comboIndex == 0)
+            {
+                renderer.setShader(hppv::Render::TexPremultiplyAlpha);
+            }
+            // imgui + uniforms
+            else
+            {
+                auto shader = hppv::Render(int(hppv::Render::Sdf) + sdf.comboIndex - 1);
+                renderer.setShader(shader);
+
+                if(shader == hppv::Render::SdfOutline)
+                {
+                    ImGui::ColorEdit4("outline color", &sdf.outline.color.x);
+                    ImGui::SliderFloat("outline width", &sdf.outline.width, 0.f, 0.5f);
+
+                    renderer.setUniform("outlineColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.outline.color.x);});
+                    renderer.setUniform("outlineWidth", [](GLint loc){glUniform1f(loc, sdf.outline.width);});
+                }
+                else if(shader == hppv::Render::SdfGlow)
+                {
+                    if(sdf.glow.animate)
+                    {
+                        sdf.glow.time += frame_.frameTime;
+                        sdf.glow.width = (glm::sin(sdf.glow.time * 2.f * glm::pi<float>() / 4.f) + 1.f) / 4.f;
+                    }
+
+                    ImGui::ColorEdit4("glow color", &sdf.glow.color.x);
+                    ImGui::SliderFloat("glow width", &sdf.glow.width, 0.f, 0.5f);
+                    ImGui::Checkbox("animate", &sdf.glow.animate);
+
+                    renderer.setUniform("glowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.glow.color.x);});
+                    renderer.setUniform("glowWidth", [](GLint loc){glUniform1f(loc, sdf.glow.width);});
+                }
+                else if(shader == hppv::Render::SdfShadow)
+                {
+                    if(sdf.shadow.animate)
+                    {
+                        sdf.shadow.time += frame_.frameTime;
+                        sdf.shadow.offset.x = glm::sin(sdf.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
+                        sdf.shadow.offset.y = glm::cos(sdf.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
+                    }
+
+                    ImGui::ColorEdit4("shadow color", &sdf.shadow.color.x);
+                    ImGui::SliderFloat("shadow smoothing", &sdf.shadow.smoothing, 0.f, 0.5f);
+                    ImGui::SliderFloat2("shadow offset", &sdf.shadow.offset.x, -0.01f, 0.01f);
+                    ImGui::Checkbox("animate", &sdf.shadow.animate);
+
+                    renderer.setUniform("shadowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.shadow.color.x);});
+                    renderer.setUniform("shadowSmoothing", [](GLint loc){glUniform1f(loc, sdf.shadow.smoothing);});
+                    renderer.setUniform("shadowOffset", [](GLint loc){glUniform2fv(loc, 1, &sdf.shadow.offset.x);});
                 }
             }
-            ImGui::End();
+            // imgui end
+            {
+                ImGui::End();
+                ImGui::PopStyleColor();
+            }
 
-            renderer.setTexture(font_.getTexture());
+            renderer.setTexture(sdfFont_.getTexture());
             renderer.cache(text);
         }
+
+        renderer.setProjection({properties_.pos, properties_.size});
+        auto projection = hppv::expandToMatchAspectRatio(prototype_.space, frame_.framebufferSize);
+
+        // some text at the top
         {
-            renderer.setShader(hppv::Render::CircleColor);
-            hppv::Circle circle;
-            circle.color = {0.f, 1.f, 1.f, 0.2f};
-            circle.center = {20.f, 50.f};
-            circle.radius = {3.f};
-            renderer.cache(circle);
+            hppv::Text text(proggy_);
+            text.pos = {10, 10}; // I assume scene pos is (0, 0);
+            text.color = {0.f, 0.8f, 0.4f, 1.f};
+            text.text = "The quick brown fox jumps over the lazy dog. #include <iostream> int main(){\n"
+                        "std::cout << \"Hello World!\" << std::endl; return 0;}";
+
+            renderer.setShader(hppv::Render::TexPremultiplyAlpha);
+            renderer.setTexture(proggy_.getTexture());
+            renderer.cache(text);
         }
+        // gnu info
         {
-            renderer.setShader(hppv::Render::Tex);
-            renderer.setTexture(texture_);
-            hppv::Sprite sprite;
-            sprite.pos = {80.f, 80.f};
-            sprite.size = {100.f, 100.f};
-            sprite.texRect = {0.f, 0.f, texture_.getSize()};
+            hppv::Text text(proggy_);
+            text.text = "This is small gnu creature!";
+            auto rect = hppv::mapToSceneI({gnu_.pos, gnu_.size}, projection, this);
+            glm::ivec2 size = text.getSize();
+            text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};
+
+            hppv::Sprite sprite(text);
+            sprite.color = {0.4f, 0.1f, 0.1f, 1.f};
+
+            renderer.setShader(hppv::Render::Color);
             renderer.cache(sprite);
-        }
-        {
-            renderer.setShader(hppv::Render::FontShadow);
-            renderer.setTexture(font_.getTexture());
-            hppv::Text text;
-            text.font = &font_;
-            text.text = "The quick brow fox jumps over the lazy dog.";
-            text.pos = {20.f, 70.f};
+
+            renderer.setShader(hppv::Render::TexPremultiplyAlpha);
+            renderer.setTexture(proggy_.getTexture());
             renderer.cache(text);
         }
     }

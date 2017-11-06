@@ -23,12 +23,13 @@ class Framebuffer;
 
 struct Text
 {
+    Text(const Font& font): font(&font) {}
     glm::vec2 pos; // top left corner
     float scale = 1.f;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f; // angle in radians
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
-    Font* font;
+    const Font* font;
     std::string text;
 
     glm::vec2 getSize() const;
@@ -61,7 +62,6 @@ struct Circle
     glm::vec4 texRect;
 };
 
-// todo: texFlippedY, texFlippedX, same for circles
 enum class Render
 {
     Color,
@@ -70,9 +70,10 @@ enum class Render
     CircleColor,
     CircleTex,
     CircleTexPremultiplyAlpha,
-    Font,
-    FontOutline, // available options: vec4 outlineColor, float outlineWidth (range: 0 - 0.5)
-    FontShadow
+    Sdf,
+    SdfOutline, // vec4 outlineColor; float outlineWidth [0, 0.5]
+    SdfGlow, // vec4 glowColor; float glowWidth [0, 0.5]
+    SdfShadow // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset (vec2(1, 1) - offset by texture size)
 };
 
 enum class Sample

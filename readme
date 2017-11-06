@@ -3,9 +3,10 @@ high performance physics visualization
 
 todo:
 
-* font rendering quality
-* reduce the number of default shaders (set special options by uniforms implicitly)
+* reduce the number of default shaders; set special options with uniforms
+* add options to: flip texCoords, sample from texture as if it was flipped
 
+* Space to Space mapping; functions to map vec2
 * App - keep track of window state (fullscreen / maximized / pos / ... )
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
@@ -18,6 +19,8 @@ todo:
 * better cmake (finding libraries / cross-compilation)
 * line width (writing code)
 * replace asserts with something more robust
+* test on different platforms / gpus
+* load font from ttf
 
 included:
 

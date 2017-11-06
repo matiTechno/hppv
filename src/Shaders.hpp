@@ -159,7 +159,7 @@ void main()
 }
 )";
 
-static const char* fontSource = R"(
+static const char* sdfSource = R"(
 
 #fragment
 #version 330
@@ -183,7 +183,7 @@ void main()
 }
 )";
 
-static const char* fontOutlineSource = R"(
+static const char* sdfOutlineSource = R"(
 
 #fragment
 #version 330
@@ -193,8 +193,8 @@ in vec2 vPosition;
 in vec2 vTexCoords;
 
 uniform sampler2D sampler;
-uniform float outlineWidth = 0.2; // 0 - 0.5
 uniform vec4 outlineColor = vec4(1, 0, 0, 1);
+uniform float outlineWidth = 0.25; // [0, 0.5]
 
 const vec2 center = vec2(0.5, 0.5);
 
@@ -205,12 +205,13 @@ void main()
     float smoothing = fwidth(length(vPosition - center) * 2);
     float distance = texture(sampler, vTexCoords).a;
     float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    float alpha = smoothstep(outlineWidth - smoothing, outlineWidth + smoothing, distance);
+    float oOutlineWidth = 0.5 - outlineWidth;
+    float alpha = smoothstep(oOutlineWidth - smoothing, oOutlineWidth + smoothing, distance);
     color = mix(outlineColor, vColor, outlineFactor) * alpha;
 }
 )";
 
-static const char* fontShadowSource = R"(
+static const char* sdfGlowSource = R"(
 
 #fragment
 #version 330
@@ -220,9 +221,37 @@ in vec2 vPosition;
 in vec2 vTexCoords;
 
 uniform sampler2D sampler;
-uniform vec2 shadowOffset = vec2(-0.002, -0.002);
-uniform float shadowSmoothing = 0.5; // 0 - 0.5
+uniform vec4 glowColor = vec4(1, 0, 0, 1);
+uniform float glowWidth = 0.5; // [0, 0.5]
+
+const vec2 center = vec2(0.5, 0.5);
+
+out vec4 color;
+
+void main()
+{
+    float smoothing = fwidth(length(vPosition - center) * 2);
+    float distance = texture(sampler, vTexCoords).a;
+    float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    float glowSmoothing = max(smoothing, glowWidth);
+    float alpha = smoothstep(0.5 - glowSmoothing, 0.5 + smoothing, distance);
+    color = mix(glowColor, vColor, outlineFactor) * alpha;
+}
+)";
+
+static const char* sdfShadowSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vPosition;
+in vec2 vTexCoords;
+
+uniform sampler2D sampler;
 uniform vec4 shadowColor = vec4(1, 0, 0, 1);
+uniform float shadowSmoothing = 0.2; // [0, 0.5]
+uniform vec2 shadowOffset = vec2(-0.003, -0.006);
 
 const vec2 center = vec2(0.5, 0.5);
 
@@ -236,9 +265,10 @@ void main()
     vec4 textColor = vColor * alpha;
 
     float shadowDistance = texture(sampler, vTexCoords - shadowOffset).a;
-    float shadowAlpha = smoothstep(0.5 - shadowSmoothing, 0.5 + shadowSmoothing, shadowDistance);
+    float oShadowSmoothing = max(smoothing, shadowSmoothing);
+    float shadowAlpha = smoothstep(0.5 - oShadowSmoothing, 0.5 + oShadowSmoothing, shadowDistance);
     vec4 shadow = shadowColor * shadowAlpha;
 
-    gl_FragColor = mix(shadow, textColor, textColor.a);
+    color = mix(shadow, textColor, textColor.a);
 }
 )";

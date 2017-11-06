@@ -25,7 +25,7 @@ private:
         emitter.update(frame_.frameTime);
         emitter.render(renderer);
 
-        ImGui::Begin("Particles", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Particles", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         {
             // set emitter_ properties; load / save
             ImGui::Text("count: %lu", emitter.getCount());

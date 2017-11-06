@@ -11,8 +11,6 @@
 namespace hppv
 {
 
-// github.com/libgdx/libgdx/wiki/Distance-field-fonts
-
 struct Glyph
 {
     glm::ivec4 texRect;
@@ -20,9 +18,13 @@ struct Glyph
     int advance;
 };
 
+// github.com/libgdx/libgdx/wiki/Distance-field-fonts
+// github.com/libgdx/libgdx/wiki/Hiero
+
 class Font
 {
 public:
+    // Angle Code font format
     explicit Font(const std::string& filename);
 
     Texture& getTexture() {return texture_;}

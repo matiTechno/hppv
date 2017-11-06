@@ -35,9 +35,9 @@ void PrototypeScene::processInput(bool hasInput)
                 {
                     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-                    auto newSpaceCoords = mapCursor(event.cursor.pos, projection, *this);
+                    auto newSpaceCoords = mapCursor(event.cursor.pos, projection, this);
 
-                    auto prevSpaceCoords = mapCursor(rmb_.pos, projection, *this);
+                    auto prevSpaceCoords = mapCursor(rmb_.pos, projection, this);
 
                     prototype_.space.pos -= newSpaceCoords - prevSpaceCoords;
                 }
@@ -56,7 +56,7 @@ void PrototypeScene::processInput(bool hasInput)
                 {
                     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-                    auto spaceCoords = mapCursor(rmb_.pos, projection, *this);
+                    auto spaceCoords = mapCursor(rmb_.pos, projection, this);
 
                     prototype_.space = zoomToPoint(prototype_.space, zoom, spaceCoords);
                 }
@@ -102,8 +102,7 @@ void PrototypeScene::render(Renderer& renderer)
     if(!prototype_.renderImgui)
         return;
 
-    ImGui::Begin("PrototypeScene", nullptr,
-                 ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("PrototypeScene", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("h p p v");
         ImGui::Text("made by            m a t i T e c h n o");
@@ -130,7 +129,7 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = mapCursor(rmb_.pos, projection, *this);
+        auto spaceCoords = mapCursor(rmb_.pos, projection, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
