@@ -6,11 +6,12 @@ todo:
 * reduce the number of default shaders; set special options with uniforms
 * add options to: flip texCoords, sample from texture as if it was flipped
 
-* Space to Space mapping; functions to map vec2
+* Space to Space mapping; vec2, ivec2 variants; template parameter instead of
+  Space (T.pos, T.size)
 * App - keep track of window state (fullscreen / maximized / pos / ... )
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
-* Shader uniform setting functions
+* Shader uniform setters
 * custom shapes
 * bezier curves
 * stack allocator / vector with static buffer / flat map / general performance
@@ -18,7 +19,7 @@ todo:
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * line width (writing code)
-* replace asserts with something more robust
+* replace asserts with something more robust ?
 * test on different platforms / gpus
 * load font from ttf
 
