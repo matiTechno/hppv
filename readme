@@ -11,7 +11,7 @@ todo:
 * App - keep track of window state (fullscreen / maximized / pos / ... )
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
-* Shader uniform setters
+* Shader uniforms setters
 * custom shapes
 * bezier curves
 * stack allocator / vector with static buffer / flat map / general performance
