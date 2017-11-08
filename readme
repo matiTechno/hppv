@@ -23,6 +23,7 @@ todo:
 * replace asserts with something more robust?
 * test on different platforms / gpus
 * load font from ttf
+* license
 
 included:
 

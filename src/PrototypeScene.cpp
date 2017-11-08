@@ -25,52 +25,45 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
 
 void PrototypeScene::processInput(bool hasInput)
 {
-    if(hasInput)
+    for(auto& event: frame_.events)
     {
-        for(auto& event: frame_.events)
+        if(event.type == Event::Cursor)
         {
-            if(event.type == Event::Cursor)
+            if(rmb_.pressed && hasInput)
             {
-                if(rmb_.pressed)
-                {
-                    auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-                    auto newSpaceCoords = mapCursor(event.cursor.pos, projection, this);
-                    auto prevSpaceCoords = mapCursor(rmb_.pos, projection, this);
-                    prototype_.space.pos -= newSpaceCoords - prevSpaceCoords;
-                }
+                auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
+                auto newSpaceCoords = mapCursor(event.cursor.pos, projection, this);
+                auto prevSpaceCoords = mapCursor(rmb_.pos, projection, this);
+                prototype_.space.pos -= newSpaceCoords - prevSpaceCoords;
+            }
 
-                rmb_.pos = event.cursor.pos;
-            }
-            else if(event.type == Event::MouseButton && event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
-            {
-                rmb_.pressed = event.mouseButton.action == GLFW_PRESS;
-            }
-            else if(event.type == Event::Scroll)
-            {
-                auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
+            rmb_.pos = event.cursor.pos;
+        }
+        else if(event.type == Event::MouseButton && event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
+        {
+            rmb_.pressed = event.mouseButton.action == GLFW_PRESS;
+        }
+        else if(event.type == Event::Scroll && hasInput)
+        {
+            auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
 
-                if(rmb_.pressed || alwaysZoomToCursor_)
-                {
-                    auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-                    auto spaceCoords = mapCursor(rmb_.pos, projection, this);
-                    prototype_.space = zoomToPoint(prototype_.space, zoom, spaceCoords);
-                }
-                else
-                {
-                    prototype_.space = zoomToCenter(prototype_.space, zoom);
-                }
-            }
-            else if(event.type == Event::FramebufferSize)
+            if(rmb_.pressed || alwaysZoomToCursor_)
             {
-                glm::dvec2 cursorPos;
-                glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
-                rmb_.pos = cursorPos;
+                auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
+                auto spaceCoords = mapCursor(rmb_.pos, projection, this);
+                prototype_.space = zoomToPoint(prototype_.space, zoom, spaceCoords);
+            }
+            else
+            {
+                prototype_.space = zoomToCenter(prototype_.space, zoom);
             }
         }
-    }
-    else
-    {
-        rmb_.pressed = false;
+        else if(event.type == Event::FramebufferSize)
+        {
+            glm::dvec2 cursorPos;
+            glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
+            rmb_.pos = cursorPos;
+        }
     }
 
     prototypeProcessInput(hasInput);
@@ -81,6 +74,9 @@ void PrototypeScene::render(Renderer& renderer)
     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
     renderer.setProjection(projection);
     prototypeRender(renderer);
+
+    if(!prototype_.renderImgui)
+        return;
 
     ++frameCount_;
     accumulator_ += frame_.frameTime;
@@ -94,9 +90,7 @@ void PrototypeScene::render(Renderer& renderer)
         accumulator_ = 0.f;
     }
 
-    if(!prototype_.renderImgui)
-        return;
-
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, {0.f, 0.f, 0.f, 0.95f});
     ImGui::Begin("PrototypeScene", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("h p p v");
@@ -128,6 +122,7 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
+    ImGui::PopStyleColor();
 }
 
 } // namespace hppv

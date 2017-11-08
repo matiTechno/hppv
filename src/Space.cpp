@@ -4,6 +4,8 @@
 namespace hppv
 {
 
+static_assert(std::numeric_limits<float>::is_iec559);
+
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {
     auto spaceAspect = space.size.x / space.size.y;

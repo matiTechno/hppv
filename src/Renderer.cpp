@@ -80,7 +80,8 @@ Renderer::Renderer()
 
     shaders_.emplace(Render::Color, Shader({vertexSource, colorSource}, "Render::Color"));
     shaders_.emplace(Render::Tex, Shader({vertexSource, texSource}, "Render::Tex"));
-    shaders_.emplace(Render::TexPremultiplyAlpha, Shader({vertexSource, texPremultiplyAlphaSource}, "Render::TexPremultiplyAlpha"));
+    shaders_.emplace(Render::TexPremultiplyAlpha, Shader({vertexSource, texPremultiplyAlphaSource},
+                                                         "Render::TexPremultiplyAlpha"));
     shaders_.emplace(Render::CircleColor, Shader({vertexSource, circleColorSource}, "Render::CircleColor"));
     shaders_.emplace(Render::CircleTex, Shader({vertexSource, circleTexSource}, "Render::CircleTex"));
     shaders_.emplace(Render::CircleTexPremultiplyAlpha, Shader({vertexSource, circleTexPremultiplyAlphaSource},
