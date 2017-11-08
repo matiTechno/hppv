@@ -39,7 +39,6 @@ private:
     int frameCount_ = 0;
     float averageFrameTimeMs_ = 0.f;
     int averageFps_ = 0;
-    bool fullscreen_;
 
     // we should get the value from App
     bool vsync_ = true;

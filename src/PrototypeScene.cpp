@@ -109,10 +109,10 @@ void PrototypeScene::render(Renderer& renderer)
         if(ImGui::Checkbox("vsync", &vsync_))
             App::setVsync(vsync_);
 
-        fullscreen_ = frame_.fullscreen;
+        auto fullscreen = frame_.fullscreen;
 
-        if(ImGui::Checkbox("fullscreen", &fullscreen_))
-            App::setFullscreen(fullscreen_);
+        if(ImGui::Checkbox("fullscreen", &fullscreen))
+            App::setFullscreen(fullscreen);
 
         ImGui::Separator();
         ImGui::Text("rmb      move around");

@@ -183,7 +183,7 @@ private:
         // some text at the top
         {
             hppv::Text text(proggy_);
-            text.pos = {10, 10}; // I assume scene pos is (0, 0);
+            text.pos = {10, 10}; // I assume scene pos is (0, 0)
             text.color = {0.f, 0.8f, 0.4f, 1.f};
             text.text = "The quick brown fox jumps over the lazy dog. #include <iostream> int main(){\n"
                         "std::cout << \"Hello World!\" << std::endl; return 0;}";
