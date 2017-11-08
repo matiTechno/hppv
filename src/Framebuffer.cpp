@@ -1,5 +1,3 @@
-#include <cassert>
-
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>
 
@@ -9,16 +7,14 @@ namespace hppv
 Framebuffer::Framebuffer(GLenum textureFormat, int numAttachments):
     textureFormat_(textureFormat)
 {
-    assert(numAttachments > 0 && numAttachments <= MaxAttachments);
-
     bind();
 
-    GLenum attachments[MaxAttachments];
+    std::vector<GLenum> attachments(numAttachments);
 
     for(int i = 0; i < numAttachments; ++i)
         attachments[i] = GL_COLOR_ATTACHMENT0 + i;
 
-    glDrawBuffers(numAttachments, attachments);
+    glDrawBuffers(numAttachments, attachments.data());
 
     unbind();
 

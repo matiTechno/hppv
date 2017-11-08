@@ -27,11 +27,8 @@ out vec4 color;
 void main()
 {
    float distanceFromCenter = length(vPosition - center);
-   float delta = fwidth(distanceFromCenter);
-   float alpha = 1 - smoothstep(0,
-                radius,
-                distanceFromCenter);
-
+   float delta = fwidth(distanceFromCenter) * 2;
+   float alpha = 1 - smoothstep(0, radius, distanceFromCenter);
    vec4 sample = texture(sampler, vTexCoords);
    color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
 }
@@ -118,7 +115,7 @@ private:
             circle.center.y = 50.f + glm::cos(time_ / 2.f) * 20.f;
             circle.radius = 25.f;
             circle.color = {1.f, 1.f, 1.f, 1.f};
-            circle.texRect = hppv::mapToSceneF({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)}, projection, this);
+            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)}, projection, this);
 
             renderer.cache(circle);
 
@@ -126,7 +123,7 @@ private:
             circle.center.y = 30.f + glm::cos(time_ / 3.f) * 20.f;
             circle.radius = 5.f;
             circle.color = {1.f, 1.f, 0.5f, 1.f};
-            circle.texRect = hppv::mapToSceneF({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)}, projection, this);
+            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)}, projection, this);
 
             renderer.cache(circle);
         }

@@ -30,7 +30,6 @@ public:
     void clear();
 
 private:
-    enum {MaxAttachments = 10};
     GLframebuffer framebuffer_;
     std::vector<Texture> textures_;
     GLenum textureFormat_;

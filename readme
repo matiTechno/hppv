@@ -3,6 +3,8 @@ high performance physics visualization
 
 todo:
 
+* renderer.uniform1f("time", time) instead of callbacks
+* Shader uniforms setters
 * reduce the number of default shaders; set special options with uniforms
 * add options to: flip texCoords, sample from texture as if it was flipped
 
@@ -11,7 +13,6 @@ todo:
 * App - keep track of window state (fullscreen / maximized / pos / ... )
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
-* Shader uniforms setters
 * custom shapes
 * bezier curves
 * stack allocator / vector with static buffer / flat map / general performance
@@ -19,7 +20,7 @@ todo:
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * line width (writing code)
-* replace asserts with something more robust ?
+* replace asserts with something more robust?
 * test on different platforms / gpus
 * load font from ttf
 

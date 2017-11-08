@@ -93,11 +93,8 @@ out vec4 color;
 void main()
 {
     float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter);
-    float alpha = 1 - smoothstep(radius - delta * 2,
-                                 radius,
-                                 distanceFromCenter);
-
+    float delta = fwidth(distanceFromCenter) * 2;
+    float alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
     color = vColor * alpha;
 }
 )";
@@ -121,11 +118,8 @@ out vec4 color;
 void main()
 {
     float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter);
-    float alpha = 1 - smoothstep(radius - delta * 2,
-                                 radius,
-                                 distanceFromCenter);
-
+    float delta = fwidth(distanceFromCenter) * 2;
+    float alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
     color = texture(sampler, vTexCoords) * vColor * alpha;
 }
 )";
@@ -149,11 +143,8 @@ out vec4 color;
 void main()
 {
     float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter);
-    float alpha = 1 - smoothstep(radius - delta * 2,
-                                 radius,
-                                 distanceFromCenter);
-
+    float delta = fwidth(distanceFromCenter) * 2;
+    float alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
     vec4 sample = texture(sampler, vTexCoords);
     color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
 }
@@ -176,7 +167,7 @@ out vec4 color;
 
 void main()
 {
-    float smoothing = fwidth(length(vPosition - center) * 2);
+    float smoothing = fwidth(length(vPosition - center)) * 2;
     float distance = texture(sampler, vTexCoords).a;
     float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     color = vColor * alpha;
@@ -202,7 +193,7 @@ out vec4 color;
 
 void main()
 {
-    float smoothing = fwidth(length(vPosition - center) * 2);
+    float smoothing = fwidth(length(vPosition - center)) * 2;
     float distance = texture(sampler, vTexCoords).a;
     float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     float oOutlineWidth = 0.5 - outlineWidth;
@@ -230,12 +221,12 @@ out vec4 color;
 
 void main()
 {
-    float smoothing = fwidth(length(vPosition - center) * 2);
+    float smoothing = fwidth(length(vPosition - center)) * 2;
     float distance = texture(sampler, vTexCoords).a;
-    float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+    float glowFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     float glowSmoothing = max(smoothing, glowWidth);
     float alpha = smoothstep(0.5 - glowSmoothing, 0.5 + smoothing, distance);
-    color = mix(glowColor, vColor, outlineFactor) * alpha;
+    color = mix(glowColor, vColor, glowFactor) * alpha;
 }
 )";
 
@@ -259,7 +250,7 @@ out vec4 color;
 
 void main()
 {
-    float smoothing = fwidth(length(vPosition - center) * 2);
+    float smoothing = fwidth(length(vPosition - center)) * 2;
     float distance = texture(sampler, vTexCoords).a;
     float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
     vec4 textColor = vColor * alpha;

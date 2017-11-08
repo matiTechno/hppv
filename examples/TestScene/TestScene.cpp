@@ -13,7 +13,7 @@ class TestScene: public hppv::PrototypeScene
 {
 public:
     TestScene():
-        PrototypeScene(hppv::Space(0.f, 0.f, 100.f, 100.f), 1.1f, false),
+        PrototypeScene(hppv::Space(0.f, 0.f, 180.f, 100.f), 1.1f, false),
         sdfFont_("res/sdf.fnt"),
         proggy_("res/proggy.fnt")
     {
@@ -23,8 +23,8 @@ public:
 private:
     struct
     {
-        glm::vec2 pos = {70.f, 70.f};
-        glm::vec2 size = {30.f, 30.f};
+        glm::vec2 pos = {5.f, 70.f};
+        glm::vec2 size = {25.f, 25.f};
         hppv::Texture tex;
     }
     gnu_;
@@ -49,8 +49,8 @@ private:
             // todo: serialize
             struct
             {
-                glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
                 char text[256] = {"The slow red squirrel jumps over the hungry bear."};
+                glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
                 float rotation = 0.f;
                 bool sprite = true;
                 glm::vec4 spriteColor = {0.1f, 0.05f, 0.05f, 0.5f};
@@ -90,8 +90,8 @@ private:
             {
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.95f));
                 ImGui::Begin("sdf");
-                ImGui::ColorEdit4("font color", &sdf.color.x);
                 ImGui::InputTextMultiline("", sdf.text, sizeof(sdf.text) / sizeof(char));
+                ImGui::ColorEdit4("font color", &sdf.color.x);
                 ImGui::SliderFloat("rotation", &sdf.rotation, 0.f, 2 * glm::pi<float>());
                 ImGui::Checkbox("sprite", &sdf.sprite);
                 ImGui::ColorEdit4("sprite color", &sdf.spriteColor.x);
@@ -101,7 +101,7 @@ private:
             hppv::Text text(sdfFont_);
             text.text = sdf.text;
             text.scale = 0.4f;
-            text.pos = {50.f, 50.f};
+            text.pos = prototype_.initialSpace.pos + prototype_.initialSpace.size / 2.f;
             text.pos -= text.getSize() / 2.f;
             text.color = sdf.color;
             text.rotation = sdf.rotation;
@@ -196,7 +196,7 @@ private:
         {
             hppv::Text text(proggy_);
             text.text = "This is small gnu creature!";
-            auto rect = hppv::mapToSceneI({gnu_.pos, gnu_.size}, projection, this);
+            auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, projection, this);
             glm::ivec2 size = text.getSize();
             text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};
 
