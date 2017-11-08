@@ -30,31 +30,36 @@ struct Event
         {
             glm::ivec2 prevSize;
             glm::ivec2 newSize;
-        } framebufferSize;
+        }
+        framebufferSize;
 
         struct
         {
             int key;
             int action;
             int mods;
-        } key;
+        }
+        key;
 
         struct
         {
             glm::vec2 pos;
-        } cursor;
+        }
+        cursor;
 
         struct
         {
             int button;
             int action;
             int mods;
-        } mouseButton;
+        }
+        mouseButton;
 
         struct
         {
             glm::vec2 offset;
-        } scroll;
+        }
+        scroll;
     };
 };
 

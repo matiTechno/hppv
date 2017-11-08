@@ -34,11 +34,8 @@ void PrototypeScene::processInput(bool hasInput)
                 if(rmb_.pressed)
                 {
                     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-
                     auto newSpaceCoords = mapCursor(event.cursor.pos, projection, this);
-
                     auto prevSpaceCoords = mapCursor(rmb_.pos, projection, this);
-
                     prototype_.space.pos -= newSpaceCoords - prevSpaceCoords;
                 }
 
@@ -55,9 +52,7 @@ void PrototypeScene::processInput(bool hasInput)
                 if(rmb_.pressed || alwaysZoomToCursor_)
                 {
                     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-
                     auto spaceCoords = mapCursor(rmb_.pos, projection, this);
-
                     prototype_.space = zoomToPoint(prototype_.space, zoom, spaceCoords);
                 }
                 else

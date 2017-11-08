@@ -10,7 +10,6 @@ namespace hppv
 {
 
 using GLenum = unsigned int;
-using GLuint = unsigned int;
 
 class Texture
 {

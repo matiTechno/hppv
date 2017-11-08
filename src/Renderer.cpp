@@ -6,8 +6,8 @@
 #include <hppv/glad.h>
 #define SHADER_IMPLEMENTATION
 #include <hppv/Shader.hpp> // must be included before Renderer.hpp
-#include <hppv/App.hpp>
 #include <hppv/Renderer.hpp>
+#include <hppv/App.hpp>
 #include <hppv/Scene.hpp>
 #include <hppv/Font.hpp>
 #include <hppv/Framebuffer.hpp>
@@ -42,6 +42,36 @@ glm::vec2 Text::getSize() const
 
     size.x = std::max(size.x, x);
     return size;
+}
+
+Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint, glm::vec4 color,
+                                  glm::vec4 texRect, const Texture& texture)
+{
+    Renderer::Instance i;
+
+    i.matrix = glm::mat4(1.f);
+
+    i.matrix = glm::translate(i.matrix, glm::vec3(pos, 0.f));
+
+    if(rotation != 0.f)
+    {
+        i.matrix = glm::translate(i.matrix, glm::vec3(size / 2.f + rotationPoint, 0.f));
+        i.matrix = glm::rotate(i.matrix, rotation, glm::vec3(0.f, 0.f, -1.f));
+        i.matrix = glm::translate(i.matrix, glm::vec3(-size / 2.f - rotationPoint, 0.f));
+    }
+
+    i.matrix = glm::scale(i.matrix, glm::vec3(size, 1.f));
+
+    i.color = color;
+
+    auto texSize = texture.getSize();
+
+    i.normTexRect.x = texRect.x / texSize.x;
+    i.normTexRect.z = texRect.z / texSize.x;
+    i.normTexRect.w = texRect.w / texSize.y;
+    i.normTexRect.y = 1.f - texRect.y / texSize.y - i.normTexRect.w;
+
+    return i;
 }
 
 Renderer::Renderer()
@@ -262,7 +292,7 @@ void Renderer::cache(const Sprite* sprite, std::size_t count)
     for(auto i = start; i < end; ++i, ++sprite)
     {
         instances_[i] = createInstance(sprite->pos, sprite->size, sprite->rotation, sprite->rotationPoint,
-                                       sprite->color, sprite->texRect);
+                                       sprite->color, sprite->texRect, *texUnits_.back().texture);
     }
 }
 
@@ -278,7 +308,7 @@ void Renderer::cache(const Circle* circle, std::size_t count)
     for(auto i = start; i < end; ++i, ++circle)
     {
         instances_[i] = createInstance(circle->center - circle->radius, glm::vec2(circle->radius * 2.f), 0.f, {},
-                                       circle->color, circle->texRect);
+                                       circle->color, circle->texRect, *texUnits_.back().texture);
     }
 }
 
@@ -310,7 +340,7 @@ void Renderer::cache(const Text& text)
 
         instances_[i] = createInstance(pos, size, text.rotation, text.rotationPoint + text.pos + halfTextSize - pos
                                        - size / 2.f, // this correction is needed, see createInstance
-                                       text.color, glyph.texRect);
+                                       text.color, glyph.texRect, *texUnits_.back().texture);
 
         penPos.x += glyph.advance * text.scale;
         ++i;
@@ -414,36 +444,6 @@ Renderer::Batch& Renderer::getBatchToUpdate()
     current.uniforms.count = 0;
 
     return current;
-}
-
-Renderer::Instance Renderer::createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
-                                            glm::vec4 color, glm::vec4 texRect)
-{
-    Instance i;
-
-    i.matrix = glm::mat4(1.f);
-
-    i.matrix = glm::translate(i.matrix, glm::vec3(pos, 0.f));
-
-    if(rotation != 0.f)
-    {
-        i.matrix = glm::translate(i.matrix, glm::vec3(size / 2.f + rotationPoint, 0.f));
-        i.matrix = glm::rotate(i.matrix, rotation, glm::vec3(0.f, 0.f, -1.f));
-        i.matrix = glm::translate(i.matrix, glm::vec3(-size / 2.f - rotationPoint, 0.f));
-    }
-
-    i.matrix = glm::scale(i.matrix, glm::vec3(size, 1.f));
-
-    i.color = color;
-
-    auto texSize = texUnits_.back().texture->getSize();
-
-    i.normTexRect.x = texRect.x / texSize.x;
-    i.normTexRect.z = texRect.z / texSize.x;
-    i.normTexRect.w = texRect.w / texSize.y;
-    i.normTexRect.y = 1.f - texRect.y / texSize.y - i.normTexRect.w;
-
-    return i;
 }
 
 } // namespace hppv

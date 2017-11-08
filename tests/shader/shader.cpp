@@ -34,7 +34,6 @@ void main()
 }
 )";
 
-
 TEST_CASE("shader")
 {
     hppv::App app;

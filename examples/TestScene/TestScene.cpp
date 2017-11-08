@@ -195,7 +195,7 @@ private:
         // gnu info
         {
             hppv::Text text(proggy_);
-            text.text = "This is small gnu creature!";
+            text.text = "This is a small gnu creature!";
             auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, projection, this);
             glm::ivec2 size = text.getSize();
             text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};

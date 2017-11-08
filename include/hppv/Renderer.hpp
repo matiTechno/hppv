@@ -73,7 +73,7 @@ enum class Render
     Sdf,
     SdfOutline, // vec4 outlineColor; float outlineWidth [0, 0.5]
     SdfGlow, // vec4 glowColor; float glowWidth [0, 0.5]
-    SdfShadow // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset (vec2(1, 1) - offset by texture size)
+    SdfShadow // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
 };
 
 enum class Sample
@@ -137,7 +137,15 @@ public:
     //uniform mat4 projection;
     //out vec4 vColor;
     //out vec2 vTexCoords;
-    //out vec2 vPosition; // range: 0 - 1; used for circle shading
+    //out vec2 vPosition; // [0, 1], used for circle shading
+
+    // internal use
+    struct Instance
+    {
+        glm::mat4 matrix;
+        glm::vec4 color;
+        glm::vec4 normTexRect;
+    };
 
 private:
     enum
@@ -155,13 +163,6 @@ private:
     Texture texDummy;
     GLsampler samplerLinear;
     GLsampler samplerNearest;
-
-    struct Instance
-    {
-        glm::mat4 matrix;
-        glm::vec4 color;
-        glm::vec4 normTexRect;
-    };
 
     struct TexUnit
     {
@@ -201,8 +202,6 @@ private:
 
     void setTexUnitsDefault();
     Batch& getBatchToUpdate();
-    Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
-                            glm::vec4 color, glm::vec4 texRect);
 };
 
 } // namespace hppv

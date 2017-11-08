@@ -107,6 +107,7 @@ private:
 #ifdef SHADER_IMPLEMENTATION
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -344,15 +345,21 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
                 {
                     int line = 1;
                     std::size_t end = 0;
+                    std::cout.setf(std::ios::left);
                     for(;;)
                     {
                         auto start = end;
                         if(end = shaderSource.find('\n', end); end != std::string::npos)
+                        {
                             ++end;
+                        }
                         else
+                        {
+                            std::cout << std::setw(5) << line << shaderSource.substr(start, end) << '\n';
                             break;
+                        }
 
-                        std::cout << line << "  " << shaderSource.substr(start, end - start);
+                        std::cout << std::setw(5) << line << shaderSource.substr(start, end - start);
                         ++line;
                     }
                     std::cout.flush();
