@@ -88,7 +88,7 @@ private:
 
             // imgui
             {
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, {0.f, 0.f, 0.f, 0.95f});
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, {0.f, 0.f, 0.f, 0.9f});
                 ImGui::Begin("sdf");
                 ImGui::InputTextMultiline("", sdf.text, sizeof(sdf.text) / sizeof(char));
                 ImGui::ColorEdit4("font color", &sdf.color.x);

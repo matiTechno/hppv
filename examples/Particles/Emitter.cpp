@@ -4,33 +4,36 @@
 
 #include "Emitter.hpp"
 
+void Emitter::reserveMemory()
+{
+    particles_.reserve(life.max * spawn.hz);
+    circles_.reserve(life.max * spawn.hz);
+}
+
 void Emitter::update(float frameTime)
 {
     frameTime = std::min(frameTime, 0.020f); // useful when debugging
 
-    particles.reserve(life.max * spawn.hz);
-    circles.reserve(life.max * spawn.hz);
-
-    for(std::size_t i = 0; i < count; ++i)
+    for(std::size_t i = 0; i < count_; ++i)
     {
-        particles[i].life -= frameTime;
+        particles_[i].life -= frameTime;
 
-        if(particles[i].life <= 0.f)
-            killP(i); // note: swap()
+        if(particles_[i].life <= 0.f)
+            killParticle(i); // note: swap()
 
-        circles[i].center += particles[i].acc * frameTime * frameTime * 0.5f + particles[i].vel * frameTime;
-        particles[i].vel += particles[i].acc * frameTime;
-        circles[i].color += particles[i].colorVel * frameTime;
+        circles_[i].center += particles_[i].acc * frameTime * frameTime * 0.5f + particles_[i].vel * frameTime;
+        particles_[i].vel += particles_[i].acc * frameTime;
+        circles_[i].color += particles_[i].colorVel * frameTime;
     }
 
-    accumulator += frameTime;
+    accumulator_ += frameTime;
 
     auto spawnDelay = 1.f / spawn.hz;
 
-    while(accumulator > spawnDelay)
+    while(accumulator_ > spawnDelay)
     {
-        spawnP();
-        accumulator -= spawnDelay;
+        spawnParticle();
+        accumulator_ -= spawnDelay;
     }
 }
 
@@ -38,22 +41,22 @@ void Emitter::render(hppv::Renderer& renderer)
 {
     renderer.setBlend(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     renderer.setShader(hppv::Render::CircleColor);
-    renderer.cache(circles.data(), count);
+    renderer.cache(circles_.data(), count_);
 }
 
-void Emitter::killP(std::size_t index)
+void Emitter::killParticle(std::size_t index)
 {
-    std::swap(particles[index], particles[count - 1]);
-    std::swap(circles[index], circles[count - 1]);
-    --count;
+    std::swap(particles_[index], particles_[count_ - 1]);
+    std::swap(circles_[index], circles_[count_ - 1]);
+    --count_;
 }
 
-void Emitter::spawnP()
+void Emitter::spawnParticle()
 {
-    if(count + 1 > particles.size())
+    if(count_ + 1 > particles_.size())
     {
-        particles.emplace_back();
-        circles.emplace_back();
+        particles_.emplace_back();
+        circles_.emplace_back();
     }
 
     Particle p;
@@ -72,7 +75,7 @@ void Emitter::spawnP()
     }
     // life
     {
-        Distribution  d(life.min, life.max);
+        Distribution d(life.min, life.max);
         p.life = d(*generator);
     }
     // color
@@ -87,11 +90,8 @@ void Emitter::spawnP()
         Distribution dEB(colorEnd.min.b, colorEnd.max.b);
         Distribution dEA(colorEnd.min.a, colorEnd.min.a);
 
-        c.color = glm::vec4(dSR(*generator), dSG(*generator), dSB(*generator),
-                            dSA(*generator));
-
-        p.colorVel = (glm::vec4(dER(*generator), dEG(*generator), dEB(*generator),
-                               dEA(*generator)) - c.color) / p.life;
+        c.color = glm::vec4(dSR(*generator), dSG(*generator), dSB(*generator), dSA(*generator));
+        p.colorVel = (glm::vec4(dER(*generator), dEG(*generator), dEB(*generator), dEA(*generator)) - c.color) / p.life;
     }
     // vel
     {
@@ -106,7 +106,7 @@ void Emitter::spawnP()
         p.acc = glm::vec2(dX(*generator), dY(*generator));
     }
 
-    particles[count] = p;
-    circles[count] = c;
-    ++count;
+    particles_[count_] = p;
+    circles_[count_] = c;
+    ++count_;
 }

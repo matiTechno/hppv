@@ -6,7 +6,7 @@
 #include <hppv/Renderer.hpp>
 
 template<typename T>
-struct MinMax
+struct Range
 {
     T min;
     T max;
@@ -17,9 +17,16 @@ class Emitter
 public:
     using Distribution = std::uniform_real_distribution<float>;
 
+    Emitter(std::mt19937* generator): generator(generator) {}
+    Emitter(std::mt19937& generator): generator(&generator) {}
+
+    void reserveMemory(); // based on life and spawn.hz
+
     void update(float frameTime);
 
     void render(hppv::Renderer& renderer);
+
+    std::size_t getCount() const {return count_;}
 
     std::mt19937* generator;
 
@@ -31,14 +38,12 @@ public:
     }
     spawn;
 
-    MinMax<float> life;
-    MinMax<glm::vec2> vel;
-    MinMax<glm::vec2> acc;
-    MinMax<float> radius;
-    MinMax<glm::vec4> colorStart;
-    MinMax<glm::vec4> colorEnd;
-
-    std::size_t getCount() const {return count;}
+    Range<float> life;
+    Range<glm::vec2> vel;
+    Range<glm::vec2> acc;
+    Range<float> radius;
+    Range<glm::vec4> colorStart;
+    Range<glm::vec4> colorEnd;
 
 private:
     struct Particle
@@ -49,11 +54,11 @@ private:
         glm::vec2 acc;
     };
 
-    std::vector<Particle> particles;
-    std::vector<hppv::Circle> circles;
-    std::size_t count = 0;
-    float accumulator = 0.f;
+    std::vector<Particle> particles_;
+    std::vector<hppv::Circle> circles_;
+    std::size_t count_ = 0;
+    float accumulator_ = 0.f;
 
-    void killP(std::size_t index);
-    void spawnP();
+    void killParticle(std::size_t index);
+    void spawnParticle();
 };

@@ -23,6 +23,7 @@ class Framebuffer;
 
 struct Text
 {
+    Text(const Font* font): font(font) {}
     Text(const Font& font): font(&font) {}
     glm::vec2 pos; // top left corner
     float scale = 1.f;
