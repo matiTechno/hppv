@@ -26,6 +26,7 @@ class Font
 public:
     // Angle Code font format
     explicit Font(const std::string& filename);
+    Font() = default;
 
     Texture& getTexture() {return texture_;}
     Glyph getGlyph(int code) const;

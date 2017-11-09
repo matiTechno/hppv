@@ -90,7 +90,10 @@ Glyph Font::getGlyph(int code) const
     if(auto it = glyphs_.find(code); it != glyphs_.end())
         return it->second;
 
-    return glyphs_.find('?')->second;
+    if(auto it = glyphs_.find('?'); it != glyphs_.end())
+        return it->second;
+
+    return {};
 }
 
 } // namespace hppv
