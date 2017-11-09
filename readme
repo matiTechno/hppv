@@ -19,7 +19,6 @@ todo:
 * core library satellites
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
-* line width (writing code)
 * replace asserts with something more robust?
 * test on different platforms / gpus
 * load font from ttf

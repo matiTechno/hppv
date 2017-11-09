@@ -48,15 +48,18 @@ private:
     {
         time_ += frame_.frameTime;
 
-        ImGui::Begin("next", nullptr, ImGuiWindowFlags_::ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("next", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         {
             ImGui::Text("all the shaders come from glslsandbox.com");
 
             if(ImGui::Button("Next !!!"))
             {
                 ++activeShader_;
+
                 if(activeShader_ == shaders_.end())
-                activeShader_ = shaders_.begin();
+                {
+                    activeShader_ = shaders_.begin();
+                }
             }
         }
         ImGui::End();
@@ -66,17 +69,14 @@ private:
         activeShader_->bind();
 
         glUniform1f(activeShader_->getUniformLocation("time"), time_);
-
         glUniform2f(activeShader_->getUniformLocation("resolution"), size.x, size.y);
-
-        renderer.setShader(*activeShader_);
-
-        renderer.setProjection(hppv::Space({0.f, 0.f}, size));
 
         hppv::Sprite sprite;
         sprite.pos = {0.f, 0.f};
         sprite.size = size;
 
+        renderer.setShader(*activeShader_);
+        renderer.setProjection(hppv::Space({0.f, 0.f}, size));
         renderer.cache(sprite);
     }
 };

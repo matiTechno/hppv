@@ -10,6 +10,13 @@
 namespace hppv
 {
 
+glm::vec2 getCursorPos()
+{
+    glm::dvec2 pos;
+    glfwGetCursorPos(App::getWindow(), &pos.x, &pos.y);
+    return pos;
+}
+
 PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
     prototype_{space, space},
     zoomFactor_(zoomFactor),
@@ -18,9 +25,7 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
     properties_.maximize = true;
     rmb_.pressed = false;
 
-    glm::dvec2 cursorPos;
-    glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
-    rmb_.pos = cursorPos;
+    rmb_.pos = getCursorPos();
 }
 
 void PrototypeScene::processInput(bool hasInput)
@@ -60,9 +65,7 @@ void PrototypeScene::processInput(bool hasInput)
         }
         else if(event.type == Event::FramebufferSize)
         {
-            glm::dvec2 cursorPos;
-            glfwGetCursorPos(App::getWindow(), &cursorPos.x, &cursorPos.y);
-            rmb_.pos = cursorPos;
+            rmb_.pos = getCursorPos();
         }
     }
 
@@ -97,24 +100,34 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("made by            m a t i T e c h n o");
         ImGui::Text("frameTime          %f ms", averageFrameTimeMs_);
         ImGui::Text("fps                %d",    averageFps_);
-        ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x,
-                                                 frame_.framebufferSize.y);
+        ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x, frame_.framebufferSize.y);
 
         if(ImGui::Checkbox("vsync", &vsync_))
+        {
             App::setVsync(vsync_);
+        }
 
         auto fullscreen = frame_.fullscreen;
 
         if(ImGui::Checkbox("fullscreen", &fullscreen))
+        {
             App::setFullscreen(fullscreen);
+        }
 
         ImGui::Separator();
         ImGui::Text("rmb      move around");
+
         std::string zoomInfo("scroll   zoom to ");
+
         if(alwaysZoomToCursor_)
+        {
             zoomInfo += "cursor";
+        }
         else
+        {
             zoomInfo += "center / cursor if rmb";
+        }
+
         ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();

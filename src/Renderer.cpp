@@ -20,11 +20,8 @@ namespace hppv
 glm::vec2 Text::getSize() const
 {
     auto x = 0.f;
-    glm::vec2 size(0.f);
-
     auto lineHeight = font->getLineHeight() * scale;
-
-    size.y += lineHeight;
+    glm::vec2 size(0.f, lineHeight);
 
     for(auto c: text)
     {
@@ -44,8 +41,8 @@ glm::vec2 Text::getSize() const
     return size;
 }
 
-Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint, glm::vec4 color,
-                                  glm::vec4 texRect, const Texture& texture)
+Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
+                                  glm::vec4 color, glm::vec4 texRect, const Texture& texture)
 {
     Renderer::Instance i;
 
@@ -224,7 +221,6 @@ void Renderer::setShader(Render mode)
 void Renderer::setTexture(Texture& texture, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
-
     const auto start = batch.texUnits.start;
     const auto count = batch.texUnits.count;
 
@@ -248,7 +244,6 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
 void Renderer::setSampler(GLsampler& sampler, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
-
     const auto start = batch.texUnits.start;
     const auto count = batch.texUnits.count;
 
@@ -287,8 +282,11 @@ void Renderer::cache(const Sprite* sprite, std::size_t count)
     const auto start = batch.instances.start + batch.instances.count;
     batch.instances.count += count;
     const auto end = batch.instances.start + batch.instances.count;
+
     if(end > instances_.size())
+    {
         instances_.resize(end);
+    }
 
     for(auto i = start; i < end; ++i, ++sprite)
     {
@@ -303,8 +301,11 @@ void Renderer::cache(const Circle* circle, std::size_t count)
     const auto start = batch.instances.start + batch.instances.count;
     batch.instances.count += count;
     const auto end = batch.instances.start + batch.instances.count;
+
     if(end > instances_.size())
+    {
         instances_.resize(end);
+    }
 
     for(auto i = start; i < end; ++i, ++circle)
     {
@@ -317,12 +318,14 @@ void Renderer::cache(const Text& text)
 {
     auto& batch = batches_.back();
     auto maxInstances = batch.instances.start + batch.instances.count + text.text.size();
+
     if(maxInstances > instances_.size())
+    {
         instances_.resize(maxInstances);
+    }
 
     auto penPos = text.pos;
     auto i = batch.instances.start + batch.instances.count;
-
     const auto halfTextSize = text.getSize() / 2.f;
 
     for(auto c: text.text)
@@ -382,7 +385,9 @@ void Renderer::flush()
             const auto count = batch.uniforms.count;
 
             for(auto i = start; i < start + count; ++i)
+            {
                 uniforms_[i].setter(batch.shader->getUniformLocation(uniforms_[i].name));
+            }
         }
 
         {

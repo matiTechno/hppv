@@ -66,21 +66,19 @@ private:
             renderer.setViewport(framebuffer_);
 
             {
-                renderer.setShader(hppv::Render::Tex);
-                renderer.setTexture(texture_);
-
                 hppv::Sprite sprite;
                 sprite.pos = prototype_.initialSpace.pos;
                 sprite.size = prototype_.initialSpace.size;
                 sprite.texRect = {0.f, 0.f, texture_.getSize()};
 
+                renderer.setShader(hppv::Render::Tex);
+                renderer.setTexture(texture_);
                 renderer.cache(sprite);
-
-                renderer.setShader(hppv::Render::CircleColor);
 
                 sprite.size = {30.f, 30.f};
                 sprite.color = {0.5f, 0.f, 0.5f, 0.5f};
 
+                renderer.setShader(hppv::Render::CircleColor);
                 renderer.cache(sprite);
             }
 
@@ -95,27 +93,26 @@ private:
 
         // ambient light
         {
-            renderer.setShader(hppv::Render::Tex);
-
             hppv::Sprite sprite;
             sprite.pos = projection.pos;
             sprite.size = projection.size;
             sprite.color = {0.1f, 0.1f, 0.1f, 1.f};
             sprite.texRect = {0.f, 0.f, framebuffer_.getTexture(0).getSize()};
 
+            renderer.setShader(hppv::Render::Tex);
             renderer.cache(sprite);
         }
 
         // spot lights
+        renderer.setShader(shader_);
         {
-            renderer.setShader(shader_);
-
             hppv::Circle circle;
             circle.center.x = 50.f + glm::sin(time_ / 2.f) * 20.f;
             circle.center.y = 50.f + glm::cos(time_ / 2.f) * 20.f;
             circle.radius = 25.f;
             circle.color = {1.f, 1.f, 1.f, 1.f};
-            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)}, projection, this);
+            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)},
+                                              projection, this);
 
             renderer.cache(circle);
 
@@ -123,7 +120,8 @@ private:
             circle.center.y = 30.f + glm::cos(time_ / 3.f) * 20.f;
             circle.radius = 5.f;
             circle.color = {1.f, 1.f, 0.5f, 1.f};
-            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)}, projection, this);
+            circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)},
+                                              projection, this);
 
             renderer.cache(circle);
         }

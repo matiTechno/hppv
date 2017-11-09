@@ -19,7 +19,9 @@ void Emitter::update(float frameTime)
         particles_[i].life -= frameTime;
 
         if(particles_[i].life <= 0.f)
+        {
             killParticle(i); // note: swap()
+        }
 
         circles_[i].center += particles_[i].acc * frameTime * frameTime * 0.5f + particles_[i].vel * frameTime;
         particles_[i].vel += particles_[i].acc * frameTime;
@@ -65,8 +67,7 @@ void Emitter::spawnParticle()
     // center
     {
         Distribution d(0.f, 1.f);
-        c.center = spawn.pos + glm::vec2(d(*generator) * spawn.size.x,
-                                         d(*generator) * spawn.size.y);
+        c.center = spawn.pos + glm::vec2(d(*generator) * spawn.size.x, d(*generator) * spawn.size.y);
     }
     // radius
     {
@@ -91,7 +92,9 @@ void Emitter::spawnParticle()
         Distribution dEA(colorEnd.min.a, colorEnd.min.a);
 
         c.color = glm::vec4(dSR(*generator), dSG(*generator), dSB(*generator), dSA(*generator));
-        p.colorVel = (glm::vec4(dER(*generator), dEG(*generator), dEB(*generator), dEA(*generator)) - c.color) / p.life;
+
+        p.colorVel = (glm::vec4(dER(*generator), dEG(*generator), dEB(*generator), dEA(*generator))
+                      - c.color) / p.life;
     }
     // vel
     {

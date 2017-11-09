@@ -27,13 +27,10 @@ bool App::initialize(bool printDebugInfo)
     if(printDebugInfo)
     {
         std::cout << "GLFW compile time version " << GLFW_VERSION_MAJOR
-                  << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << '\n';
-
-        std::cout << "GLFW run time version     " << glfwGetVersionString() << '\n';
-
-        std::cout << "GLM version               " << GLM_VERSION << '\n';
-
-        std::cout << "dear imgui version        " << IMGUI_VERSION << std::endl;
+                  << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << '\n'
+                  << "GLFW run time version     " << glfwGetVersionString() << '\n'
+                  << "GLM version               " << GLM_VERSION << '\n'
+                  << "dear imgui version        " << IMGUI_VERSION << std::endl;
     }
 
     glfwSetErrorCallback(errorCallback);
@@ -63,8 +60,7 @@ bool App::initialize(bool printDebugInfo)
     {
         std::cout << "vendor                    " << glGetString(GL_VENDOR) << '\n';
         std::cout << "renderer                  " << glGetString(GL_RENDERER) << '\n';
-        std::cout << "OpenGL version            " << glGetString(GL_VERSION)
-                  << std::endl;
+        std::cout << "OpenGL version            " << glGetString(GL_VERSION) << std::endl;
     }
 
     glfwSwapInterval(1);
@@ -84,8 +80,7 @@ bool App::initialize(bool printDebugInfo)
     glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
 
     frame_.fullscreen = glfwGetWindowMonitor(window_);
-    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x,
-                                    &frame_.framebufferSize.y);
+    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x, &frame_.framebufferSize.y);
 
     scenes_.reserve(ReservedScenes);
     scenesToRender_.reserve(ReservedScenes);
@@ -106,7 +101,6 @@ void App::run()
        ImGui_ImplGlfwGL3_NewFrame();
 
        frame_.fullscreen = glfwGetWindowMonitor(window_); // in case of window manager setting the fullscreen
-
        // framebufferSize is set in event callback
 
        float newTime = glfwGetTime();
@@ -126,14 +120,13 @@ void App::run()
            scene.processInput(false);
 
            if(scene.properties_.updateWhenNotTop)
+           {
                scene.update();
+           }
        }
 
        // top scene
        {
-           auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
-                                  ImGui::GetIO().WantCaptureMouse;
-
            auto& topScene = *scenes_.back();
 
            if(topScene.properties_.maximize)
@@ -141,6 +134,9 @@ void App::run()
                topScene.properties_.pos = {0, 0};
                topScene.properties_.size = frame_.framebufferSize;
            }
+
+           auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
+                                  ImGui::GetIO().WantCaptureMouse;
 
            topScene.processInput(!imguiWantsInput);
 
@@ -152,6 +148,7 @@ void App::run()
        for(auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
        {
            scenesToRender_.insert(scenesToRender_.begin(), &**it);
+
            if((*it)->properties_.opaque)
                break;
        }
@@ -161,7 +158,6 @@ void App::run()
        // borders
        {
            renderer_->setViewport({0, 0, frame_.framebufferSize});
-
            renderer_->setProjection(Space({0, 0}, frame_.framebufferSize));
            renderer_->setShader(Render::Color);
 
@@ -174,11 +170,13 @@ void App::run()
                sprite.color = {0.f, 1.f, 0.f, 0.4f};
                sprite.pos = pos - 1;
                sprite.size = size + 4;
+
                renderer_->cache(sprite);
 
                sprite.color = {0.f, 0.f, 0.f, 1.f};
                sprite.pos = pos;
                sprite.size = size;
+
                renderer_->cache(sprite);
            }
 
@@ -188,9 +186,7 @@ void App::run()
        for(auto scene: scenesToRender_)
        {
            renderer_->setViewport(&*scene);
-
            scene->render(*renderer_);
-
            renderer_->flush();
        }
 
@@ -199,9 +195,12 @@ void App::run()
            auto sceneToPush = std::move(topScene.properties_.sceneToPush);
            auto numToPop = topScene.properties_.numScenesToPop;
            assert(numToPop <= scenes_.size());
-
            scenes_.erase(scenes_.end() - numToPop, scenes_.end());
-           if(sceneToPush) scenes_.push_back(std::move(sceneToPush));
+
+           if(sceneToPush)
+           {
+               scenes_.push_back(std::move(sceneToPush));
+           }
        }
 
        ImGui::Render();
@@ -265,10 +264,15 @@ void App::windowCloseCallback(GLFWwindow*)
 void App::windowFocusCallback(GLFWwindow*, int focused)
 {
     Event event;
+
     if(focused)
+    {
         event.type = Event::FocusGained;
+    }
     else
+    {
         event.type = Event::FocusLost;
+    }
 
     frame_.events.push_back(event);
 }

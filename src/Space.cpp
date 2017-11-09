@@ -9,19 +9,19 @@ static_assert(std::numeric_limits<float>::is_iec559);
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
 {
     auto spaceAspect = space.size.x / space.size.y;
-
     auto targetAspect = static_cast<float>(size.x) / size.y;
-
     auto newSize = space.size;
 
     if(spaceAspect < targetAspect)
+    {
         newSize.x = targetAspect * newSize.y;
-
+    }
     else if(spaceAspect > targetAspect)
+    {
         newSize.y = newSize.x / targetAspect;
+    }
 
     auto newPos = space.pos - (newSize - space.size) / 2.f;
-
     return {newPos, newSize};
 }
 
@@ -51,8 +51,8 @@ glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
 glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
 {
 
-    auto newPos = (glm::vec2(scene->properties_.size) / projection.size)
-                  * (glm::vec2(rect.x, rect.y) - projection.pos);
+    auto newPos = (glm::vec2(scene->properties_.size) / projection.size) *
+                  (glm::vec2(rect.x, rect.y) - projection.pos);
 
     auto newSize = glm::vec2(rect.z, rect.w) * (glm::vec2(scene->properties_.size) / projection.size);
 

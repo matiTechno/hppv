@@ -18,11 +18,9 @@ struct Value
 
 Value getValue(const std::string& str, std::size_t pos, char prev = '=', char end = ' ')
 {
-
     auto start = str.find(prev, pos) + 1;
     auto count = str.find(end, start) - start;
     auto substr = str.substr(start, count);
-
     return {std::atoi(substr.c_str()), substr, start + count};
 }
 
@@ -39,7 +37,9 @@ Font::Font(const std::string& filename)
     std::string line;
 
     for(int i = 0; i < 2; ++i)
+    {
         std::getline(file, line);
+    }
 
     auto value = getValue(line, 0);
     lineHeight_ = value.value;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 namespace hppv
 {
 
@@ -10,18 +12,32 @@ class GLobject
 public:
     using Deleter = void(*)(GLuint);
 
-    ~GLobject();
+    ~GLobject() {if(id_) deleter_(id_);}
     GLobject(const GLobject&) = delete;
     GLobject& operator=(const GLobject&) = delete;
-    GLobject(GLobject&& rhs);
-    GLobject& operator=(GLobject&& rhs);
+
+    GLobject(GLobject&& rhs):
+        id_(rhs.id_),
+        deleter_(rhs.deleter_)
+    {
+        rhs.id_ = 0;
+    }
+
+    GLobject& operator=(GLobject&& rhs)
+    {
+        assert(this != &rhs);
+        this->~GLobject();
+        id_ = rhs.id_;
+        rhs.id_ = 0;
+        return *this;
+    }
 
     GLuint getId() const {return id_;}
 
 protected:
     GLuint id_ = 0;
 
-    GLobject(Deleter deleter);
+    GLobject(Deleter deleter): deleter_(deleter) {}
 
 private:
     Deleter deleter_;

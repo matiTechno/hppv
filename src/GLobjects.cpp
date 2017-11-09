@@ -4,34 +4,6 @@
 namespace hppv
 {
 
-GLobject::GLobject(Deleter deleter):
-    deleter_(deleter)
-{}
-
-GLobject::~GLobject()
-{
-    if(id_)
-        deleter_(id_);
-}
-
-GLobject::GLobject(GLobject&& rhs):
-    id_(rhs.id_),
-    deleter_(rhs.deleter_)
-{
-    rhs.id_ = 0;
-}
-
-GLobject& GLobject::operator=(GLobject&& rhs)
-{
-    if(this != &rhs)
-    {
-        this->~GLobject();
-        id_ = rhs.id_;
-        rhs.id_ = 0;
-    }
-    return *this;
-}
-
 GLvao::GLvao():
     GLobject([](GLuint id){glDeleteVertexArrays(1, &id);})
 {

@@ -24,12 +24,10 @@ public:
 
     Deleter& operator=(Deleter&& rhs)
     {
-        if(this != &rhs)
-        {
-            this->~Deleter();
-            callback_ = rhs.callback_;
-            rhs.callback_ = nullptr;
-        }
+        assert(this != &rhs);
+        this->~Deleter();
+        callback_ = rhs.callback_;
+        rhs.callback_ = nullptr;
         return *this;
     }
 

@@ -12,7 +12,9 @@ Framebuffer::Framebuffer(GLenum textureFormat, int numAttachments):
     std::vector<GLenum> attachments(numAttachments);
 
     for(int i = 0; i < numAttachments; ++i)
+    {
         attachments[i] = GL_COLOR_ATTACHMENT0 + i;
+    }
 
     glDrawBuffers(numAttachments, attachments.data());
 
