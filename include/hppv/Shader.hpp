@@ -116,7 +116,18 @@ private:
 namespace hppv
 {
 
-Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
+fs::file_time_type getFileLastWriteTime(const std::string& filename)
+{
+    std::error_code ec;
+    auto time = fs::last_write_time(filename, ec);
+
+    if(ec)
+    {
+        std::cout << "sh::Shader: last_write_time() failed, file = " << filename << std::endl;
+    }
+
+    return time;
+}
 
 std::string loadSourceFromFile(const fs::path& path)
 {
@@ -163,19 +174,6 @@ std::string loadSourceFromFile(const fs::path& path)
     return source;
 }
 
-fs::file_time_type getFileLastWriteTime(const std::string& filename)
-{
-    std::error_code ec;
-    auto time = fs::last_write_time(filename, ec);
-
-    if(ec)
-    {
-        std::cout << "sh::Shader: last_write_time() failed, file = " << filename << std::endl;
-    }
-
-    return time;
-}
-
 Shader::Shader(File, const std::string& filename, bool hotReload):
     id_(filename),
     hotReload_(hotReload)
@@ -193,27 +191,6 @@ Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view
     hotReload_(false)
 {
     swapProgram(sources);
-}
-
-void Shader::bind()
-{
-    if(hotReload_)
-    {
-        if(auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
-        {
-            fileLastWriteTime_ = time;
-
-            if(auto source = loadSourceFromFile(id_); source.size())
-            {
-                if(swapProgram({source}))
-                {
-                    std::cout << "sh::Shader, " << id_ << ": hot reload succeeded" << std::endl;
-                }
-            }
-        }
-    }
-
-    glUseProgram(program_.getId());
 }
 
 GLint Shader::getUniformLocation(const std::string& uniformName) const
@@ -246,6 +223,29 @@ void Shader::reload()
         }
     }
 }
+
+void Shader::bind()
+{
+    if(hotReload_)
+    {
+        if(auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
+        {
+            fileLastWriteTime_ = time;
+
+            if(auto source = loadSourceFromFile(id_); source.size())
+            {
+                if(swapProgram({source}))
+                {
+                    std::cout << "sh::Shader, " << id_ << ": hot reload succeeded" << std::endl;
+                }
+            }
+        }
+    }
+
+    glUseProgram(program_.getId());
+}
+
+Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
 
 template<bool isProgram>
 std::optional<std::string> getError(GLuint id, GLenum flag)
@@ -293,7 +293,7 @@ std::optional<std::string> getError(GLuint id, GLenum flag)
     return log;
 }
 
-// shader must be cleaned by caller with glDeleteShader()
+// shader must be deleted by caller with glDeleteShader()
 GLuint createAndCompileShader(GLenum type, const std::string& source)
 {
     auto id = glCreateShader(type);
@@ -304,7 +304,7 @@ GLuint createAndCompileShader(GLenum type, const std::string& source)
 }
 
 // returns 0 on error
-// when return value != 0 program must be cleaned by caller with glDeleteProgram()
+// if return value != 0 program must be deleted by caller with glDeleteProgram()
 GLuint createProgram(std::initializer_list<std::string_view> sources, const std::string& id)
 {
     struct ShaderType
