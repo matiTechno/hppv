@@ -14,9 +14,9 @@ using GLenum = unsigned int;
 class Texture
 {
 public:
-    Texture();
     explicit Texture(const std::string& filename);
     Texture(GLenum format, glm::ivec2 size);
+    Texture();
 
     glm::ivec2 getSize() const {return size_;}
 

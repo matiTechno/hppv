@@ -75,4 +75,10 @@ TEST_CASE("shader")
     hppv::Shader shader2(std::move(shader));
     REQUIRE(shader2.isValid());
     REQUIRE(shader.isValid() == false);
+
+    shader2 = hppv::Shader({}, "9");
+    REQUIRE(shader.isValid() == false);
+
+    shader2 = hppv::Shader();
+    REQUIRE(shader.isValid() == false);
 }

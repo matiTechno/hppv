@@ -9,12 +9,6 @@
 namespace hppv
 {
 
-Texture::Texture()
-{
-    bind();
-    createDefault();
-}
-
 Texture::Texture(const std::string& filename)
 {
     bind();
@@ -44,6 +38,12 @@ Texture::Texture(GLenum format, glm::ivec2 size):
     bind();
 
     glTexStorage2D(GL_TEXTURE_2D, 1, format, size.x, size.y);
+}
+
+Texture::Texture()
+{
+    bind();
+    createDefault();
 }
 
 void Texture::bind(GLuint unit)
