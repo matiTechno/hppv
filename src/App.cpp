@@ -79,12 +79,11 @@ bool App::initialize(bool printDebugInfo)
     glfwSetCharCallback(window_, charCallback);
     glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
 
-    frame_.fullscreen = glfwGetWindowMonitor(window_);
-    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x, &frame_.framebufferSize.y);
-
     scenes_.reserve(ReservedScenes);
     scenesToRender_.reserve(ReservedScenes);
     frame_.events.reserve(ReservedEvents);
+
+    refreshFrame();
 
     return true;
 }
@@ -100,12 +99,11 @@ void App::run()
        glfwPollEvents();
        ImGui_ImplGlfwGL3_NewFrame();
 
-       frame_.fullscreen = glfwGetWindowMonitor(window_); // in case of window manager setting the fullscreen
-       // framebufferSize is set in event callback
-
        float newTime = glfwGetTime();
        frame_.frameTime = newTime - time;
        time = newTime;
+
+       refreshFrame();
 
        for(auto it = scenes_.begin(); it != scenes_.end() - 1; ++it)
        {
@@ -209,6 +207,31 @@ void App::run()
    }
 }
 
+void App::refreshFrame()
+{
+    glm::dvec2 cursorPos;
+    glfwGetCursorPos(window_, &cursorPos.x, &cursorPos.y);
+    frame_.cursorPos = cursorPos;
+
+    glfwGetFramebufferSize(window_, &frame_.framebufferSize.x, &frame_.framebufferSize.y);
+
+    // bug: glfw does not detect if window was made fullscreen by window manager
+    if(glfwGetWindowMonitor(window_))
+    {
+        frame_.window.state = Frame::Window::Fullscreen;
+    }
+    else if(glfwGetWindowAttrib(window_, GLFW_MAXIMIZED))
+    {
+        frame_.window.state = Frame::Window::Maximized;
+    }
+    else
+    {
+        frame_.window.state = Frame::Window::Restored;
+        glfwGetWindowPos(window_, &frame_.window.restored.pos.x, &frame_.window.restored.pos.y);
+        glfwGetWindowSize(window_, &frame_.window.restored.size.x, &frame_.window.restored.size.y);
+    }
+}
+
 void App::quit()
 {
     glfwSetWindowShouldClose(window_, GLFW_TRUE);
@@ -225,25 +248,29 @@ void App::hideCursor(bool hide)
     glfwSetInputMode(window_, GLFW_CURSOR, mode);
 }
 
-void App::setFullscreen(bool on)
+// frame_.window.state is set in refreshFrame()
+void App::setWindow(Frame::Window::State state)
 {
-    assert(on != frame_.fullscreen);
+    assert(frame_.window.state != state);
+    assert(state != Frame::Window::Maximized);
 
-    frame_.fullscreen = on;
-
-    if(on)
+    if(state == Frame::Window::Fullscreen)
     {
-        glfwGetWindowPos(window_, &frame_.windowedState.pos.x, &frame_.windowedState.pos.y);
-        glfwGetWindowSize(window_, &frame_.windowedState.size.x, &frame_.windowedState.size.y);
-
         auto* monitor = glfwGetPrimaryMonitor();
         const auto* mode = glfwGetVideoMode(monitor);
         glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     }
     else
     {
-        glfwSetWindowMonitor(window_, nullptr, frame_.windowedState.pos.x, frame_.windowedState.pos.y,
-                             frame_.windowedState.size.x, frame_.windowedState.size.y, 0);
+        if(frame_.window.state == Frame::Window::Fullscreen)
+        {
+            glfwSetWindowMonitor(window_, nullptr, frame_.window.restored.pos.x, frame_.window.restored.pos.y,
+                                 frame_.window.restored.size.x, frame_.window.restored.size.y, 0);
+        }
+        else
+        {
+            glfwRestoreWindow(window_);
+        }
     }
 }
 
@@ -320,12 +347,12 @@ void App::charCallback(GLFWwindow* window, unsigned int codepoint)
     ImGui_ImplGlfwGL3_CharCallback(window, codepoint);
 }
 
+// frame_.framebufferSize is set in refreshFrame()
 void App::framebufferSizeCallback(GLFWwindow*, int width, int height)
 {
     Event event(Event::FramebufferSize);
     event.framebufferSize.prevSize = frame_.framebufferSize;
-    frame_.framebufferSize = {width, height};
-    event.framebufferSize.newSize = frame_.framebufferSize;
+    event.framebufferSize.newSize = {width, height};
     frame_.events.push_back(event);
 }
 

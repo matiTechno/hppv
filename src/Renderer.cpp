@@ -343,7 +343,7 @@ void Renderer::cache(const Text& text)
         auto size = glm::vec2(glyph.texRect.z, glyph.texRect.w) * text.scale;
 
         instances_[i] = createInstance(pos, size, text.rotation, text.rotationPoint + text.pos + halfTextSize - pos
-                                       - size / 2.f, // this correction is needed, see createInstance
+                                       - size / 2.f, // this correction is needed, see createInstance()
                                        text.color, glyph.texRect, *texUnits_.back().texture);
 
         penPos.x += glyph.advance * text.scale;

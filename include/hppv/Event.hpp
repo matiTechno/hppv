@@ -17,12 +17,11 @@ struct Event
         Cursor,
         MouseButton,
         Scroll
-    };
+    }
+    type;
 
     Event() = default;
     Event(Type type): type(type) {}
-
-    Type type;
 
     union
     {

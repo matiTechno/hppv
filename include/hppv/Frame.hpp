@@ -9,23 +9,32 @@
 namespace hppv
 {
 
+// initialized in App::initialize()
 struct Frame
 {
     float frameTime;
-
-    // initialized in App::initialize()
-    glm::ivec2 framebufferSize;
-    bool fullscreen;
-
     std::vector<Event> events;
+    glm::vec2 cursorPos;
+    glm::ivec2 framebufferSize;
 
-    // internal use
-    struct
+    struct Window
     {
-        glm::ivec2 pos;
-        glm::ivec2 size;
+        enum State
+        {
+            Restored,
+            Fullscreen,
+            Maximized
+        }
+        state;
+
+        struct
+        {
+            glm::ivec2 pos;
+            glm::ivec2 size;
+        }
+        restored;
     }
-    windowedState;
+    window;
 };
 
 } // namespace hppv

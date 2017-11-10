@@ -33,9 +33,8 @@ public:
     static void quit();
     static void setVsync(bool on);
     static void hideCursor(bool hide);
-    static void setFullscreen(bool on);
+    static void setWindow(Frame::Window::State state); // must not be Frame::Window::Maximized
     static const Frame& getFrame() {return frame_;}
-    static GLFWwindow* getWindow() {return window_;}
 
 private:
     enum
@@ -52,6 +51,8 @@ private:
     static GLFWwindow* window_;
     static Frame frame_;
     static bool handleQuitEvent_;
+
+    void refreshFrame();
 
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);

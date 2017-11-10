@@ -113,7 +113,7 @@ public:
         ++getBatchToUpdate().uniforms.count;
     }
 
-    // texture state is lost after flush
+    // texture state is lost after flush()
     void setTexture(Texture& texture, GLenum unit = 0);
 
     void setSampler(GLsampler& sampler, GLenum unit = 0);

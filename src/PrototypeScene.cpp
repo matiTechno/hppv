@@ -10,13 +10,6 @@
 namespace hppv
 {
 
-glm::vec2 getCursorPos()
-{
-    glm::dvec2 pos;
-    glfwGetCursorPos(App::getWindow(), &pos.x, &pos.y);
-    return pos;
-}
-
 PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
     prototype_{space, space},
     zoomFactor_(zoomFactor),
@@ -25,7 +18,7 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
     properties_.maximize = true;
     rmb_.pressed = false;
 
-    rmb_.pos = getCursorPos();
+    rmb_.pos = frame_.cursorPos;
 }
 
 void PrototypeScene::processInput(bool hasInput)
@@ -65,7 +58,7 @@ void PrototypeScene::processInput(bool hasInput)
         }
         else if(event.type == Event::FramebufferSize)
         {
-            rmb_.pos = getCursorPos();
+            rmb_.pos = frame_.cursorPos;
         }
     }
 
@@ -107,11 +100,17 @@ void PrototypeScene::render(Renderer& renderer)
             App::setVsync(vsync_);
         }
 
-        auto fullscreen = frame_.fullscreen;
-
-        if(ImGui::Checkbox("fullscreen", &fullscreen))
+        if(frame_.window.state == Frame::Window::Fullscreen ||
+           frame_.window.state == Frame::Window::Maximized)
         {
-            App::setFullscreen(fullscreen);
+            if(ImGui::Button("restore"))
+            {
+                App::setWindow(Frame::Window::Restored);
+            }
+        }
+        else if(ImGui::Button("set fullscreen"))
+        {
+            App::setWindow(Frame::Window::Fullscreen);
         }
 
         ImGui::Separator();
