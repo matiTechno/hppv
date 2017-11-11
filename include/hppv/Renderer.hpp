@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <string>
-#include <map>
 #include <functional>
 
 #include <glm/vec2.hpp>
@@ -65,16 +64,14 @@ struct Circle
 
 enum class Render
 {
-    Color,
-    Tex,
-    TexPremultiplyAlpha,
-    CircleColor,
-    CircleTex,
-    CircleTexPremultiplyAlpha,
-    Sdf,
-    SdfOutline, // vec4 outlineColor; float outlineWidth [0, 0.5]
-    SdfGlow, // vec4 glowColor; float glowWidth [0, 0.5]
-    SdfShadow // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
+    Color = 0,
+    Tex = 1,
+    CircleColor = 2,
+    CircleTex = 3,
+    Sdf = 4,
+    SdfOutline = 5, // vec4 outlineColor; float outlineWidth [0, 0.5]
+    SdfGlow = 6, // vec4 glowColor; float glowWidth [0, 0.5]
+    SdfShadow = 7 // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
 };
 
 enum class Sample
@@ -83,9 +80,10 @@ enum class Sample
     Nearest
 };
 
-// in all cases x-axis grows right, y-axis grows down;
-// state changes on non-empty cache will break batch unless
-// it doesn't hold any instances
+// * in all cases x-axis grows right, y-axis grows down
+// * state changes on non-empty cache will break batch unless
+//   it doesn't hold any instances
+// * texture / sampler / uniform states are lost after flush()
 
 class Renderer
 {
@@ -94,43 +92,67 @@ public:
 
     Renderer();
 
-    void setScissor(glm::ivec4 scissor);
-    void disableScissor(); // on default
+    // ----- disabled on default
 
-    void setViewport(glm::ivec4 viewport);
-    void setViewport(const Scene* scene);
-    void setViewport(const Framebuffer& framebuffer); // glViewport(0, 0, sizeX, sizeY)
+    void scissor(glm::ivec4 scissor);
+    void disableScissor() {getBatchToUpdate().scissorEnabled = false;}
+
+    // -----
+
+    void viewport(glm::ivec4 viewport);
+    void viewport(const Scene* scene);
+    void viewport(const Framebuffer& framebuffer); // glViewport(0, 0, size.x, size.y)
+
+    // ----- projected / visible area
 
     template<typename T>
-    void setProjection(const T& projection) // projected / visible area
-    {
-        auto& batch = getBatchToUpdate();
-        batch.projection = {projection.pos, projection.size};
-    }
+    void projection(const T& projection) {getBatchToUpdate().projection = {projection.pos, projection.size};}
 
-    void setProjection(Space projection) // for initializer list
-    {
-        auto& batch = getBatchToUpdate();
-        batch.projection = projection;
-    }
+    void projection(Space projection) {getBatchToUpdate().projection = projection;} // for initializer list
 
-    void setShader(Shader& shader); // default is Render::Color
-    void setShader(Render mode);
+    // ----- default is Render::Color
 
-    template<typename Setter> // void(GLint location)
-    void setUniform(const std::string& name, Setter&& setter)
+    void shader(Shader& shader) {getBatchToUpdate().shader = &shader;}
+    void shader(Render mode);
+
+    // ----- void(GLint uniformLocation)
+
+    template<typename Setter>
+    void uniform(const std::string& name, Setter&& setter)
     {
         uniforms_.emplace_back(Uniform{name, std::forward<Setter>(setter)});
         ++getBatchToUpdate().uniforms.count;
     }
 
-    // texture state is lost after flush()
-    void setTexture(Texture& texture, GLenum unit = 0);
+    // ----- default sampler is Sample::Linear
 
-    void setSampler(GLsampler& sampler, GLenum unit = 0);
-    void setSampler(Sample mode, GLenum unit = 0); // default is Sample::Linear
+    void texture(Texture& texture, GLenum unit = 0);
+    void sampler(GLsampler& sampler, GLenum unit = 0);
+    void sampler(Sample mode, GLenum unit = 0)
+    {
+        sampler(mode == Sample::Linear ? samplerLinear : samplerNearest, unit);
+    }
 
-    void setBlend(GLenum srcAlpha, GLenum dstAlpha); // default is GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+    // ----- default is GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+
+    void blend(GLenum srcAlpha, GLenum dstAlpha)
+    {
+        auto& batch = getBatchToUpdate();
+        batch.srcAlpha = srcAlpha;
+        batch.dstAlpha = dstAlpha;
+    }
+
+    // ----- enabled on default
+
+    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;}
+
+    // ----- disabled on default
+
+    void flipTexRectX(bool on) {getBatchToUpdate().flipTexRectX = on;}
+    void flipTexRectY(bool on) {getBatchToUpdate().flipTexRectY = on;}
+    void flipTextureY(bool on) {getBatchToUpdate().flipTextureY = on;}
+
+    // -----
 
     void cache(const Sprite& sprite) {cache(&sprite, 1);}
     void cache(const Circle& circle) {cache(&circle, 1);}
@@ -138,18 +160,17 @@ public:
     void cache(const Sprite* sprite, std::size_t count);
     void cache(const Circle* circle, std::size_t count);
 
+    // -----
+
     void flush();
 
-    static const char* vertexSource;
+    // -----
 
-    //layout(location = 0) in vec4 vertex;
-    //layout(location = 1) in vec4 color;
-    //layout(location = 2) in vec4 normTexRect;
-    //layout(location = 3) in mat4 matrix;
-    //uniform mat4 projection;
-    //out vec4 vColor;
-    //out vec2 vTexCoords;
-    //out vec2 vPosition; // [0, 1], used for circle shading
+    // out vec4 vColor;
+    // out vec2 vTexCoords;
+    // out vec2 vPosition; // [0, 1], used for circle shading and fwidth()
+
+    static const char* vertexSource;
 
     // internal use
     struct Instance
@@ -171,7 +192,7 @@ private:
     GLvao vao_;
     GLbo boQuad_;
     GLbo boInstances_;
-    std::map<Render, Shader> shaders_;
+    Shader shaderBasic_, shaderSdf_;
     Texture texDummy;
     GLsampler samplerLinear;
     GLsampler samplerNearest;
@@ -199,6 +220,10 @@ private:
         Shader* shader;
         GLenum srcAlpha;
         GLenum dstAlpha;
+        bool premultiplyAlpha;
+        bool flipTexRectX;
+        bool flipTexRectY;
+        bool flipTextureY;
         struct
         {
             std::size_t start;

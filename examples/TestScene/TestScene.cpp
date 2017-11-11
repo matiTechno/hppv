@@ -40,8 +40,8 @@ private:
             sprite.size = gnu_.size;
             sprite.texRect = {0.f, 0.f, gnu_.tex.getSize()};
 
-            renderer.setShader(hppv::Render::Tex);
-            renderer.setTexture(gnu_.tex);
+            renderer.shader(hppv::Render::Tex);
+            renderer.texture(gnu_.tex);
             renderer.cache(sprite);
         }
         // sdf font
@@ -111,27 +111,27 @@ private:
                 hppv::Sprite sprite(text);
                 sprite.color = sdf.spriteColor;
 
-                renderer.setShader(hppv::Render::Color);
+                renderer.shader(hppv::Render::Color);
                 renderer.cache(sprite);
             }
 
             if(sdf.comboIndex == 0)
             {
-                renderer.setShader(hppv::Render::TexPremultiplyAlpha);
+                renderer.shader(hppv::Render::Tex);
             }
             // imgui + uniforms
             else
             {
                 auto shader = hppv::Render(int(hppv::Render::Sdf) + sdf.comboIndex - 1);
-                renderer.setShader(shader);
+                renderer.shader(shader);
 
                 if(shader == hppv::Render::SdfOutline)
                 {
                     ImGui::ColorEdit4("outline color", &sdf.outline.color.x);
                     ImGui::SliderFloat("outline width", &sdf.outline.width, 0.f, 0.5f);
 
-                    renderer.setUniform("outlineColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.outline.color.x);});
-                    renderer.setUniform("outlineWidth", [](GLint loc){glUniform1f(loc, sdf.outline.width);});
+                    renderer.uniform("outlineColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.outline.color.x);});
+                    renderer.uniform("outlineWidth", [](GLint loc){glUniform1f(loc, sdf.outline.width);});
                 }
                 else if(shader == hppv::Render::SdfGlow)
                 {
@@ -145,8 +145,8 @@ private:
                     ImGui::SliderFloat("glow width", &sdf.glow.width, 0.f, 0.5f);
                     ImGui::Checkbox("animate", &sdf.glow.animate);
 
-                    renderer.setUniform("glowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.glow.color.x);});
-                    renderer.setUniform("glowWidth", [](GLint loc){glUniform1f(loc, sdf.glow.width);});
+                    renderer.uniform("glowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.glow.color.x);});
+                    renderer.uniform("glowWidth", [](GLint loc){glUniform1f(loc, sdf.glow.width);});
                 }
                 else if(shader == hppv::Render::SdfShadow)
                 {
@@ -162,9 +162,9 @@ private:
                     ImGui::SliderFloat2("shadow offset", &sdf.shadow.offset.x, -0.01f, 0.01f);
                     ImGui::Checkbox("animate", &sdf.shadow.animate);
 
-                    renderer.setUniform("shadowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.shadow.color.x);});
-                    renderer.setUniform("shadowSmoothing", [](GLint loc){glUniform1f(loc, sdf.shadow.smoothing);});
-                    renderer.setUniform("shadowOffset", [](GLint loc){glUniform2fv(loc, 1, &sdf.shadow.offset.x);});
+                    renderer.uniform("shadowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.shadow.color.x);});
+                    renderer.uniform("shadowSmoothing", [](GLint loc){glUniform1f(loc, sdf.shadow.smoothing);});
+                    renderer.uniform("shadowOffset", [](GLint loc){glUniform2fv(loc, 1, &sdf.shadow.offset.x);});
                 }
             }
             // imgui end
@@ -173,11 +173,11 @@ private:
                 ImGui::PopStyleColor();
             }
 
-            renderer.setTexture(sdfFont_.getTexture());
+            renderer.texture(sdfFont_.getTexture());
             renderer.cache(text);
         }
 
-        renderer.setProjection(this->properties_);
+        renderer.projection(this->properties_);
 
         // some text at the top
         {
@@ -187,8 +187,8 @@ private:
             text.text = "The quick brown fox jumps over the lazy dog. #include <iostream> int main(){\n"
                         "std::cout << \"Hello World!\" << std::endl; return 0;}";
 
-            renderer.setShader(hppv::Render::TexPremultiplyAlpha);
-            renderer.setTexture(proggy_.getTexture());
+            renderer.shader(hppv::Render::Tex);
+            renderer.texture(proggy_.getTexture());
             renderer.cache(text);
         }
         // gnu info
@@ -205,11 +205,11 @@ private:
             hppv::Sprite sprite(text);
             sprite.color = {0.4f, 0.1f, 0.1f, 1.f};
 
-            renderer.setShader(hppv::Render::Color);
+            renderer.shader(hppv::Render::Color);
             renderer.cache(sprite);
 
-            renderer.setShader(hppv::Render::TexPremultiplyAlpha);
-            renderer.setTexture(proggy_.getTexture());
+            renderer.shader(hppv::Render::Tex);
+            renderer.texture(proggy_.getTexture());
             renderer.cache(text);
         }
     }

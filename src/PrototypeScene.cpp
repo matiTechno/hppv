@@ -68,7 +68,7 @@ void PrototypeScene::processInput(bool hasInput)
 void PrototypeScene::render(Renderer& renderer)
 {
     auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-    renderer.setProjection(projection);
+    renderer.projection(projection);
     prototypeRender(renderer);
 
     if(!prototype_.renderImgui)

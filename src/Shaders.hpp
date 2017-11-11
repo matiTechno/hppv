@@ -11,95 +11,42 @@ layout(location = 2) in vec4 normTexRect;
 layout(location = 3) in mat4 matrix;
 
 uniform mat4 projection;
+uniform bool flipTexRectX = false;
+uniform bool flipTexRectY = false;
+uniform bool flipTextureY = false;
 
 out vec4 vColor;
-out vec2 vTexCoords;
 out vec2 vPosition;
+out vec2 vTexCoords;
 
 void main()
 {
     gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
     vColor = color;
-    vTexCoords = vertex.zw * normTexRect.zw + normTexRect.xy;
     vPosition = vertex.xy;
+
+    vec2 texCoords = vertex.zw;
+
+    if(flipTexRectX)
+    {
+        texCoords.x = (texCoords.x - 1) * -1;
+    }
+
+    if(flipTexRectY)
+    {
+        texCoords.y = (texCoords.y - 1) * -1;
+    }
+
+    vTexCoords = texCoords * normTexRect.zw + normTexRect.xy;
+
+    if(flipTextureY)
+    {
+        vTexCoords.y = 1 - vTexCoords.y;
+    }
 }
 )";
 
-static const char* colorSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-
-out vec4 color;
-
-void main()
-{
-    color = vColor;
-}
-)";
-
-static const char* texSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-out vec4 color;
-
-void main()
-{
-    color = texture(sampler, vTexCoords) * vColor;
-}
-)";
-
-static const char* texPremultiplyAlphaSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-out vec4 color;
-
-void main()
-{
-    vec4 sample = texture(sampler, vTexCoords);
-    color = vec4(sample.rgb * sample.a, sample.a) * vColor;
-}
-)";
-
-static const char* circleColorSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-
-const float radius = 0.5;
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
-
-void main()
-{
-    float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter) * 2;
-    float alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
-    color = vColor * alpha;
-}
-)";
-
-static const char* circleTexSource = R"(
+static const char* basicSource = R"(
 
 #fragment
 #version 330
@@ -109,44 +56,53 @@ in vec2 vPosition;
 in vec2 vTexCoords;
 
 uniform sampler2D sampler;
+uniform int mode = 0;
+uniform bool premultiplyAlpha = false;
 
 const float radius = 0.5;
 const vec2 center = vec2(0.5, 0.5);
 
 out vec4 color;
 
-void main()
+void circleAlpha(out float alpha)
 {
     float distanceFromCenter = length(vPosition - center);
     float delta = fwidth(distanceFromCenter) * 2;
-    float alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
-    color = texture(sampler, vTexCoords) * vColor * alpha;
+    alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
 }
-)";
-
-static const char* circleTexPremultiplyAlphaSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
-
-const float radius = 0.5;
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
 
 void main()
 {
-    float distanceFromCenter = length(vPosition - center);
-    float delta = fwidth(distanceFromCenter) * 2;
-    float alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
-    vec4 sample = texture(sampler, vTexCoords);
-    color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
+    if(mode == 0) // Color
+    {
+        color = vColor;
+    }
+    else if(mode == 2) // CircleColor
+    {
+        float alpha;
+        circleAlpha(alpha);
+        color = vColor * alpha;
+    }
+    else
+    {
+        vec4 sample = texture(sampler, vTexCoords);
+
+        if(premultiplyAlpha)
+        {
+            sample = vec4(sample.rgb * sample.a, sample.a);
+        }
+
+        if(mode == 1) // Tex
+        {
+            color = sample * vColor;
+        }
+        else if(mode == 3) // CircleTex
+        {
+            float alpha;
+            circleAlpha(alpha);
+            color = sample * vColor * alpha;
+        }
+    }
 }
 )";
 
@@ -160,86 +116,11 @@ in vec2 vPosition;
 in vec2 vTexCoords;
 
 uniform sampler2D sampler;
-
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
-
-void main()
-{
-    float smoothing = fwidth(length(vPosition - center)) * 2;
-    float distance = texture(sampler, vTexCoords).a;
-    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    color = vColor * alpha;
-}
-)";
-
-static const char* sdfOutlineSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
+uniform int mode;
 uniform vec4 outlineColor = vec4(1, 0, 0, 1);
 uniform float outlineWidth = 0.25; // [0, 0.5]
-
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
-
-void main()
-{
-    float smoothing = fwidth(length(vPosition - center)) * 2;
-    float distance = texture(sampler, vTexCoords).a;
-    float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    float oOutlineWidth = 0.5 - outlineWidth;
-    float alpha = smoothstep(oOutlineWidth - smoothing, oOutlineWidth + smoothing, distance);
-    color = mix(outlineColor, vColor, outlineFactor) * alpha;
-}
-)";
-
-static const char* sdfGlowSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
 uniform vec4 glowColor = vec4(1, 0, 0, 1);
 uniform float glowWidth = 0.5; // [0, 0.5]
-
-const vec2 center = vec2(0.5, 0.5);
-
-out vec4 color;
-
-void main()
-{
-    float smoothing = fwidth(length(vPosition - center)) * 2;
-    float distance = texture(sampler, vTexCoords).a;
-    float glowFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    float glowSmoothing = max(smoothing, glowWidth);
-    float alpha = smoothstep(0.5 - glowSmoothing, 0.5 + smoothing, distance);
-    color = mix(glowColor, vColor, glowFactor) * alpha;
-}
-)";
-
-static const char* sdfShadowSource = R"(
-
-#fragment
-#version 330
-
-in vec4 vColor;
-in vec2 vPosition;
-in vec2 vTexCoords;
-
-uniform sampler2D sampler;
 uniform vec4 shadowColor = vec4(1, 0, 0, 1);
 uniform float shadowSmoothing = 0.2; // [0, 0.5]
 uniform vec2 shadowOffset = vec2(-0.003, -0.006);
@@ -252,14 +133,37 @@ void main()
 {
     float smoothing = fwidth(length(vPosition - center)) * 2;
     float distance = texture(sampler, vTexCoords).a;
-    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
-    vec4 textColor = vColor * alpha;
 
-    float shadowDistance = texture(sampler, vTexCoords - shadowOffset).a;
-    float oShadowSmoothing = max(smoothing, shadowSmoothing);
-    float shadowAlpha = smoothstep(0.5 - oShadowSmoothing, 0.5 + oShadowSmoothing, shadowDistance);
-    vec4 shadow = shadowColor * shadowAlpha;
+    if(mode == 4) // Sdf
+    {
+        float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+        color = vColor * alpha;
+    }
+    else if(mode == 5) // SdfOutline
+    {
+        float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+        float oOutlineWidth = 0.5 - outlineWidth;
+        float alpha = smoothstep(oOutlineWidth - smoothing, oOutlineWidth + smoothing, distance);
+        color = mix(outlineColor, vColor, outlineFactor) * alpha;
+    }
+    else if(mode == 6) // SdfGlow
+    {
+        float glowFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+        float glowSmoothing = max(smoothing, glowWidth);
+        float alpha = smoothstep(0.5 - glowSmoothing, 0.5 + smoothing, distance);
+        color = mix(glowColor, vColor, glowFactor) * alpha;
+    }
+    else if(mode == 7) // SdfShadow
+    {
+        float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+        vec4 textColor = vColor * alpha;
 
-    color = mix(shadow, textColor, textColor.a);
+        float shadowDistance = texture(sampler, vTexCoords - shadowOffset).a;
+        float oShadowSmoothing = max(smoothing, shadowSmoothing);
+        float shadowAlpha = smoothstep(0.5 - oShadowSmoothing, 0.5 + oShadowSmoothing, shadowDistance);
+        vec4 shadow = shadowColor * shadowAlpha;
+
+        color = mix(shadow, textColor, textColor.a);
+    }
 }
 )";

@@ -71,8 +71,8 @@ private:
         glUniform1f(activeShader_->getUniformLocation("time"), time_);
         glUniform2f(activeShader_->getUniformLocation("resolution"), size.x, size.y);
 
-        renderer.setShader(*activeShader_);
-        renderer.setProjection(hppv::Sprite());
+        renderer.shader(*activeShader_);
+        renderer.projection(hppv::Sprite());
         renderer.cache(hppv::Sprite());
     }
 };

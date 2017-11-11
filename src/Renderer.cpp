@@ -71,22 +71,11 @@ Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation,
     return i;
 }
 
-Renderer::Renderer()
+Renderer::Renderer():
+    shaderBasic_({vertexSource, basicSource}, "Renderer::shaderBasic_"),
+    shaderSdf_({vertexSource, sdfSource}, "Renderer::shaderSdf_")
 {
     glEnable(GL_BLEND);
-
-    shaders_.emplace(Render::Color, Shader({vertexSource, colorSource}, "Render::Color"));
-    shaders_.emplace(Render::Tex, Shader({vertexSource, texSource}, "Render::Tex"));
-    shaders_.emplace(Render::TexPremultiplyAlpha, Shader({vertexSource, texPremultiplyAlphaSource},
-                                                         "Render::TexPremultiplyAlpha"));
-    shaders_.emplace(Render::CircleColor, Shader({vertexSource, circleColorSource}, "Render::CircleColor"));
-    shaders_.emplace(Render::CircleTex, Shader({vertexSource, circleTexSource}, "Render::CircleTex"));
-    shaders_.emplace(Render::CircleTexPremultiplyAlpha, Shader({vertexSource, circleTexPremultiplyAlphaSource},
-                                                               "Render::CircleTexPremultiplyAlpha"));
-    shaders_.emplace(Render::Sdf, Shader({vertexSource, sdfSource}, "Render::Sdf"));
-    shaders_.emplace(Render::SdfOutline, Shader({vertexSource, sdfOutlineSource}, "Render::SdfOutline"));
-    shaders_.emplace(Render::SdfGlow, Shader({vertexSource, sdfGlowSource}, "Render::SdfGlow"));
-    shaders_.emplace(Render::SdfShadow, Shader({vertexSource, sdfShadowSource}, "Render::SdfShadow"));
 
     glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -102,9 +91,13 @@ Renderer::Renderer()
     {
         auto& first = batches_.front();
         first.scissorEnabled = false;
-        first.shader = &shaders_.at(Render::Color);
+        first.shader = &shaderBasic_;
         first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
+        first.premultiplyAlpha = true;
+        first.flipTexRectX = false;
+        first.flipTexRectY = false;
+        first.flipTextureY = false;
         first.instances.start = 0;
         first.instances.count = 0;
         first.texUnits.start = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
@@ -167,7 +160,7 @@ Renderer::Renderer()
                           + 3 * sizeof(glm::vec4)));
 }
 
-void Renderer::setScissor(glm::ivec4 scissor)
+void Renderer::scissor(glm::ivec4 scissor)
 {
     scissor.y = App::getFrame().framebufferSize.y - scissor.y - scissor.w;
     auto& batch = getBatchToUpdate();
@@ -175,43 +168,40 @@ void Renderer::setScissor(glm::ivec4 scissor)
     batch.scissorEnabled = true;
 }
 
-void Renderer::disableScissor()
-{
-    auto& batch = getBatchToUpdate();
-    batch.scissorEnabled = false;
-}
-
-void Renderer::setViewport(glm::ivec4 viewport)
+void Renderer::viewport(glm::ivec4 viewport)
 {
     viewport.y = App::getFrame().framebufferSize.y - viewport.y - viewport.w;
-    auto& batch = getBatchToUpdate();
-    batch.viewport = viewport;
+    getBatchToUpdate().viewport = viewport;
 }
 
-void Renderer::setViewport(const Scene* scene)
+void Renderer::viewport(const Scene* scene)
 {
-    setViewport({scene->properties_.pos, scene->properties_.size});
+    viewport({scene->properties_.pos, scene->properties_.size});
 }
 
-void Renderer::setViewport(const Framebuffer& framebuffer)
+void Renderer::viewport(const Framebuffer& framebuffer)
 {
-    auto& batch = getBatchToUpdate();
-    batch.viewport = {0, 0, framebuffer.getSize()};
+    getBatchToUpdate().viewport = {0, 0, framebuffer.getSize()};
 }
 
-void Renderer::setShader(Shader& shader)
+void Renderer::shader(Render mode)
 {
+    auto modeId = static_cast<int>(mode);
     auto& batch = getBatchToUpdate();
-    batch.shader = &shader;
+
+    if(modeId < 4)
+    {
+        batch.shader = &shaderBasic_;
+    }
+    else
+    {
+        batch.shader = &shaderSdf_;
+    }
+
+    uniform("mode", [modeId](GLint loc){glUniform1i(loc, modeId);});
 }
 
-void Renderer::setShader(Render mode)
-{
-    auto& batch = getBatchToUpdate();
-    batch.shader = &shaders_.at(mode);
-}
-
-void Renderer::setTexture(Texture& texture, GLenum unit)
+void Renderer::texture(Texture& texture, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
     const auto start = batch.texUnits.start;
@@ -234,7 +224,7 @@ void Renderer::setTexture(Texture& texture, GLenum unit)
     ++batch.texUnits.count;
 }
 
-void Renderer::setSampler(GLsampler& sampler, GLenum unit)
+void Renderer::sampler(GLsampler& sampler, GLenum unit)
 {
     auto& batch = getBatchToUpdate();
     const auto start = batch.texUnits.start;
@@ -255,18 +245,6 @@ void Renderer::setSampler(GLsampler& sampler, GLenum unit)
     last.sampler = &sampler;
     last.texture = (&last - 1)->texture;
     ++batch.texUnits.count;
-}
-
-void Renderer::setSampler(Sample mode, GLenum unit)
-{
-    setSampler(mode == Sample::Linear ? samplerLinear : samplerNearest, unit);
-}
-
-void Renderer::setBlend(GLenum srcAlpha, GLenum dstAlpha)
-{
-    auto& batch = getBatchToUpdate();
-    batch.srcAlpha = srcAlpha;
-    batch.dstAlpha = dstAlpha;
 }
 
 void Renderer::cache(const Sprite* sprite, std::size_t count)
@@ -348,11 +326,8 @@ void Renderer::cache(const Text& text)
 void Renderer::flush()
 {
     auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
-
     glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
-
     glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(), GL_STREAM_DRAW);
-
     glBindVertexArray(vao_.getId());
 
     for(auto& batch: batches_)
@@ -370,6 +345,11 @@ void Renderer::flush()
         glViewport(batch.viewport.x, batch.viewport.y, batch.viewport.z, batch.viewport.w);
 
         batch.shader->bind();
+
+        glUniform1i(batch.shader->getUniformLocation("premultiplyAlpha", false), batch.premultiplyAlpha);
+        glUniform1i(batch.shader->getUniformLocation("flipTexRectX"), batch.flipTexRectX);
+        glUniform1i(batch.shader->getUniformLocation("flipTexRectY"), batch.flipTexRectY);
+        glUniform1i(batch.shader->getUniformLocation("flipTextureY"), batch.flipTextureY);
 
         {
             auto projection = batch.projection;
@@ -403,7 +383,6 @@ void Renderer::flush()
         }
 
         glBlendFunc(batch.srcAlpha, batch.dstAlpha);
-
         glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.instances.count, batch.instances.start);
     }
 

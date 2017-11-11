@@ -5,9 +5,6 @@ todo:
 
 * renderer.uniform1f("time", time) instead of callbacks
 * Shader uniforms setters
-* reduce the number of default shaders; set special options with uniforms
-* add options to: flip texCoords, sample from texture as if it was flipped
------
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
 * custom shapes

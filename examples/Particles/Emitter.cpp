@@ -41,8 +41,8 @@ void Emitter::update(float frameTime)
 
 void Emitter::render(hppv::Renderer& renderer)
 {
-    renderer.setBlend(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    renderer.setShader(hppv::Render::CircleColor);
+    renderer.blend(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    renderer.shader(hppv::Render::CircleColor);
     renderer.cache(circles_.data(), count_);
 }
 

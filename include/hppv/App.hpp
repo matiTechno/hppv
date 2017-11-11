@@ -32,7 +32,7 @@ public:
 
     static void quit();
     static void setVsync(bool on);
-    static void hideCursor(bool hide);
+    static void setCursor(bool visible);
 
     // if state == Restored and window was maximized before
     // being fullscreen it will be set to maximized

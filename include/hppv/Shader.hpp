@@ -54,14 +54,15 @@ public:
 
     bool isValid() const {return program_.getId();}
 
-    GLint getUniformLocation(const std::string& uniformName) const;
+    GLint getUniformLocation(const std::string& uniformName, bool printError = true) const;
 
     // after successful reload:
-    //                         * shader must be rebound
-    //                         * all uniform locations are invalidated
-    // on failure:
-    //                         * previous state remains
+    // * shader must be rebound
+    // * all uniform locations are invalidated
     //
+    // on failure:
+    // * previous state remains
+
     void reload(); // does not check if file was modified
 
     void bind(); // if hotReload is on and file was modified does reload
@@ -113,6 +114,7 @@ private:
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <optional>
 
 namespace hppv
 {
@@ -124,7 +126,7 @@ fs::file_time_type getFileLastWriteTime(const std::string& filename)
 
     if(ec)
     {
-        std::cout << "sh::Shader: last_write_time() failed, file = " << filename << std::endl;
+        std::cout << "Shader: last_write_time() failed, file = " << filename << std::endl;
     }
 
     return time;
@@ -136,7 +138,7 @@ std::string loadSourceFromFile(const fs::path& path)
 
     if(!file.is_open())
     {
-        std::cout << "sh::Shader: could not open file = " << path << std::endl;
+        std::cout << "Shader: could not open file = " << path << std::endl;
         return {};
     }
 
@@ -194,15 +196,18 @@ Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view
     swapProgram(sources);
 }
 
-GLint Shader::getUniformLocation(const std::string& uniformName) const
+GLint Shader::getUniformLocation(const std::string& uniformName, bool printError) const
 {
     auto it = uniformLocations_.find(uniformName);
 
     if(it == uniformLocations_.end() &&
        inactiveUniforms_.find(uniformName) == inactiveUniforms_.end())
     {
-        std::cout << "sh::Shader, " << id_ << ": inactive uniform = " << uniformName << std::endl;
-        inactiveUniforms_.insert(uniformName);
+        if(printError)
+        {
+            std::cout << "Shader, " << id_ << ": inactive uniform = " << uniformName << std::endl;
+            inactiveUniforms_.insert(uniformName);
+        }
         return 666;
     }
 
@@ -220,7 +225,7 @@ void Shader::reload()
     {
         if(swapProgram({source}))
         {
-            std::cout << "sh::Shader, " << id_ << ": reload succeeded" << std::endl;
+            std::cout << "Shader, " << id_ << ": reload succeeded" << std::endl;
         }
     }
 }
@@ -237,7 +242,7 @@ void Shader::bind()
             {
                 if(swapProgram({source}))
                 {
-                    std::cout << "sh::Shader, " << id_ << ": hot reload succeeded" << std::endl;
+                    std::cout << "Shader, " << id_ << ": hot reload succeeded" << std::endl;
                 }
             }
         }
@@ -315,10 +320,10 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
     };
 
     const ShaderType shaderTypes[] =
-    {{GL_VERTEX_SHADER,   "#vertex"},
+    {{GL_VERTEX_SHADER, "#vertex"},
     {GL_GEOMETRY_SHADER, "#geometry"},
     {GL_FRAGMENT_SHADER, "#fragment"},
-    {GL_COMPUTE_SHADER,  "#compute"}};
+    {GL_COMPUTE_SHADER, "#compute"}};
 
     struct ShaderData
     {
@@ -364,7 +369,7 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
 
             if(auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
             {
-                std::cout << "sh::Shader, " << id << ": " << it->type.name << " shader compilation failed\n"
+                std::cout << "Shader, " << id << ": " << it->type.name << " shader compilation failed\n"
                           << *error << '\n';
 
                 {
@@ -425,7 +430,7 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
 
     if(auto error = getError<true>(program, GL_LINK_STATUS))
     {
-        std::cout << "sh::Shader, " << id << ": program linking failed\n" << *error << std::endl;
+        std::cout << "Shader, " << id << ": program linking failed\n" << *error << std::endl;
         glDeleteProgram(program);
         return 0;
     }

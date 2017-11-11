@@ -63,7 +63,7 @@ private:
             framebuffer_.bind();
             framebuffer_.setSize(properties_.size);
             framebuffer_.clear();
-            renderer.setViewport(framebuffer_);
+            renderer.viewport(framebuffer_);
 
             {
                 hppv::Sprite sprite;
@@ -71,25 +71,25 @@ private:
                 sprite.size = prototype_.initialSpace.size;
                 sprite.texRect = {0.f, 0.f, texture_.getSize()};
 
-                renderer.setShader(hppv::Render::Tex);
-                renderer.setTexture(texture_);
+                renderer.shader(hppv::Render::Tex);
+                renderer.texture(texture_);
                 renderer.cache(sprite);
 
                 sprite.size = {30.f, 30.f};
                 sprite.color = {0.5f, 0.f, 0.5f, 0.5f};
 
-                renderer.setShader(hppv::Render::CircleColor);
+                renderer.shader(hppv::Render::CircleColor);
                 renderer.cache(sprite);
             }
 
             renderer.flush();
             framebuffer_.unbind();
-            renderer.setViewport(this);
+            renderer.viewport(this);
         }
 
         auto projection = hppv::expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-        renderer.setTexture(framebuffer_.getTexture(0));
+        renderer.texture(framebuffer_.getTexture(0));
 
         // ambient light
         {
@@ -99,12 +99,12 @@ private:
             sprite.color = {0.1f, 0.1f, 0.1f, 1.f};
             sprite.texRect = {0.f, 0.f, framebuffer_.getTexture(0).getSize()};
 
-            renderer.setShader(hppv::Render::Tex);
+            renderer.shader(hppv::Render::Tex);
             renderer.cache(sprite);
         }
 
         // spot lights
-        renderer.setShader(shader_);
+        renderer.shader(shader_);
         {
             hppv::Circle circle;
             circle.center.x = 50.f + glm::sin(time_ / 2.f) * 20.f;

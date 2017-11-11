@@ -155,9 +155,9 @@ void App::run()
 
        // borders
        {
-           renderer_->setViewport({0, 0, frame_.framebufferSize});
-           renderer_->setProjection({{0, 0}, frame_.framebufferSize});
-           renderer_->setShader(Render::Color);
+           renderer_->viewport({0, 0, frame_.framebufferSize});
+           renderer_->projection({{0, 0}, frame_.framebufferSize});
+           renderer_->shader(Render::Color);
 
            for(auto& scene: scenesToRender_)
            {
@@ -183,7 +183,7 @@ void App::run()
 
        for(auto scene: scenesToRender_)
        {
-           renderer_->setViewport(&*scene);
+           renderer_->viewport(&*scene);
            scene->render(*renderer_);
            renderer_->flush();
        }
@@ -255,9 +255,9 @@ void App::setVsync(bool on)
     glfwSwapInterval(on);
 }
 
-void App::hideCursor(bool hide)
+void App::setCursor(bool visible)
 {
-    auto mode = hide ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
+    auto mode = visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
     glfwSetInputMode(window_, GLFW_CURSOR, mode);
 }
 
