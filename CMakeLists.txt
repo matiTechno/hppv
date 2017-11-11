@@ -4,7 +4,7 @@ project(hppv)
 set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -pedantic -O2 -g")
 set(CMAKE_C_FLAGS   "-Wall -Wextra -O2")
 
-add_definitions(-DGLM_FORCE_NO_CTOR_INIT)
+add_definitions(-DGLM_FORCE_NO_CTOR_INIT -DSHADER_GLM)
 
 include_directories(./include)
 

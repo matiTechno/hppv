@@ -64,14 +64,9 @@ private:
         }
         ImGui::End();
 
-        auto size = properties_.size;
-
-        activeShader_->bind();
-
-        glUniform1f(activeShader_->getUniformLocation("time"), time_);
-        glUniform2f(activeShader_->getUniformLocation("resolution"), size.x, size.y);
-
         renderer.shader(*activeShader_);
+        renderer.uniform("time", time_);
+        renderer.uniform("resolution", properties_.size);
         renderer.projection(hppv::Sprite());
         renderer.cache(hppv::Sprite());
     }

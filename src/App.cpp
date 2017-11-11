@@ -217,14 +217,7 @@ void App::refreshFrame()
 
     auto previousState = frame_.window.state;
 
-    // workaround for fullscreen detection
-    glm::ivec2 winPos, winSize;
-    glfwGetWindowPos(window_, &winPos.x, &winPos.y);
-    glfwGetWindowSize(window_, &winSize.x, &winSize.y);
-    auto* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    glm::ivec2 modeSize {mode->width, mode->height};
-
-    if(glfwGetWindowMonitor(window_) || (winPos == glm::ivec2(0) && winSize == modeSize))
+    if(glfwGetWindowMonitor(window_))
     {
         frame_.window.state = Frame::Window::Fullscreen;
     }
@@ -235,8 +228,8 @@ void App::refreshFrame()
     else
     {
         frame_.window.state = Frame::Window::Restored;
-        frame_.window.restored.pos = winPos;
-        frame_.window.restored.size = winSize;
+        glfwGetWindowPos(window_, &frame_.window.restored.pos.x, &frame_.window.restored.pos.y);
+        glfwGetWindowSize(window_, &frame_.window.restored.size.x, &frame_.window.restored.size.y);
     }
 
     if(frame_.window.state != previousState)

@@ -2,6 +2,7 @@
 
 // #include "glad.h" or "glew.h" or ...
 // #define SHADER_IMPLEMENTATION
+// #define SHADER_GLM (for more convenient uniform interface)
 // #include "Shader.h"
 
 // shader source format
@@ -35,6 +36,13 @@
 #include <string_view>
 #include <cassert>
 
+#ifdef SHADER_GLM
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#endif
+
 namespace hppv
 {
 
@@ -54,7 +62,7 @@ public:
 
     bool isValid() const {return program_.getId();}
 
-    GLint getUniformLocation(const std::string& uniformName, bool printError = true) const;
+    GLint getUniformLocation(std::string_view name, bool printError = true) const;
 
     // after successful reload:
     // * shader must be rebound
@@ -66,6 +74,24 @@ public:
     void reload(); // does not check if file was modified
 
     void bind(); // if hotReload is on and file was modified does reload
+
+    // call bind before these
+
+    void uniform1i(std::string_view name, int value);
+    void uniform1f(std::string_view name, float value);
+    void uniform2f(std::string_view name, const float* value);
+    void uniform3f(std::string_view name, const float* value);
+    void uniform4f(std::string_view name, const float* value);
+    void uniformMat4f(std::string_view name, const float* value);
+
+#ifdef SHADER_GLM
+    void uniform(std::string_view name, int value) {uniform1i(name, value);}
+    void uniform(std::string_view name, float value) {uniform1f(name, value);}
+    void uniform(std::string_view name, glm::vec2 value) {uniform2f(name, &value.x);}
+    void uniform(std::string_view name, glm::vec3 value) {uniform3f(name, &value.x);}
+    void uniform(std::string_view name, glm::vec4 value) {uniform4f(name, &value.x);}
+    void uniform(std::string_view name, const glm::mat4& value) {uniformMat4f(name, &value[0][0]);}
+#endif
 
 private:
     class Program
@@ -97,8 +123,8 @@ private:
     bool hotReload_;
     Program program_;
     fs::file_time_type fileLastWriteTime_;
-    std::map<std::string, GLint> uniformLocations_;
-    mutable std::set<std::string> inactiveUniforms_;
+    std::map<std::string, GLint, std::less<>> uniformLocations_;
+    mutable std::set<std::string, std::less<>> inactiveUniforms_;
 
     // returns true on success
     bool swapProgram(std::initializer_list<std::string_view> sources);
@@ -196,17 +222,17 @@ Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view
     swapProgram(sources);
 }
 
-GLint Shader::getUniformLocation(const std::string& uniformName, bool printError) const
+GLint Shader::getUniformLocation(const std::string_view name, bool printError) const
 {
-    auto it = uniformLocations_.find(uniformName);
+    auto it = uniformLocations_.find(name);
 
     if(it == uniformLocations_.end() &&
-       inactiveUniforms_.find(uniformName) == inactiveUniforms_.end())
+       inactiveUniforms_.find(name) == inactiveUniforms_.end())
     {
         if(printError)
         {
-            std::cout << "Shader, " << id_ << ": inactive uniform = " << uniformName << std::endl;
-            inactiveUniforms_.insert(uniformName);
+            std::cout << "Shader, " << id_ << ": inactive uniform = " << name << std::endl;
+            inactiveUniforms_.emplace(name);
         }
         return 666;
     }
@@ -250,6 +276,14 @@ void Shader::bind()
 
     glUseProgram(program_.getId());
 }
+
+void Shader::uniform1i(std::string_view name, int value) {glUniform1i(getUniformLocation(name), value);}
+void Shader::uniform1f(std::string_view name, float value) {glUniform1f(getUniformLocation(name), value);}
+void Shader::uniform2f(std::string_view name, const float* value) {glUniform2fv(getUniformLocation(name), 1, value);}
+void Shader::uniform3f(std::string_view name, const float* value) {glUniform3fv(getUniformLocation(name), 1, value);}
+void Shader::uniform4f(std::string_view name, const float* value) {glUniform4fv(getUniformLocation(name), 1, value);}
+void Shader::uniformMat4f(std::string_view name, const float* value){glUniformMatrix4fv(getUniformLocation(name),
+                                                                                        1, GL_FALSE, value);}
 
 Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
 

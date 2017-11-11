@@ -130,8 +130,8 @@ private:
                     ImGui::ColorEdit4("outline color", &sdf.outline.color.x);
                     ImGui::SliderFloat("outline width", &sdf.outline.width, 0.f, 0.5f);
 
-                    renderer.uniform("outlineColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.outline.color.x);});
-                    renderer.uniform("outlineWidth", [](GLint loc){glUniform1f(loc, sdf.outline.width);});
+                    renderer.uniform("outlineColor", sdf.outline.color);
+                    renderer.uniform("outlineWidth", sdf.outline.width);
                 }
                 else if(shader == hppv::Render::SdfGlow)
                 {
@@ -145,8 +145,8 @@ private:
                     ImGui::SliderFloat("glow width", &sdf.glow.width, 0.f, 0.5f);
                     ImGui::Checkbox("animate", &sdf.glow.animate);
 
-                    renderer.uniform("glowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.glow.color.x);});
-                    renderer.uniform("glowWidth", [](GLint loc){glUniform1f(loc, sdf.glow.width);});
+                    renderer.uniform("glowColor", sdf.glow.color);
+                    renderer.uniform("glowWidth", sdf.glow.width);
                 }
                 else if(shader == hppv::Render::SdfShadow)
                 {
@@ -162,9 +162,9 @@ private:
                     ImGui::SliderFloat2("shadow offset", &sdf.shadow.offset.x, -0.01f, 0.01f);
                     ImGui::Checkbox("animate", &sdf.shadow.animate);
 
-                    renderer.uniform("shadowColor", [](GLint loc){glUniform4fv(loc, 1, &sdf.shadow.color.x);});
-                    renderer.uniform("shadowSmoothing", [](GLint loc){glUniform1f(loc, sdf.shadow.smoothing);});
-                    renderer.uniform("shadowOffset", [](GLint loc){glUniform2fv(loc, 1, &sdf.shadow.offset.x);});
+                    renderer.uniform("shadowColor", sdf.shadow.color);
+                    renderer.uniform("shadowSmoothing", sdf.shadow.smoothing);
+                    renderer.uniform("shadowOffset", sdf.shadow.offset);
                 }
             }
             // imgui end

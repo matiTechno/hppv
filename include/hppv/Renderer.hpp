@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <string>
-#include <functional>
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -115,19 +114,20 @@ public:
     void shader(Shader& shader) {getBatchToUpdate().shader = &shader;}
     void shader(Render mode);
 
-    // ----- void(GLint uniformLocation)
+    // -----
 
-    template<typename Setter>
-    void uniform(const std::string& name, Setter&& setter)
-    {
-        uniforms_.emplace_back(Uniform{name, std::forward<Setter>(setter)});
-        ++getBatchToUpdate().uniforms.count;
-    }
+    void uniform(const std::string& name, int value);
+    void uniform(const std::string& name, float value);
+    void uniform(const std::string& name, glm::vec2 value);
+    void uniform(const std::string& name, glm::vec3 value);
+    void uniform(const std::string& name, glm::vec4 value);
+    void uniform(const std::string& name, const glm::mat4& value);
 
     // ----- default sampler is Sample::Linear
 
     void texture(Texture& texture, GLenum unit = 0);
     void sampler(GLsampler& sampler, GLenum unit = 0);
+
     void sampler(Sample mode, GLenum unit = 0)
     {
         sampler(mode == Sample::Linear ? samplerLinear : samplerNearest, unit);
@@ -206,8 +206,30 @@ private:
 
     struct Uniform
     {
+        enum Type
+        {
+            I1,
+            F1, F2, F3, F4,
+            MAT4F
+        }
+        type;
+
+        Uniform(Type type, const std::string& name):
+            type(type),
+            name(name)
+        {}
+
         std::string name;
-        std::function<void(GLint)> setter;
+
+        union
+        {
+            int i1;
+            float f1;
+            glm::vec2 f2;
+            glm::vec3 f3;
+            glm::vec4 f4;
+            glm::mat4 mat4f;
+        };
     };
 
     // viewport and scissor have y-axis in opengl coordinate system
