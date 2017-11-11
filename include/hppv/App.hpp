@@ -33,7 +33,16 @@ public:
     static void quit();
     static void setVsync(bool on);
     static void hideCursor(bool hide);
-    static void setWindow(Frame::Window::State state); // must not be Frame::Window::Maximized
+
+    // if state == Restored and window was maximized before
+    // being fullscreen it will be set to maximized
+
+    // bug: glfw does not detect if window is fullscreen when set
+    // externally by the window manager (xfce4, i3) and there is no way to
+    // restore it from the application
+
+    static void setWindow(Frame::Window::State state);
+
     static const Frame& getFrame() {return frame_;}
 
 private:
@@ -52,7 +61,7 @@ private:
     static Frame frame_;
     static bool handleQuitEvent_;
 
-    void refreshFrame();
+    static void refreshFrame();
 
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);

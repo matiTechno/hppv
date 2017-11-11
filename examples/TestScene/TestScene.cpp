@@ -177,13 +177,12 @@ private:
             renderer.cache(text);
         }
 
-        renderer.setProjection({properties_.pos, properties_.size});
-        auto projection = hppv::expandToMatchAspectRatio(prototype_.space, frame_.framebufferSize);
+        renderer.setProjection(this->properties_);
 
         // some text at the top
         {
             hppv::Text text(proggy_);
-            text.pos = {10, 10}; // I assume scene pos is (0, 0)
+            text.pos = properties_.pos + glm::ivec2{10, 10};
             text.color = {0.f, 0.8f, 0.4f, 1.f};
             text.text = "The quick brown fox jumps over the lazy dog. #include <iostream> int main(){\n"
                         "std::cout << \"Hello World!\" << std::endl; return 0;}";
@@ -196,9 +195,12 @@ private:
         {
             hppv::Text text(proggy_);
             text.text = "This is a small gnu creature!";
-            auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, projection, this);
-            glm::ivec2 size = text.getSize();
-            text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};
+            {
+                auto projection = hppv::expandToMatchAspectRatio(prototype_.space, frame_.framebufferSize);
+                auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, projection, this);
+                glm::ivec2 size = text.getSize();
+                text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};
+            }
 
             hppv::Sprite sprite(text);
             sprite.color = {0.4f, 0.1f, 0.1f, 1.f};

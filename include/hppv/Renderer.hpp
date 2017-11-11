@@ -47,8 +47,8 @@ struct Sprite
         rotationPoint(text.rotationPoint)
     {}
 
-    glm::vec2 pos;
-    glm::vec2 size;
+    glm::vec2 pos = {0.f, 0.f};
+    glm::vec2 size = {1.f, 1.f};
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f};
@@ -101,7 +101,18 @@ public:
     void setViewport(const Scene* scene);
     void setViewport(const Framebuffer& framebuffer); // glViewport(0, 0, sizeX, sizeY)
 
-    void setProjection(Space projection);
+    template<typename T>
+    void setProjection(const T& projection) // projected / visible area
+    {
+        auto& batch = getBatchToUpdate();
+        batch.projection = {projection.pos, projection.size};
+    }
+
+    void setProjection(Space projection) // for initializer list
+    {
+        auto& batch = getBatchToUpdate();
+        batch.projection = projection;
+    }
 
     void setShader(Shader& shader); // default is Render::Color
     void setShader(Render mode);
@@ -184,7 +195,7 @@ private:
         glm::ivec4 scissor;
         glm::ivec4 viewport;
         bool scissorEnabled;
-        glm::mat4 projection;
+        Space projection;
         Shader* shader;
         GLenum srcAlpha;
         GLenum dstAlpha;

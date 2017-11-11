@@ -24,8 +24,10 @@ struct Frame
             Restored,
             Fullscreen,
             Maximized
-        }
-        state;
+        };
+
+        State state;
+        State previousState;
 
         struct
         {

@@ -42,12 +42,6 @@ Space zoomToPoint(Space space, float zoom, glm::vec2 point)
     return space;
 }
 
-glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
-{
-    pos -= glm::vec2(scene->properties_.pos);
-    return projection.pos + (projection.size / glm::vec2(scene->properties_.size)) * pos;
-}
-
 glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
 {
 
@@ -70,6 +64,12 @@ glm::ivec4 iMapToWindow(glm::vec4 rect, Space projection, const Scene* scene)
     mapped.x += scene->properties_.pos.x;
     mapped.y += scene->properties_.pos.y;
     return mapped;
+}
+
+glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
+{
+    pos -= glm::vec2(scene->properties_.pos);
+    return projection.pos + (projection.size / glm::vec2(scene->properties_.size)) * pos;
 }
 
 } // namespace hppv

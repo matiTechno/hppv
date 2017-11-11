@@ -199,13 +199,6 @@ void Renderer::setViewport(const Framebuffer& framebuffer)
     batch.viewport = {0, 0, framebuffer.getSize()};
 }
 
-void Renderer::setProjection(Space projection)
-{
-    auto& batch = getBatchToUpdate();
-    batch.projection = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
-                                  projection.pos.y + projection.size.y, projection.pos.y);
-}
-
 void Renderer::setShader(Shader& shader)
 {
     auto& batch = getBatchToUpdate();
@@ -378,7 +371,14 @@ void Renderer::flush()
 
         batch.shader->bind();
 
-        glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE, &batch.projection[0][0]);
+        {
+            auto projection = batch.projection;
+
+            auto matrix = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
+                                     projection.pos.y + projection.size.y, projection.pos.y);
+
+            glUniformMatrix4fv(batch.shader->getUniformLocation("projection"), 1, GL_FALSE, &matrix[0][0]);
+        }
 
         {
             const auto start = batch.uniforms.start;

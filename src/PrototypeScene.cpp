@@ -100,17 +100,35 @@ void PrototypeScene::render(Renderer& renderer)
             App::setVsync(vsync_);
         }
 
-        if(frame_.window.state == Frame::Window::Fullscreen ||
-           frame_.window.state == Frame::Window::Maximized)
+        // window state
+        if(frame_.window.state == Frame::Window::Fullscreen)
         {
             if(ImGui::Button("restore"))
             {
                 App::setWindow(Frame::Window::Restored);
             }
         }
-        else if(ImGui::Button("set fullscreen"))
+        else
         {
-            App::setWindow(Frame::Window::Fullscreen);
+            if(ImGui::Button("set fullscreen"))
+            {
+                App::setWindow(Frame::Window::Fullscreen);
+            }
+
+            if(frame_.window.state == Frame::Window::Maximized)
+            {
+                if(ImGui::Button("restore"))
+                {
+                    App::setWindow(Frame::Window::Restored);
+                }
+            }
+            else
+            {
+                if(ImGui::Button("maximize"))
+                {
+                    App::setWindow(Frame::Window::Maximized);
+                }
+            }
         }
 
         ImGui::Separator();
