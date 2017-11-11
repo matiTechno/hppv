@@ -161,6 +161,9 @@ void App::run()
 
            for(auto& scene: scenesToRender_)
            {
+               if(!scene->properties_.drawBorder)
+                   continue;
+
                auto pos = scene->properties_.pos;
                auto size = scene->properties_.size;
 

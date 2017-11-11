@@ -49,7 +49,6 @@ glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
                   (glm::vec2(rect.x, rect.y) - projection.pos);
 
     auto newSize = glm::vec2(rect.z, rect.w) * (glm::vec2(scene->properties_.size) / projection.size);
-
     return {newPos, newSize};
 }
 
