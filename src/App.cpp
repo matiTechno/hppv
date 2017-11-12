@@ -105,7 +105,10 @@ void App::run()
 
        refreshFrame();
 
-       for(auto it = scenes_.begin(); it != scenes_.end() - 1; ++it)
+       auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
+                              ImGui::GetIO().WantCaptureMouse;
+
+       for(auto it = scenes_.begin(); it != scenes_.end(); ++it)
        {
            auto& scene = **it;
 
@@ -115,30 +118,14 @@ void App::run()
                scene.properties_.size = frame_.framebufferSize;
            }
 
-           scene.processInput(false);
+           auto isTop = it == scenes_.end() - 1;
 
-           if(scene.properties_.updateWhenNotTop)
+           scene.processInput(isTop && !imguiWantsInput);
+
+           if(scene.properties_.updateWhenNotTop || isTop)
            {
                scene.update();
            }
-       }
-
-       // top scene
-       {
-           auto& topScene = *scenes_.back();
-
-           if(topScene.properties_.maximize)
-           {
-               topScene.properties_.pos = {0, 0};
-               topScene.properties_.size = frame_.framebufferSize;
-           }
-
-           auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
-                                  ImGui::GetIO().WantCaptureMouse;
-
-           topScene.processInput(!imguiWantsInput);
-
-           topScene.update();
        }
 
        scenesToRender_.clear();
@@ -152,37 +139,6 @@ void App::run()
        }
 
        glClear(GL_COLOR_BUFFER_BIT);
-
-       // borders
-       {
-           renderer_->viewport({0, 0, frame_.framebufferSize});
-           renderer_->projection({{0, 0}, frame_.framebufferSize});
-           renderer_->shader(Render::Color);
-
-           for(auto& scene: scenesToRender_)
-           {
-               if(!scene->properties_.drawBorder)
-                   continue;
-
-               auto pos = scene->properties_.pos;
-               auto size = scene->properties_.size;
-
-               Sprite sprite;
-               sprite.color = {0.f, 1.f, 0.f, 0.4f};
-               sprite.pos = pos - 1;
-               sprite.size = size + 4;
-
-               renderer_->cache(sprite);
-
-               sprite.color = {0.f, 0.f, 0.f, 1.f};
-               sprite.pos = pos;
-               sprite.size = size;
-
-               renderer_->cache(sprite);
-           }
-
-           renderer_->flush();
-       }
 
        for(auto scene: scenesToRender_)
        {

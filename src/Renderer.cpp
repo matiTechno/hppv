@@ -95,6 +95,7 @@ Renderer::Renderer():
         first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
         first.premultiplyAlpha = true;
+        first.antialiasedSprites = false;
         first.flipTexRectX = false;
         first.flipTexRectY = false;
         first.flipTextureY = false;
@@ -391,6 +392,7 @@ void Renderer::flush()
 
         // don't print error msg if shader does not have this uniform
         glUniform1i(shader.getUniformLocation("premultiplyAlpha", false), batch.premultiplyAlpha);
+        glUniform1i(shader.getUniformLocation("antialiasedSprites", false), batch.antialiasedSprites);
 
         shader.uniform("flipTexRectX", batch.flipTexRectX);
         shader.uniform("flipTexRectY", batch.flipTexRectY);

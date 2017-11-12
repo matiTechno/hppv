@@ -29,7 +29,6 @@ public:
         glm::ivec2 pos = {0, 0};
         glm::ivec2 size = {100, 100};
         bool maximize = false;
-        bool drawBorder = true;
         bool opaque = true;
         bool updateWhenNotTop = false;
         // only polled for the top scene

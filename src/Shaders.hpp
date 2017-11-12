@@ -16,14 +16,14 @@ uniform bool flipTexRectY = false;
 uniform bool flipTextureY = false;
 
 out vec4 vColor;
-out vec2 vPosition;
 out vec2 vTexCoords;
+out vec2 vPos;
 
 void main()
 {
     gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
     vColor = color;
-    vPosition = vertex.xy;
+    vPos = vertex.xy;
 
     vec2 texCoords = vertex.zw;
 
@@ -52,21 +52,33 @@ static const char* basicSource = R"(
 #version 330
 
 in vec4 vColor;
-in vec2 vPosition;
 in vec2 vTexCoords;
+in vec2 vPos;
 
 uniform sampler2D sampler;
 uniform int mode = 0;
 uniform bool premultiplyAlpha = false;
+uniform bool antialiasedSprites = false;
 
 const float radius = 0.5;
 const vec2 center = vec2(0.5, 0.5);
 
 out vec4 color;
 
+void rectAlpha(out float alpha)
+{
+    float deltaX = fwidth(length(vPos.x - center.x)) * 2;
+    float distX = abs(vPos.x - center.x);
+    alpha = 1 - smoothstep(0.5 - deltaX, 0.5, distX);
+
+    float deltaY = fwidth(length(vPos.y - center.y)) * 2;
+    float distY = abs(vPos.y - center.y);
+    alpha *= 1 - smoothstep(0.5 - deltaY, 0.5, distY);
+}
+
 void circleAlpha(out float alpha)
 {
-    float distanceFromCenter = length(vPosition - center);
+    float distanceFromCenter = length(vPos - center);
     float delta = fwidth(distanceFromCenter) * 2;
     alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
 }
@@ -75,7 +87,14 @@ void main()
 {
     if(mode == 0) // Color
     {
-        color = vColor;
+        float alpha = 1;
+
+        if(antialiasedSprites)
+        {
+            rectAlpha(alpha);
+        }
+
+        color = vColor * alpha;
     }
     else if(mode == 2) // CircleColor
     {
@@ -94,7 +113,14 @@ void main()
 
         if(mode == 1) // Tex
         {
-            color = sample * vColor;
+            float alpha = 1;
+
+            if(antialiasedSprites)
+            {
+                rectAlpha(alpha);
+            }
+
+            color = sample * vColor * alpha;
         }
         else if(mode == 3) // CircleTex
         {
@@ -112,8 +138,8 @@ static const char* sdfSource = R"(
 #version 330
 
 in vec4 vColor;
-in vec2 vPosition;
 in vec2 vTexCoords;
+in vec2 vPos;
 
 uniform sampler2D sampler;
 uniform int mode;
@@ -131,7 +157,7 @@ out vec4 color;
 
 void main()
 {
-    float smoothing = fwidth(length(vPosition - center)) * 2;
+    float smoothing = fwidth(length(vPos - center)) * 2;
     float distance = texture(sampler, vTexCoords).a;
 
     if(mode == 4) // Sdf

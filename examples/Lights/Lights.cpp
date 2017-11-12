@@ -14,8 +14,8 @@ static const char* lightSource = R"(
 #version 330
 
 in vec4 vColor;
-in vec2 vPosition;
 in vec2 vTexCoords;
+in vec2 vPos;
 
 uniform sampler2D sampler;
 
@@ -26,11 +26,27 @@ out vec4 color;
 
 void main()
 {
-   float distanceFromCenter = length(vPosition - center);
+   float distanceFromCenter = length(vPos - center);
    float delta = fwidth(distanceFromCenter) * 2;
    float alpha = 1 - smoothstep(0, radius, distanceFromCenter);
    vec4 sample = texture(sampler, vTexCoords);
    color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
+}
+)";
+
+static const char* gradientSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vPos;
+
+out vec4 color;
+
+void main()
+{
+    color = vec4(0, 0, 1 - abs(vPos.y * 2 - 1), 1);
 }
 )";
 
@@ -39,7 +55,8 @@ class Lights: public hppv::PrototypeScene
 public:
     Lights():
         hppv::PrototypeScene(hppv::Space(0.f, 0.f, 100.f, 100.f), 1.1f, false),
-        shader_({hppv::Renderer::vertexSource, lightSource}, "light"),
+        shaderLight_({hppv::Renderer::vertexSource, lightSource}, "light"),
+        shaderGradient_({hppv::Renderer::vertexSource, gradientSource}, "gradient"),
         texture_("res/mandrill.png"),
         framebuffer_(GL_RGBA8, 1)
     {
@@ -49,7 +66,7 @@ public:
     }
 
 private:
-    hppv::Shader shader_;
+    hppv::Shader shaderLight_, shaderGradient_;
     hppv::Texture texture_;
     hppv::Framebuffer framebuffer_;
     float time_ = 0.f;
@@ -57,6 +74,15 @@ private:
     void prototypeRender(hppv::Renderer& renderer) override
     {
         time_ += frame_.frameTime;
+
+        // scene background
+        {
+            hppv::Sprite sprite(prototype_.space);
+
+            renderer.shader(shaderGradient_);
+            renderer.cache(sprite);
+            renderer.flush();
+        }
 
         // render all objects to framebuffer
         {
@@ -66,9 +92,7 @@ private:
             renderer.viewport(framebuffer_);
 
             {
-                hppv::Sprite sprite;
-                sprite.pos = prototype_.initialSpace.pos;
-                sprite.size = prototype_.initialSpace.size;
+                hppv::Sprite sprite(prototype_.initialSpace);
                 sprite.texRect = {0.f, 0.f, texture_.getSize()};
 
                 renderer.shader(hppv::Render::Tex);
@@ -104,7 +128,7 @@ private:
         }
 
         // spot lights
-        renderer.shader(shader_);
+        renderer.shader(shaderLight_);
         {
             hppv::Circle circle;
             circle.center.x = 50.f + glm::sin(time_ / 2.f) * 20.f;
@@ -117,7 +141,7 @@ private:
             renderer.cache(circle);
 
             circle.center.x = 30.f + glm::sin(time_ / 4.f) * 20.f;
-            circle.center.y = 30.f + glm::cos(time_ / 3.f) * 20.f;
+            circle.center.y = 30.f + glm::cos(time_ / 4.f) * 20.f;
             circle.radius = 5.f;
             circle.color = {1.f, 1.f, 0.5f, 1.f};
             circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)},

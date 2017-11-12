@@ -58,6 +58,11 @@ struct Sprite
         size(circle.radius * 2.f)
     {}
 
+    Sprite(Space space):
+        pos(space.pos),
+        size(space.size)
+    {}
+
     glm::vec2 pos = {0.f, 0.f};
     glm::vec2 size = {1.f, 1.f};
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
@@ -147,11 +152,16 @@ public:
         batch.dstAlpha = dstAlpha;
     }
 
-    // ----- enabled on default
+    // ----- fragment extensions
 
-    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;}
+    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;} // enabled on default
 
-    // ----- disabled on default
+    // good for rendering rotated sprites,
+    // not so good when one sprite must perfectly cover the other
+
+    void antialiasedSprites(bool on) {getBatchToUpdate().antialiasedSprites = on;} // disabled on default
+
+    // ----- vertex extensions, disabled on default
 
     void flipTexRectX(bool on) {getBatchToUpdate().flipTexRectX = on;}
     void flipTexRectY(bool on) {getBatchToUpdate().flipTexRectY = on;}
@@ -173,7 +183,7 @@ public:
 
     // out vec4 vColor;
     // out vec2 vTexCoords;
-    // out vec2 vPosition; // [0, 1], used for circle shading and fwidth()
+    // out vec2 vPos; // [0, 1], used for circle shading and fwidth()
 
     static const char* vertexSource;
 
@@ -248,6 +258,7 @@ private:
         GLenum srcAlpha;
         GLenum dstAlpha;
         bool premultiplyAlpha;
+        bool antialiasedSprites;
         bool flipTexRectX;
         bool flipTexRectY;
         bool flipTextureY;

@@ -115,6 +115,8 @@ void PrototypeScene::render(Renderer& renderer)
                 App::setWindow(Frame::Window::Fullscreen);
             }
 
+            ImGui::SameLine();
+
             if(frame_.window.state == Frame::Window::Maximized)
             {
                 if(ImGui::Button("restore"))
@@ -129,6 +131,11 @@ void PrototypeScene::render(Renderer& renderer)
                     App::setWindow(Frame::Window::Maximized);
                 }
             }
+        }
+
+        if(ImGui::Button("quit"))
+        {
+            App::quit();
         }
 
         ImGui::Separator();
