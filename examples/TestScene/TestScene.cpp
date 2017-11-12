@@ -130,8 +130,8 @@ private:
                     ImGui::ColorEdit4("outline color", &sdf.outline.color.x);
                     ImGui::SliderFloat("outline width", &sdf.outline.width, 0.f, 0.5f);
 
-                    renderer.uniform("outlineColor", sdf.outline.color);
-                    renderer.uniform("outlineWidth", sdf.outline.width);
+                    renderer.uniform4f("outlineColor", sdf.outline.color);
+                    renderer.uniform1f("outlineWidth", sdf.outline.width);
                 }
                 else if(shader == hppv::Render::SdfGlow)
                 {
@@ -145,8 +145,8 @@ private:
                     ImGui::SliderFloat("glow width", &sdf.glow.width, 0.f, 0.5f);
                     ImGui::Checkbox("animate", &sdf.glow.animate);
 
-                    renderer.uniform("glowColor", sdf.glow.color);
-                    renderer.uniform("glowWidth", sdf.glow.width);
+                    renderer.uniform4f("glowColor", sdf.glow.color);
+                    renderer.uniform1f("glowWidth", sdf.glow.width);
                 }
                 else if(shader == hppv::Render::SdfShadow)
                 {
@@ -162,9 +162,9 @@ private:
                     ImGui::SliderFloat2("shadow offset", &sdf.shadow.offset.x, -0.01f, 0.01f);
                     ImGui::Checkbox("animate", &sdf.shadow.animate);
 
-                    renderer.uniform("shadowColor", sdf.shadow.color);
-                    renderer.uniform("shadowSmoothing", sdf.shadow.smoothing);
-                    renderer.uniform("shadowOffset", sdf.shadow.offset);
+                    renderer.uniform4f("shadowColor", sdf.shadow.color);
+                    renderer.uniform1f("shadowSmoothing", sdf.shadow.smoothing);
+                    renderer.uniform2f("shadowOffset", sdf.shadow.offset);
                 }
             }
             // imgui end

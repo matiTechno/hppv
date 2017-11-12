@@ -65,8 +65,8 @@ private:
         ImGui::End();
 
         renderer.shader(*activeShader_);
-        renderer.uniform("time", time_);
-        renderer.uniform("resolution", properties_.size);
+        renderer.uniform1f("time", time_);
+        renderer.uniform2f("resolution", properties_.size);
         renderer.projection(hppv::Sprite());
         renderer.cache(hppv::Sprite());
     }

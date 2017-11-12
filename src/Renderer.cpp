@@ -199,45 +199,45 @@ void Renderer::shader(Render mode)
         batch.shader = &shaderSdf_;
     }
 
-    uniform("mode", modeId);
+    uniform1i("mode", modeId);
 }
 
-void Renderer::uniform(const std::string& name, int value)
+void Renderer::uniform1i(const std::string& name, int value)
 {
     uniforms_.emplace_back(Uniform::I1, name);
     uniforms_.back().i1 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform(const std::string& name, float value)
+void Renderer::uniform1f(const std::string& name, float value)
 {
     uniforms_.emplace_back(Uniform::F1, name);
     uniforms_.back().f1 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform(const std::string& name, glm::vec2 value)
+void Renderer::uniform2f(const std::string& name, glm::vec2 value)
 {
     uniforms_.emplace_back(Uniform::F2, name);
     uniforms_.back().f2 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform(const std::string& name, glm::vec3 value)
+void Renderer::uniform3f(const std::string& name, glm::vec3 value)
 {
     uniforms_.emplace_back(Uniform::F3, name);
     uniforms_.back().f3 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform(const std::string& name, glm::vec4 value)
+void Renderer::uniform4f(const std::string& name, glm::vec4 value)
 {
     uniforms_.emplace_back(Uniform::F4, name);
     uniforms_.back().f4 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform(const std::string& name, const glm::mat4& value)
+void Renderer::uniformMat4f(const std::string& name, const glm::mat4& value)
 {
     uniforms_.emplace_back(Uniform::MAT4F, name);
     uniforms_.back().mat4f = value;
@@ -390,13 +390,15 @@ void Renderer::flush()
         auto& shader = *batch.shader;
         shader.bind();
 
-        // don't print error msg if shader does not have this uniform
-        glUniform1i(shader.getUniformLocation("premultiplyAlpha", false), batch.premultiplyAlpha);
-        glUniform1i(shader.getUniformLocation("antialiasedSprites", false), batch.antialiasedSprites);
+        if(&shader == &shaderBasic_)
+        {
+            shader.uniform1i("premultiplyAlpha", batch.premultiplyAlpha);
+            shader.uniform1i("antialiasedSprites", batch.antialiasedSprites);
+        }
 
-        shader.uniform("flipTexRectX", batch.flipTexRectX);
-        shader.uniform("flipTexRectY", batch.flipTexRectY);
-        shader.uniform("flipTextureY", batch.flipTextureY);
+        shader.uniform1i("flipTexRectX", batch.flipTexRectX);
+        shader.uniform1i("flipTexRectY", batch.flipTexRectY);
+        shader.uniform1i("flipTextureY", batch.flipTextureY);
 
         {
             auto projection = batch.projection;
@@ -404,7 +406,7 @@ void Renderer::flush()
             auto matrix = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
                                      projection.pos.y + projection.size.y, projection.pos.y);
 
-            shader.uniform("projection", matrix);
+            shader.uniformMat4f("projection", matrix);
         }
 
         {
@@ -416,12 +418,12 @@ void Renderer::flush()
                 const auto& uniform = uniforms_[i];
                 switch(uniform.type)
                 {
-                case Uniform::I1: shader.uniform(uniform.name, uniform.i1); break;
-                case Uniform::F1: shader.uniform(uniform.name, uniform.f1); break;
-                case Uniform::F2: shader.uniform(uniform.name, uniform.f2); break;
-                case Uniform::F3: shader.uniform(uniform.name, uniform.f3); break;
-                case Uniform::F4: shader.uniform(uniform.name, uniform.f4); break;
-                case Uniform::MAT4F: shader.uniform(uniform.name, uniform.mat4f);
+                case Uniform::I1: shader.uniform1i(uniform.name, uniform.i1); break;
+                case Uniform::F1: shader.uniform1f(uniform.name, uniform.f1); break;
+                case Uniform::F2: shader.uniform2f(uniform.name, uniform.f2); break;
+                case Uniform::F3: shader.uniform3f(uniform.name, uniform.f3); break;
+                case Uniform::F4: shader.uniform4f(uniform.name, uniform.f4); break;
+                case Uniform::MAT4F: shader.uniformMat4f(uniform.name, uniform.mat4f);
                 }
             }
         }

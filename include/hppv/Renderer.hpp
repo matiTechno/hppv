@@ -126,12 +126,12 @@ public:
 
     // -----
 
-    void uniform(const std::string& name, int value);
-    void uniform(const std::string& name, float value);
-    void uniform(const std::string& name, glm::vec2 value);
-    void uniform(const std::string& name, glm::vec3 value);
-    void uniform(const std::string& name, glm::vec4 value);
-    void uniform(const std::string& name, const glm::mat4& value);
+    void uniform1i(const std::string& name, int value);
+    void uniform1f(const std::string& name, float value);
+    void uniform2f(const std::string& name, glm::vec2 value);
+    void uniform3f(const std::string& name, glm::vec3 value);
+    void uniform4f(const std::string& name, glm::vec4 value);
+    void uniformMat4f(const std::string& name, const glm::mat4& value);
 
     // ----- default sampler is Sample::Linear
 
@@ -152,7 +152,7 @@ public:
         batch.dstAlpha = dstAlpha;
     }
 
-    // ----- fragment extensions
+    // ----- fragment extensions for first 4 Render modes
 
     void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;} // enabled on default
 

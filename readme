@@ -3,18 +3,17 @@ high performance physics visualization
 
 todo:
 
-* complete PixelShadows example
+* complete / understand PixelShadows example
+* custom geometry (test on geometry shadows / lights example?)
+* projection rotation, camera, Space redesign
+* bezier curves
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
-* custom shapes
-* bezier curves
-* stack allocator / vector with static buffer / flat map / general performance
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
-* replace asserts with something more robust?
 * load font from ttf
-* projection rotation, camera, Space redesign
 * license
+* stack allocator / vector with static buffer / flat map / general performance
 
 included:
 

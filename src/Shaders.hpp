@@ -65,22 +65,22 @@ const vec2 center = vec2(0.5, 0.5);
 
 out vec4 color;
 
-void rectAlpha(out float alpha)
+float rectAlpha()
 {
     float deltaX = fwidth(length(vPos.x - center.x)) * 2;
     float distX = abs(vPos.x - center.x);
-    alpha = 1 - smoothstep(0.5 - deltaX, 0.5, distX);
-
+    float alpha = 1 - smoothstep(0.5 - deltaX, 0.5, distX);
     float deltaY = fwidth(length(vPos.y - center.y)) * 2;
     float distY = abs(vPos.y - center.y);
     alpha *= 1 - smoothstep(0.5 - deltaY, 0.5, distY);
+    return alpha;
 }
 
-void circleAlpha(out float alpha)
+float circleAlpha()
 {
     float distanceFromCenter = length(vPos - center);
     float delta = fwidth(distanceFromCenter) * 2;
-    alpha = 1 - smoothstep(radius - delta, radius, distanceFromCenter);
+    return 1 - smoothstep(radius - delta, radius, distanceFromCenter);
 }
 
 void main()
@@ -91,16 +91,14 @@ void main()
 
         if(antialiasedSprites)
         {
-            rectAlpha(alpha);
+            alpha = rectAlpha();
         }
 
         color = vColor * alpha;
     }
     else if(mode == 2) // CircleColor
     {
-        float alpha;
-        circleAlpha(alpha);
-        color = vColor * alpha;
+        color = vColor * circleAlpha();
     }
     else
     {
@@ -117,16 +115,14 @@ void main()
 
             if(antialiasedSprites)
             {
-                rectAlpha(alpha);
+                alpha = rectAlpha();
             }
 
             color = sample * vColor * alpha;
         }
         else if(mode == 3) // CircleTex
         {
-            float alpha;
-            circleAlpha(alpha);
-            color = sample * vColor * alpha;
+            color = sample * vColor * circleAlpha();
         }
     }
 }

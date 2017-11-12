@@ -62,7 +62,7 @@ public:
 
     bool isValid() const {return program_.getId();}
 
-    GLint getUniformLocation(std::string_view name, bool printError = true) const;
+    GLint getUniformLocation(std::string_view name) const;
 
     // after successful reload:
     // * shader must be rebound
@@ -85,12 +85,10 @@ public:
     void uniformMat4f(std::string_view name, const float* value);
 
 #ifdef SHADER_GLM
-    void uniform(std::string_view name, int value) {uniform1i(name, value);}
-    void uniform(std::string_view name, float value) {uniform1f(name, value);}
-    void uniform(std::string_view name, glm::vec2 value) {uniform2f(name, &value.x);}
-    void uniform(std::string_view name, glm::vec3 value) {uniform3f(name, &value.x);}
-    void uniform(std::string_view name, glm::vec4 value) {uniform4f(name, &value.x);}
-    void uniform(std::string_view name, const glm::mat4& value) {uniformMat4f(name, &value[0][0]);}
+    void uniform2f(std::string_view name, glm::vec2 value) {uniform2f(name, &value.x);}
+    void uniform3f(std::string_view name, glm::vec3 value) {uniform3f(name, &value.x);}
+    void uniform4f(std::string_view name, glm::vec4 value) {uniform4f(name, &value.x);}
+    void uniformMat4f(std::string_view name, const glm::mat4& value) {uniformMat4f(name, &value[0][0]);}
 #endif
 
 private:
@@ -222,18 +220,15 @@ Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view
     swapProgram(sources);
 }
 
-GLint Shader::getUniformLocation(const std::string_view name, bool printError) const
+GLint Shader::getUniformLocation(const std::string_view name) const
 {
     auto it = uniformLocations_.find(name);
 
     if(it == uniformLocations_.end() &&
        inactiveUniforms_.find(name) == inactiveUniforms_.end())
     {
-        if(printError)
-        {
-            std::cout << "Shader, " << id_ << ": inactive uniform = " << name << std::endl;
-            inactiveUniforms_.emplace(name);
-        }
+        std::cout << "Shader, " << id_ << ": inactive uniform = " << name << std::endl;
+        inactiveUniforms_.emplace(name);
         return 666;
     }
 
