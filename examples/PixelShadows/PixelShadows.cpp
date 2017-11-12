@@ -48,7 +48,6 @@ void main()
 
     color = vec4(vec3(distance), 1);
 }
-
 )";
 
 static const char* lightSource = R"(
@@ -120,7 +119,7 @@ private:
         renderer.viewport(fbShadow_);
         {
             Sprite sprite(prototype_.space);
-            auto& occlusionTex = fbOcclusion_.getTexture(0);
+            auto& occlusionTex = fbOcclusion_.getTexture();
             sprite.texRect = {0.f, 0.f, occlusionTex.getSize()};
 
             renderer.uniform("resolution", occlusionTex.getSize());

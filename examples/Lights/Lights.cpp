@@ -113,7 +113,7 @@ private:
 
         auto projection = hppv::expandToMatchAspectRatio(prototype_.space, properties_.size);
 
-        renderer.texture(framebuffer_.getTexture(0));
+        renderer.texture(framebuffer_.getTexture());
 
         // ambient light
         {
@@ -121,7 +121,7 @@ private:
             sprite.pos = projection.pos;
             sprite.size = projection.size;
             sprite.color = {0.1f, 0.1f, 0.1f, 1.f};
-            sprite.texRect = {0.f, 0.f, framebuffer_.getTexture(0).getSize()};
+            sprite.texRect = {0.f, 0.f, framebuffer_.getTexture().getSize()};
 
             renderer.shader(hppv::Render::Tex);
             renderer.cache(sprite);

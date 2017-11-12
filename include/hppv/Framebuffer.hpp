@@ -19,7 +19,7 @@ public:
 
     void unbind(); // binds default framebuffer
 
-    Texture& getTexture(int attachment) {return textures_[attachment];}
+    Texture& getTexture(int attachment = 0) {return textures_[attachment];}
 
     glm::ivec2 getSize() const {return textures_[0].getSize();}
 
