@@ -12,6 +12,7 @@ todo:
 * better cmake (finding libraries / cross-compilation)
 * replace asserts with something more robust?
 * load font from ttf
+* projection rotation, camera, Space redesign
 * license
 
 included:

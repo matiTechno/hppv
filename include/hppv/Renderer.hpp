@@ -34,6 +34,14 @@ struct Text
     glm::vec2 getSize() const;
 };
 
+struct Circle
+{
+    glm::vec2 center;
+    float radius;
+    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+    glm::vec4 texRect;
+};
+
 struct Sprite
 {
     Sprite() = default;
@@ -45,19 +53,16 @@ struct Sprite
         rotationPoint(text.rotationPoint)
     {}
 
+    Sprite(const Circle& circle):
+        pos(circle.center - circle.radius),
+        size(circle.radius * 2.f)
+    {}
+
     glm::vec2 pos = {0.f, 0.f};
     glm::vec2 size = {1.f, 1.f};
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f};
-    glm::vec4 texRect;
-};
-
-struct Circle
-{
-    glm::vec2 center;
-    float radius;
-    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     glm::vec4 texRect;
 };
 
