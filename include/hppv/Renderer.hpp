@@ -90,7 +90,7 @@ enum class Sample
 };
 
 // * in all cases x-axis grows right, y-axis grows down
-// * state changes on non-empty batch will break it
+// * state changes on non-empty batch break it
 // * texture / sampler / uniform states are lost after flush()
 
 class Renderer
