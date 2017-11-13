@@ -1,6 +1,7 @@
 #include <vector>
 
 #include <glm/gtc/constants.hpp>
+#include <glm/trigonometric.hpp>
 
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
@@ -70,7 +71,6 @@ float sample(vec2 texCoords, float r)
 
 void main()
 {
-
     vec2 norm = vTexCoords * 2 - 1;
     float theta = atan(norm.y, norm.x);
     float r = length(norm);
@@ -105,16 +105,32 @@ public:
         shaderLight_({hppv::Renderer::vertexSource, lightSource}, "light")
     {
         {
-            light_.color = {1.f, 0.5f, 0.2f, 0.f};
-            light_.radius = 2.f;
+            hppv::Circle circle;
+            circle.center = {50.f, 50.f};
+            circle.radius = 70.f;
+            circle.color = {1.f, 0.5f, 0.2f, 0.f};
+            lights_.push_back(circle);
+        }
+        {
+            hppv::Circle circle;
+            circle.center = {0.f, 0.f};
+            circle.radius = 50.f;
+            circle.color = {0.6f, 0.6f, 1.f, 0.f};
+            lights_.push_back(circle);
+        }
+        {
+            hppv::Circle circle;
+            circle.radius = 30.f;
+            circle.color = {0.f, 1.f, 0.f, 0.f};
+            lights_.push_back(circle);
         }
         {
             hppv::Sprite sprite;
             sprite.pos = {10.f, 10.f};
             sprite.size = {30.f, 8.f};
-            sprite.color = {0.2f, 0.f, 0.f, 1.f};
+            sprite.color = {0.7f, 0.f, 0.f, 1.f};
             sprite.rotation = glm::pi<float>() / 8.f;
-            sprites_.push_back(sprite);
+            objects_.push_back(sprite);
         }
         {
             hppv::Sprite sprite;
@@ -122,14 +138,14 @@ public:
             sprite.size = {40.f, 40.f};
             sprite.color = {0.f, 0.3f, 0.f, 1.f};
             sprite.rotation = -0.1f;
-            sprites_.push_back(sprite);
+            objects_.push_back(sprite);
         }
         {
             hppv::Sprite sprite;
             sprite.pos = {40.f, 30.f};
             sprite.size = {5.f, 5.f};
-            sprite.color = {0.2f, 0.2f, 0.2f, 1.f};
-            sprites_.push_back(sprite);
+            sprite.color = {0.7f, 0.f, 0.f, 1.f};
+            objects_.push_back(sprite);
         }
     }
 
@@ -138,75 +154,87 @@ private:
 
     hppv::Framebuffer fbOcclusion_, fbShadow_;
     hppv::Shader shaderShadow_, shaderLight_;
-    hppv::Circle light_;
-    std::vector<hppv::Sprite> sprites_;
+    std::vector<hppv::Circle> lights_;
+    std::vector<hppv::Sprite> objects_;
+    float time_ = 0.f;
+
+    void update() override
+    {
+        time_ += frame_.frameTime;
+
+        lights_[2].center.x = 90.f + 40 * glm::sin(time_);
+        lights_[2].center.y = 80.f + 40 * glm::cos(time_);
+    }
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
         renderer.antialiasedSprites(true);
-        light_.center = space_.current.pos + space_.current.size / 2.f;
 
-        // occlusion map
+        for(auto& light: lights_)
         {
-            fbOcclusion_.bind();
-            fbOcclusion_.setSize(glm::ivec2(LightRays));
-            fbOcclusion_.clear();
-            renderer.viewport(fbOcclusion_);
+            // occlusion map
             {
-                renderer.shader(hppv::Render::Color);
-
-                for(auto& sprite: sprites_)
+                fbOcclusion_.bind();
+                fbOcclusion_.setSize(glm::ivec2(LightRays));
+                fbOcclusion_.clear();
+                renderer.viewport(fbOcclusion_);
+                renderer.projection(hppv::Sprite(light));
                 {
+                    renderer.shader(hppv::Render::Color);
+
+                    for(auto& object: objects_)
+                    {
+                        renderer.cache(object);
+                    }
+                }
+                renderer.projection(space_.projected);
+                renderer.flush();
+            }
+            // shadow map
+            {
+                fbShadow_.bind();
+                fbShadow_.setSize({LightRays, 1});
+                fbShadow_.clear();
+                renderer.viewport(fbShadow_);
+                {
+                    hppv::Sprite sprite(space_.projected);
+                    auto& occlusionTex = fbOcclusion_.getTexture();
+                    sprite.texRect = {0, 0, occlusionTex.getSize()};
+
+                    renderer.shader(shaderShadow_);
+                    renderer.uniform1f("resolution", LightRays);
+                    renderer.texture(occlusionTex);
                     renderer.cache(sprite);
                 }
+                renderer.flush();
+                renderer.viewport(this);
+                fbShadow_.unbind();
             }
-            renderer.flush();
-        }
-        // shadow map
-        {
-            fbShadow_.bind();
-            fbShadow_.setSize({LightRays, 1});
-            fbShadow_.clear();
-            renderer.viewport(fbShadow_);
+            // light
             {
-                hppv::Sprite sprite(space_.projected);
-                auto& occlusionTex = fbOcclusion_.getTexture();
-                sprite.texRect = {0, 0, occlusionTex.getSize()};
+                hppv::Sprite sprite(light);
+                sprite.color = light.color;
+                auto& shadowTex = fbShadow_.getTexture();
+                sprite.texRect = {0, 0, shadowTex.getSize()};
 
-                renderer.shader(shaderShadow_);
+                renderer.flipTextureY(true); // why?
+                renderer.shader(shaderLight_);
                 renderer.uniform1f("resolution", LightRays);
-                renderer.texture(occlusionTex);
+                renderer.texture(shadowTex);
                 renderer.cache(sprite);
+                renderer.flipTextureY(false);
+                renderer.flush();
             }
-            renderer.flush();
-            renderer.viewport(this);
-            fbShadow_.unbind();
         }
-        // shadows
-        {
-            hppv::Sprite sprite(space_.projected);
-            sprite.color = light_.color;
-            auto& shadowTex = fbShadow_.getTexture();
-            sprite.texRect = {0, 0, shadowTex.getSize()};
 
-            renderer.flipTextureY(true);
-            renderer.shader(shaderLight_);
-            renderer.uniform1f("resolution", LightRays);
-            renderer.texture(shadowTex);
-            renderer.cache(sprite);
-            renderer.flipTextureY(false);
-        }
         // objects
         {
             renderer.shader(hppv::Render::Color);
 
-            for(auto& sprite: sprites_)
+            for(auto& object: objects_)
             {
-                renderer.cache(sprite);
+                renderer.cache(object);
             }
-
-            renderer.shader(hppv::Render::CircleColor);
-            renderer.cache(light_);
         }
     }
 };
