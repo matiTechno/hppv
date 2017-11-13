@@ -3,7 +3,7 @@ high performance physics visualization
 
 todo:
 
-* complete / understand PixelShadows example
+* complete PixelShadows example
 * custom geometry (test on geometry shadows / lights example?)
 * projection rotation, camera, Space redesign
 * bezier curves

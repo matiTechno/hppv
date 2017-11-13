@@ -90,8 +90,7 @@ enum class Sample
 };
 
 // * in all cases x-axis grows right, y-axis grows down
-// * state changes on non-empty cache will break batch unless
-//   it doesn't hold any instances
+// * state changes on non-empty batch will break it
 // * texture / sampler / uniform states are lost after flush()
 
 class Renderer
@@ -101,7 +100,7 @@ public:
 
     Renderer();
 
-    // ----- disabled on default
+    // ----- disabled by default
 
     void scissor(glm::ivec4 scissor);
     void disableScissor() {getBatchToUpdate().scissorEnabled = false;}
@@ -152,16 +151,16 @@ public:
         batch.dstAlpha = dstAlpha;
     }
 
-    // ----- fragment extensions for first 4 Render modes
+    // ----- fragment shader options for the first 4 Render modes
 
-    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;} // enabled on default
+    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;} // enabled by default
 
     // good for rendering rotated sprites,
     // not so good when one sprite must perfectly cover the other
 
-    void antialiasedSprites(bool on) {getBatchToUpdate().antialiasedSprites = on;} // disabled on default
+    void antialiasedSprites(bool on) {getBatchToUpdate().antialiasedSprites = on;} // disabled by default
 
-    // ----- vertex extensions, disabled on default
+    // ----- vertex shader options, disabled by default
 
     void flipTexRectX(bool on) {getBatchToUpdate().flipTexRectX = on;}
     void flipTexRectY(bool on) {getBatchToUpdate().flipTexRectY = on;}
