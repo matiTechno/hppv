@@ -19,13 +19,43 @@ public:
     void render(Renderer& renderer)  final override;
 
 protected:
-    struct
+
+    void prototypeRenderImGui(bool on) {renderImGui_ = on;}
+
+    class PrototypeSpace
     {
-        const Space initialSpace;
-        Space space;
-        bool renderImgui = true;
+    public:
+        PrototypeSpace(Space initial):
+            initial(initial),
+            current(current_),
+            projected(projected_),
+            current_(initial)
+        {}
+
+        void set(Space space)
+        {
+            current_ = space;
+            projected_ = expandToMatchAspectRatio(space, sceneSize_);
+        }
+
+        // call at the beginning of every frame (Scene size might have changed)
+        // PrototypeScene already does it
+        void newFrame(glm::ivec2 sceneSize)
+        {
+            sceneSize_ = sceneSize;
+            projected_ = expandToMatchAspectRatio(current, sceneSize);
+        }
+
+        const Space initial;
+        const Space& current;
+        const Space& projected;
+
+    private:
+        Space current_;
+        Space projected_;
+        glm::ivec2 sceneSize_;
     }
-    prototype_;
+    space_;
 
 private:
     virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
@@ -39,6 +69,7 @@ private:
     int frameCount_ = 0;
     float averageFrameTimeMs_ = 0.f;
     int averageFps_ = 0;
+    bool renderImGui_ = true;
 
     // we should get the value from App
     bool vsync_ = true;

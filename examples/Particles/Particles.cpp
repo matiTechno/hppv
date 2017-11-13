@@ -52,8 +52,8 @@ int main()
 void Particles::configureEmitter()
 {
     {
-        auto pos = prototype_.initialSpace.pos;
-        auto size = prototype_.initialSpace.size;
+        auto pos = space_.initial.pos;
+        auto size = space_.initial.size;
         emitter_.spawn.size = {size.x, 10.f};
         emitter_.spawn.pos = {pos.x, pos.y + size.y - emitter_.spawn.size.y - 20.f};
     }

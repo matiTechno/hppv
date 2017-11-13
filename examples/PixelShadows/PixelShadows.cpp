@@ -144,7 +144,7 @@ private:
     void prototypeRender(hppv::Renderer& renderer) override
     {
         renderer.antialiasedSprites(true);
-        light_.center = prototype_.space.pos + prototype_.space.size / 2.f;
+        light_.center = space_.current.pos + space_.current.size / 2.f;
 
         // occlusion map
         {
@@ -169,7 +169,7 @@ private:
             fbShadow_.clear();
             renderer.viewport(fbShadow_);
             {
-                hppv::Sprite sprite(prototype_.space);
+                hppv::Sprite sprite(space_.projected);
                 auto& occlusionTex = fbOcclusion_.getTexture();
                 sprite.texRect = {0, 0, occlusionTex.getSize()};
 
@@ -184,7 +184,7 @@ private:
         }
         // shadows
         {
-            hppv::Sprite sprite(prototype_.space);
+            hppv::Sprite sprite(space_.projected);
             sprite.color = light_.color;
             auto& shadowTex = fbShadow_.getTexture();
             sprite.texRect = {0, 0, shadowTex.getSize()};

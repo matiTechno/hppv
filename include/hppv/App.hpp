@@ -53,7 +53,7 @@ private:
     };
 
     Deleter deleterGlfw_;
-    Deleter deleterImgui_;
+    Deleter deleterImGui_;
     std::unique_ptr<Renderer> renderer_;
     std::vector<std::unique_ptr<Scene>> scenes_;
     std::vector<Scene*> scenesToRender_;

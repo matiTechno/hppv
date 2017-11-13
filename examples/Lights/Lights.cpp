@@ -77,7 +77,7 @@ private:
 
         // scene background
         {
-            hppv::Sprite sprite(prototype_.space);
+            hppv::Sprite sprite(space_.projected);
 
             renderer.shader(shaderGradient_);
             renderer.cache(sprite);
@@ -92,7 +92,7 @@ private:
             renderer.viewport(framebuffer_);
 
             {
-                hppv::Sprite sprite(prototype_.initialSpace);
+                hppv::Sprite sprite(space_.initial);
                 sprite.texRect = {0.f, 0.f, texture_.getSize()};
 
                 renderer.shader(hppv::Render::Tex);
@@ -111,15 +111,13 @@ private:
             renderer.viewport(this);
         }
 
-        auto projection = hppv::expandToMatchAspectRatio(prototype_.space, properties_.size);
-
         renderer.texture(framebuffer_.getTexture());
 
         // ambient light
         {
             hppv::Sprite sprite;
-            sprite.pos = projection.pos;
-            sprite.size = projection.size;
+            sprite.pos = space_.projected.pos;
+            sprite.size = space_.projected.size;
             sprite.color = {0.1f, 0.1f, 0.1f, 1.f};
             sprite.texRect = {0.f, 0.f, framebuffer_.getTexture().getSize()};
 
@@ -136,7 +134,7 @@ private:
             circle.radius = 25.f;
             circle.color = {1.f, 1.f, 1.f, 1.f};
             circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)},
-                                              projection, this);
+                                              space_.projected, this);
 
             renderer.cache(circle);
 
@@ -145,7 +143,7 @@ private:
             circle.radius = 5.f;
             circle.color = {1.f, 1.f, 0.5f, 1.f};
             circle.texRect = hppv::mapToScene({circle.center - circle.radius, glm::vec2(circle.radius * 2.f)},
-                                              projection, this);
+                                              space_.projected, this);
 
             renderer.cache(circle);
         }

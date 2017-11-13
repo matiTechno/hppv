@@ -11,7 +11,7 @@ namespace hppv
 {
 
 PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
-    prototype_{space, space},
+    space_(space),
     zoomFactor_(zoomFactor),
     alwaysZoomToCursor_(alwaysZoomToCursor)
 {
@@ -23,16 +23,17 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
 
 void PrototypeScene::processInput(bool hasInput)
 {
+    space_.newFrame(properties_.size);
+
     for(auto& event: frame_.events)
     {
         if(event.type == Event::Cursor)
         {
             if(rmb_.pressed && hasInput)
             {
-                auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-                auto newSpaceCoords = mapCursor(event.cursor.pos, projection, this);
-                auto prevSpaceCoords = mapCursor(rmb_.pos, projection, this);
-                prototype_.space.pos -= newSpaceCoords - prevSpaceCoords;
+                auto newSpaceCoords = mapCursor(event.cursor.pos, space_.projected, this);
+                auto prevSpaceCoords = mapCursor(rmb_.pos, space_.projected, this);
+                space_.set({space_.current.pos - (newSpaceCoords - prevSpaceCoords), space_.current.size});
             }
 
             rmb_.pos = event.cursor.pos;
@@ -47,13 +48,12 @@ void PrototypeScene::processInput(bool hasInput)
 
             if(rmb_.pressed || alwaysZoomToCursor_)
             {
-                auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-                auto spaceCoords = mapCursor(rmb_.pos, projection, this);
-                prototype_.space = zoomToPoint(prototype_.space, zoom, spaceCoords);
+                auto spaceCoords = mapCursor(rmb_.pos, space_.projected, this);
+                space_.set(zoomToPoint(space_.current, zoom, spaceCoords));
             }
             else
             {
-                prototype_.space = zoomToCenter(prototype_.space, zoom);
+                space_.set(zoomToCenter(space_.current, zoom));
             }
         }
         else if(event.type == Event::FramebufferSize)
@@ -67,11 +67,10 @@ void PrototypeScene::processInput(bool hasInput)
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    auto projection = expandToMatchAspectRatio(prototype_.space, properties_.size);
-    renderer.projection(projection);
+    renderer.projection(space_.projected);
     prototypeRender(renderer);
 
-    if(!prototype_.renderImgui)
+    if(!renderImGui_)
         return;
 
     ++frameCount_;
@@ -155,7 +154,7 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = mapCursor(rmb_.pos, projection, this);
+        auto spaceCoords = mapCursor(rmb_.pos, space_.projected, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();

@@ -101,7 +101,7 @@ private:
             hppv::Text text(sdfFont_);
             text.text = sdf.text;
             text.scale = 0.4f;
-            text.pos = prototype_.initialSpace.pos + prototype_.initialSpace.size / 2.f;
+            text.pos = space_.initial.pos + space_.initial.size / 2.f;
             text.pos -= text.getSize() / 2.f;
             text.color = sdf.color;
             text.rotation = sdf.rotation;
@@ -196,8 +196,7 @@ private:
             hppv::Text text(proggy_);
             text.text = "This is a small gnu creature!";
             {
-                auto projection = hppv::expandToMatchAspectRatio(prototype_.space, properties_.size);
-                auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, projection, this);
+                auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, space_.projected, this);
                 glm::ivec2 size = text.getSize();
                 text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};
             }
