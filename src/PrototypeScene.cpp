@@ -85,7 +85,6 @@ void PrototypeScene::render(Renderer& renderer)
         accumulator_ = 0.f;
     }
 
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, {0.f, 0.f, 0.f, 0.9f});
     ImGui::Begin("PrototypeScene", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Text("h p p v");
@@ -158,7 +157,6 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();
-    ImGui::PopStyleColor();
 }
 
 } // namespace hppv

@@ -86,17 +86,13 @@ private:
             }
             static sdf;
 
-            // imgui
-            {
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, {0.f, 0.f, 0.f, 0.9f});
-                ImGui::Begin("sdf");
-                ImGui::InputTextMultiline("", sdf.text, sizeof(sdf.text) / sizeof(char));
-                ImGui::ColorEdit4("font color", &sdf.color.x);
-                ImGui::SliderFloat("rotation", &sdf.rotation, 0.f, 2 * glm::pi<float>());
-                ImGui::Checkbox("sprite", &sdf.sprite);
-                ImGui::ColorEdit4("sprite color", &sdf.spriteColor.x);
-                ImGui::Combo("shader", &sdf.comboIndex, sdf.shaders, sizeof(sdf.shaders) / sizeof(char*));
-            }
+            ImGui::Begin("sdf");
+            ImGui::InputTextMultiline("", sdf.text, sizeof(sdf.text) / sizeof(char));
+            ImGui::ColorEdit4("font color", &sdf.color.x);
+            ImGui::SliderFloat("rotation", &sdf.rotation, 0.f, 2 * glm::pi<float>());
+            ImGui::Checkbox("sprite", &sdf.sprite);
+            ImGui::ColorEdit4("sprite color", &sdf.spriteColor.x);
+            ImGui::Combo("shader", &sdf.comboIndex, sdf.shaders, sizeof(sdf.shaders) / sizeof(char*));
 
             hppv::Text text(sdfFont_);
             text.text = sdf.text;
@@ -119,7 +115,6 @@ private:
             {
                 renderer.shader(hppv::Render::Tex);
             }
-            // imgui + uniforms
             else
             {
                 auto shader = hppv::Render(int(hppv::Render::Sdf) + sdf.comboIndex - 1);
@@ -167,11 +162,7 @@ private:
                     renderer.uniform2f("shadowOffset", sdf.shadow.offset);
                 }
             }
-            // imgui end
-            {
-                ImGui::End();
-                ImGui::PopStyleColor();
-            }
+            ImGui::End();
 
             renderer.texture(sdfFont_.getTexture());
             renderer.cache(text);

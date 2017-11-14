@@ -38,8 +38,6 @@ protected:
             projected_ = expandToMatchAspectRatio(space, sceneSize_);
         }
 
-        // call at the beginning of every frame (Scene size might have changed)
-        // PrototypeScene already does it
         void newFrame(glm::ivec2 sceneSize)
         {
             sceneSize_ = sceneSize;
