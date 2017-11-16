@@ -193,7 +193,7 @@ public:
     void cache(const Circle* circle, std::size_t count);
     void cache(const Text& text);
     void cache(const Vertex& vertex) {cache(&vertex, 1);}
-    void cache(const Vertex* vertices, std::size_t count);
+    void cache(const Vertex* vertex, std::size_t count);
 
     // -----
 

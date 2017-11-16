@@ -396,7 +396,7 @@ void Renderer::cache(const Text& text)
     }
 }
 
-void Renderer::cache(const Vertex* vertices, std::size_t count)
+void Renderer::cache(const Vertex* vertex, std::size_t count)
 {
     auto& batch = batches_.back();
     assert(batch.vao == &vaoVertices_);
@@ -409,9 +409,9 @@ void Renderer::cache(const Vertex* vertices, std::size_t count)
         vertices_.resize(end);
     }
 
-    for(auto i = start; i < end; ++i)
+    for(auto i = start; i < end; ++i, ++vertex)
     {
-        vertices_[i] = vertices[i];
+        vertices_[i] = *vertex;
     }
 }
 
@@ -546,7 +546,7 @@ Renderer::Batch& Renderer::getBatchToUpdate()
 {
     {
         auto& current = batches_.back();
-        if(!current.instances.count)
+        if(!current.instances.count && !current.vertices.count)
             return current;
     }
 
