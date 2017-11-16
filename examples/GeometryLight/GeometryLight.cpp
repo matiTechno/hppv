@@ -18,7 +18,7 @@ private:
         v1.pos = {30.f, 30.f};
         v1.color = {1.f, 0.f, 0.f, 1.f};
         hppv::Vertex v2;
-        v2.pos = {60.f, 30.f};
+        v2.pos = {60.f, 40.f};
         v2.color = {0.f, 1.f, 0.f, 1.f};
         hppv::Vertex v3;
         v3.pos = {50.f, 20.f};

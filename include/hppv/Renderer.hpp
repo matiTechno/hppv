@@ -115,6 +115,8 @@ public:
 
     Renderer();
 
+    // -----
+
     void mode(Mode mode) {getBatchToUpdate().vao = (mode == Mode::Instances ? &vaoInstances_ : &vaoVertices_);}
 
     // ----- disabled by default
