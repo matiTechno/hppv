@@ -60,13 +60,13 @@ TEST_CASE("shader")
     shader = hppv::Shader({}, "4");
     REQUIRE(shader.isValid() == false);
 
-    shader = hppv::Shader({hppv::Renderer::vertexSource, fragment, std::string()}, "5");
+    shader = hppv::Shader({hppv::Renderer::vInstancesSource, fragment, std::string()}, "5");
     REQUIRE(shader.isValid());
 
     shader = hppv::Shader({fragment + std::string("error")}, "6");
     REQUIRE(shader.isValid() == false);
 
-    shader = hppv::Shader({vertex, fragment, hppv::Renderer::vertexSource}, "7");
+    shader = hppv::Shader({vertex, fragment, hppv::Renderer::vInstancesSource}, "7");
     REQUIRE(shader.isValid() == false);
 
     shader = hppv::Shader({fragment}, "8");

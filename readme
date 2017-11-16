@@ -3,9 +3,8 @@ high performance physics visualization
 
 todo:
 
-* custom geometry (test on geometry shadows / lights example?)
-* projection rotation, camera, Space redesign
 * bezier curves
+* projection rotation, camera, Space redesign
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
 * App init parameters

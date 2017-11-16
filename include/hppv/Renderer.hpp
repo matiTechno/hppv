@@ -71,6 +71,19 @@ struct Sprite
     glm::vec4 texRect;
 };
 
+struct Vertex
+{
+    glm::vec2 pos;
+    glm::vec2 texCoord; // [0, 1]
+    glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+};
+
+enum class Mode
+{
+    Instances,
+    Vertices
+};
+
 enum class Render
 {
     Color = 0,
@@ -80,7 +93,9 @@ enum class Render
     Sdf = 4,
     SdfOutline = 5, // vec4 outlineColor; float outlineWidth [0, 0.5]
     SdfGlow = 6, // vec4 glowColor; float glowWidth [0, 0.5]
-    SdfShadow = 7 // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
+    SdfShadow = 7, // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
+    VerticesColor = 8,
+    VerticesTex = 9
 };
 
 enum class Sample
@@ -99,6 +114,8 @@ public:
     using GLint = int;
 
     Renderer();
+
+    void mode(Mode mode) {getBatchToUpdate().vao = (mode == Mode::Instances ? &vaoInstances_ : &vaoVertices_);}
 
     // ----- disabled by default
 
@@ -151,7 +168,7 @@ public:
         batch.dstAlpha = dstAlpha;
     }
 
-    // ----- fragment shader options for the first 4 Render modes
+    // ----- fragment shader options
 
     void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;} // enabled by default
 
@@ -162,31 +179,41 @@ public:
 
     // ----- vertex shader options, disabled by default
 
+    // work with non-vertices shaders
     void flipTexRectX(bool on) {getBatchToUpdate().flipTexRectX = on;}
     void flipTexRectY(bool on) {getBatchToUpdate().flipTexRectY = on;}
+
     void flipTextureY(bool on) {getBatchToUpdate().flipTextureY = on;}
 
     // -----
 
     void cache(const Sprite& sprite) {cache(&sprite, 1);}
     void cache(const Circle& circle) {cache(&circle, 1);}
-    void cache(const Text& text);
     void cache(const Sprite* sprite, std::size_t count);
     void cache(const Circle* circle, std::size_t count);
+    void cache(const Text& text);
+    void cache(const Vertex& vertex) {cache(&vertex, 1);}
+    void cache(const Vertex* vertices, std::size_t count);
 
     // -----
 
     void flush();
 
-    // -----
+    // ----- vertex shaders
 
     // out vec4 vColor;
-    // out vec2 vTexCoords;
+    // out vec2 vTexCoord;
     // out vec2 vPos; // [0, 1], used for circle shading and fwidth()
 
-    static const char* vertexSource;
+    static const char* vInstancesSource;
 
-    // internal use
+    // out vec4 vColor;
+    // out vec2 vTexCoord;
+
+    static const char* vVerticesSource;
+
+    // ----- internal use
+
     struct Instance
     {
         glm::mat4 matrix;
@@ -200,13 +227,13 @@ private:
         ReservedBatches = 50,
         ReservedInstances = 100000,
         ReservedTexUnits = 50,
-        ReservedUniforms = 50
+        ReservedUniforms = 50,
+        ReservedVertices = 50000
     };
 
-    GLvao vao_;
-    GLbo boQuad_;
-    GLbo boInstances_;
-    Shader shaderBasic_, shaderSdf_;
+    GLvao vaoInstances_, vaoVertices_;
+    GLbo boQuad_, boInstances_, boVertices_;
+    Shader shaderBasic_, shaderSdf_, shaderVertices_;
     Texture texDummy;
     GLsampler samplerLinear;
     GLsampler samplerNearest;
@@ -249,6 +276,7 @@ private:
     // viewport and scissor have y-axis in opengl coordinate system
     struct Batch
     {
+        GLvao* vao;
         glm::ivec4 scissor;
         glm::ivec4 viewport;
         bool scissorEnabled;
@@ -266,13 +294,14 @@ private:
             std::size_t start;
             std::size_t count;
         }
-        instances, texUnits, uniforms;
+        instances, texUnits, uniforms, vertices;
     };
 
     std::vector<Batch> batches_;
     std::vector<Instance> instances_;
     std::vector<TexUnit> texUnits_;
     std::vector<Uniform> uniforms_;
+    std::vector<Vertex> vertices_;
 
     void setTexUnitsDefault();
     Batch& getBatchToUpdate();

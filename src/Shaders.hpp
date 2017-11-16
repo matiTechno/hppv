@@ -1,6 +1,6 @@
 #include "Renderer.hpp"
 
-const char* hppv::Renderer::vertexSource = R"(
+const char* hppv::Renderer::vInstancesSource = R"(
 
 #vertex
 #version 330
@@ -16,7 +16,7 @@ uniform bool flipTexRectY = false;
 uniform bool flipTextureY = false;
 
 out vec4 vColor;
-out vec2 vTexCoords;
+out vec2 vTexCoord;
 out vec2 vPos;
 
 void main()
@@ -25,34 +25,34 @@ void main()
     vColor = color;
     vPos = vertex.xy;
 
-    vec2 texCoords = vertex.zw;
+    vec2 texCoord = vertex.zw;
 
     if(flipTexRectX)
     {
-        texCoords.x = (texCoords.x - 1) * -1;
+        texCoord.x = (texCoord.x - 1) * -1;
     }
 
     if(flipTexRectY)
     {
-        texCoords.y = (texCoords.y - 1) * -1;
+        texCoord.y = (texCoord.y - 1) * -1;
     }
 
-    vTexCoords = texCoords * normTexRect.zw + normTexRect.xy;
+    vTexCoord = texCoord * normTexRect.zw + normTexRect.xy;
 
     if(flipTextureY)
     {
-        vTexCoords.y = 1 - vTexCoords.y;
+        vTexCoord.y = 1 - vTexCoord.y;
     }
 }
 )";
 
-static const char* basicSource = R"(
+static const char* fBasicSource = R"(
 
 #fragment
 #version 330
 
 in vec4 vColor;
-in vec2 vTexCoords;
+in vec2 vTexCoord;
 in vec2 vPos;
 
 uniform sampler2D sampler;
@@ -102,7 +102,7 @@ void main()
     }
     else
     {
-        vec4 sample = texture(sampler, vTexCoords);
+        vec4 sample = texture(sampler, vTexCoord);
 
         if(premultiplyAlpha)
         {
@@ -128,13 +128,13 @@ void main()
 }
 )";
 
-static const char* sdfSource = R"(
+static const char* fSdfSource = R"(
 
 #fragment
 #version 330
 
 in vec4 vColor;
-in vec2 vTexCoords;
+in vec2 vTexCoord;
 in vec2 vPos;
 
 uniform sampler2D sampler;
@@ -154,7 +154,7 @@ out vec4 color;
 void main()
 {
     float smoothing = fwidth(length(vPos - center)) * 2;
-    float distance = texture(sampler, vTexCoords).a;
+    float distance = texture(sampler, vTexCoord).a;
 
     if(mode == 4) // Sdf
     {
@@ -180,12 +180,74 @@ void main()
         float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
         vec4 textColor = vColor * alpha;
 
-        float shadowDistance = texture(sampler, vTexCoords - shadowOffset).a;
+        float shadowDistance = texture(sampler, vTexCoord - shadowOffset).a;
         float oShadowSmoothing = max(smoothing, shadowSmoothing);
         float shadowAlpha = smoothstep(0.5 - oShadowSmoothing, 0.5 + oShadowSmoothing, shadowDistance);
         vec4 shadow = shadowColor * shadowAlpha;
 
         color = mix(shadow, textColor, textColor.a);
+    }
+}
+)";
+
+const char* hppv::Renderer::vVerticesSource = R"(
+
+#vertex
+#version 330
+
+layout(location = 0) in vec2 pos;
+layout(location = 1) in vec2 texCoord;
+layout(location = 2) in vec4 color;
+
+uniform mat4 projection;
+uniform bool flipTextureY = false;
+
+out vec4 vColor;
+out vec2 vTexCoord;
+
+void main()
+{
+    gl_Position = projection * vec4(pos, 0, 1);
+    vTexCoord = texCoord;
+    vColor = color;
+
+    if(flipTextureY)
+    {
+        vTexCoord.y = 1 - vTexCoord.y;
+    }
+}
+)";
+
+const char* fVerticesBasicSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vTexCoord;
+
+uniform sampler2D sampler;
+uniform int mode = 8;
+uniform bool premultiplyAlpha = false;
+
+out vec4 color;
+
+void main()
+{
+    if(mode == 8) // VerticesColor
+    {
+        color = vColor;
+    }
+    else if(mode == 9) // VerticesTex
+    {
+        vec4 sample = texture(sampler, vTexCoord);
+
+        if(premultiplyAlpha)
+        {
+            sample = vec4(sample.rgb * sample.a, sample.a);
+        }
+
+        color = sample * vColor;
     }
 }
 )";

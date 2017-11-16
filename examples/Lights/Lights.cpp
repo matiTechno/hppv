@@ -14,7 +14,7 @@ static const char* lightSource = R"(
 #version 330
 
 in vec4 vColor;
-in vec2 vTexCoords;
+in vec2 vTexCoord;
 in vec2 vPos;
 
 uniform sampler2D sampler;
@@ -29,7 +29,7 @@ void main()
    float distanceFromCenter = length(vPos - center);
    float delta = fwidth(distanceFromCenter) * 2;
    float alpha = 1 - smoothstep(0, radius, distanceFromCenter);
-   vec4 sample = texture(sampler, vTexCoords);
+   vec4 sample = texture(sampler, vTexCoord);
    color = vec4(sample.rgb * sample.a, sample.a) * vColor * alpha;
 }
 )";
@@ -55,8 +55,8 @@ class Lights: public hppv::PrototypeScene
 public:
     Lights():
         hppv::PrototypeScene(hppv::Space(0.f, 0.f, 100.f, 100.f), 1.1f, false),
-        shaderLight_({hppv::Renderer::vertexSource, lightSource}, "light"),
-        shaderGradient_({hppv::Renderer::vertexSource, gradientSource}, "gradient"),
+        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
+        shaderGradient_({hppv::Renderer::vInstancesSource, gradientSource}, "gradient"),
         texture_("res/mandrill.png"),
         framebuffer_(GL_RGBA8, 1)
     {

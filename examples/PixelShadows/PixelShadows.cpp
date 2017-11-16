@@ -15,7 +15,7 @@ static const char* shadowSource = R"(
 #fragment
 #version 330
 
-in vec2 vTexCoords;
+in vec2 vTexCoord;
 
 uniform sampler2D sampler;
 uniform float resolution;
@@ -31,11 +31,11 @@ void main()
 
     for(float y = 0; y < resolution; y += 1)
     {
-        vec2 norm = vec2(vTexCoords.x, y / resolution) * 2 - 1;
+        vec2 norm = vec2(vTexCoord.x, y / resolution) * 2 - 1;
         float theta = Pi * 1.5 + norm.x * Pi;
         float r = (1 + norm.y) * 0.5;
-        vec2 texCoords = vec2(-r * sin(theta), -r * cos(theta)) / 2 + 0.5;
-        vec4 sample = texture(sampler, texCoords);
+        vec2 texCoord = vec2(-r * sin(theta), -r * cos(theta)) / 2 + 0.5;
+        vec4 sample = texture(sampler, texCoord);
         float dst = y / resolution;
         float caster = sample.a;
 
@@ -55,7 +55,7 @@ static const char* lightSource = R"(
 #version 330
 
 in vec4 vColor;
-in vec2 vTexCoords;
+in vec2 vTexCoord;
 
 uniform sampler2D sampler;
 uniform float resolution;
@@ -64,14 +64,14 @@ const float Pi = 3.14;
 
 out vec4 color;
 
-float sample(vec2 texCoords, float r)
+float sample(vec2 texCoord, float r)
 {
-    return step(r, texture(sampler, texCoords).r);
+    return step(r, texture(sampler, texCoord).r);
 }
 
 void main()
 {
-    vec2 norm = vTexCoords * 2 - 1;
+    vec2 norm = vTexCoord * 2 - 1;
     float theta = atan(norm.y, norm.x);
     float r = length(norm);
     float coordX = (theta + Pi) / (2 * Pi);
@@ -101,8 +101,8 @@ public:
         hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         fbOcclusion_(GL_RGBA8, 1),
         fbShadow_(GL_RGBA8, 1),
-        shaderShadow_({hppv::Renderer::vertexSource, shadowSource}, "shadow"),
-        shaderLight_({hppv::Renderer::vertexSource, lightSource}, "light")
+        shaderShadow_({hppv::Renderer::vInstancesSource, shadowSource}, "shadow"),
+        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light")
     {
         {
             hppv::Circle circle;

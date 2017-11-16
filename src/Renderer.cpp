@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <algorithm>
+#include <cassert>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -72,8 +73,9 @@ Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation,
 }
 
 Renderer::Renderer():
-    shaderBasic_({vertexSource, basicSource}, "Renderer::shaderBasic_"),
-    shaderSdf_({vertexSource, sdfSource}, "Renderer::shaderSdf_")
+    shaderBasic_({vInstancesSource, fBasicSource}, "Renderer::shaderBasic_"),
+    shaderSdf_({vInstancesSource, fSdfSource}, "Renderer::shaderSdf_"),
+    shaderVertices_({vVerticesSource, fVerticesBasicSource}, "Renderer::shaderVertices_")
 {
     glEnable(GL_BLEND);
 
@@ -84,12 +86,14 @@ Renderer::Renderer():
     instances_.resize(ReservedInstances);
     texUnits_.reserve(ReservedTexUnits);
     uniforms_.reserve(ReservedUniforms);
+    vertices_.resize(ReservedVertices);
 
     setTexUnitsDefault();
 
     batches_.emplace_back();
     {
         auto& first = batches_.front();
+        first.vao = &vaoInstances_;
         first.scissorEnabled = false;
         first.shader = &shaderBasic_;
         first.srcAlpha = GL_ONE;
@@ -105,6 +109,8 @@ Renderer::Renderer():
         first.texUnits.count = 0;
         first.uniforms.start = 0;
         first.uniforms.count = 0;
+        first.vertices.start = 0;
+        first.vertices.count = 0;
     }
 
     float vertices[] =
@@ -120,7 +126,7 @@ Renderer::Renderer():
     glBindBuffer(GL_ARRAY_BUFFER, boQuad_.getId());
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(vao_.getId());
+    glBindVertexArray(vaoInstances_.getId());
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(0);
 
@@ -159,6 +165,23 @@ Renderer::Renderer():
     glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
                           reinterpret_cast<const void*>(offsetof(Instance, matrix)
                           + 3 * sizeof(glm::vec4)));
+
+    glBindBuffer(GL_ARRAY_BUFFER, boVertices_.getId());
+
+    glBindVertexArray(vaoVertices_.getId());
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          reinterpret_cast<const void*>(offsetof(Vertex, texCoord)));
+
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          reinterpret_cast<const void*>(offsetof(Vertex, color)));
+
+    glEnableVertexAttribArray(2);
 }
 
 void Renderer::scissor(glm::ivec4 scissor)
@@ -194,9 +217,13 @@ void Renderer::shader(Render mode)
     {
         batch.shader = &shaderBasic_;
     }
-    else
+    else if(modeId < 8)
     {
         batch.shader = &shaderSdf_;
+    }
+    else
+    {
+        batch.shader = &shaderVertices_;
     }
 
     uniform1i("mode", modeId);
@@ -293,6 +320,7 @@ void Renderer::sampler(GLsampler& sampler, GLenum unit)
 void Renderer::cache(const Sprite* sprite, std::size_t count)
 {
     auto& batch = batches_.back();
+    assert(batch.vao == &vaoInstances_);
     const auto start = batch.instances.start + batch.instances.count;
     batch.instances.count += count;
     const auto end = batch.instances.start + batch.instances.count;
@@ -312,6 +340,7 @@ void Renderer::cache(const Sprite* sprite, std::size_t count)
 void Renderer::cache(const Circle* circle, std::size_t count)
 {
     auto& batch = batches_.back();
+    assert(batch.vao == &vaoInstances_);
     const auto start = batch.instances.start + batch.instances.count;
     batch.instances.count += count;
     const auto end = batch.instances.start + batch.instances.count;
@@ -331,6 +360,7 @@ void Renderer::cache(const Circle* circle, std::size_t count)
 void Renderer::cache(const Text& text)
 {
     auto& batch = batches_.back();
+    assert(batch.vao == &vaoInstances_);
     auto maxInstances = batch.instances.start + batch.instances.count + text.text.size();
 
     if(maxInstances > instances_.size())
@@ -366,12 +396,37 @@ void Renderer::cache(const Text& text)
     }
 }
 
+void Renderer::cache(const Vertex* vertices, std::size_t count)
+{
+    auto& batch = batches_.back();
+    assert(batch.vao == &vaoVertices_);
+    const auto start = batch.vertices.start + batch.vertices.count;
+    batch.vertices.count += count;
+    const auto end = batch.vertices.start + batch.vertices.count;
+
+    if(end > vertices_.size())
+    {
+        vertices_.resize(end);
+    }
+
+    for(auto i = start; i < end; ++i)
+    {
+        vertices_[i] = vertices[i];
+    }
+}
+
 void Renderer::flush()
 {
-    auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
-    glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
-    glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(), GL_STREAM_DRAW);
-    glBindVertexArray(vao_.getId());
+    {
+        auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
+        glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
+        glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(), GL_STREAM_DRAW);
+    }
+    {
+        auto numVertices = batches_.back().vertices.start + batches_.back().vertices.count;
+        glBindBuffer(GL_ARRAY_BUFFER, boVertices_.getId());
+        glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(Vertex), vertices_.data(), GL_STREAM_DRAW);
+    }
 
     for(auto& batch: batches_)
     {
@@ -390,14 +445,22 @@ void Renderer::flush()
         auto& shader = *batch.shader;
         shader.bind();
 
-        if(&shader == &shaderBasic_)
+        if(&shader == &shaderBasic_ || &shader == &shaderVertices_)
         {
             shader.uniform1i("premultiplyAlpha", batch.premultiplyAlpha);
+        }
+
+        if(&shader == &shaderBasic_)
+        {
             shader.uniform1i("antialiasedSprites", batch.antialiasedSprites);
         }
 
-        shader.uniform1i("flipTexRectX", batch.flipTexRectX);
-        shader.uniform1i("flipTexRectY", batch.flipTexRectY);
+        if(batch.vao == &vaoInstances_)
+        {
+            shader.uniform1i("flipTexRectX", batch.flipTexRectX);
+            shader.uniform1i("flipTexRectY", batch.flipTexRectY);
+        }
+
         shader.uniform1i("flipTextureY", batch.flipTextureY);
 
         {
@@ -441,7 +504,17 @@ void Renderer::flush()
         }
 
         glBlendFunc(batch.srcAlpha, batch.dstAlpha);
-        glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.instances.count, batch.instances.start);
+        glBindVertexArray(batch.vao->getId());
+
+        if(batch.vao == &vaoInstances_)
+        {
+            glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, batch.instances.count, batch.instances.start);
+        }
+        else
+        {
+            assert(batch.vertices.count % 3 == 0);
+            glDrawArrays(GL_TRIANGLES, batch.vertices.start, batch.vertices.count);
+        }
     }
 
     batches_.erase(batches_.begin(), batches_.end() - 1);
@@ -453,6 +526,8 @@ void Renderer::flush()
     batches_.front().texUnits.count = 0;
     batches_.front().uniforms.start = 0;
     batches_.front().uniforms.count = 0;
+    batches_.front().vertices.start = 0;
+    batches_.front().vertices.count = 0;
 
     setTexUnitsDefault();
 }
@@ -485,6 +560,8 @@ Renderer::Batch& Renderer::getBatchToUpdate()
     current.texUnits.count = 0;
     current.uniforms.start += current.uniforms.count;
     current.uniforms.count = 0;
+    current.vertices.start += current.vertices.count;
+    current.vertices.count = 0;
 
     return current;
 }

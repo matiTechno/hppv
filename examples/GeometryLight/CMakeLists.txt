@@ -1,0 +1,2 @@
+add_executable(GeometryLight GeometryLight.cpp)
+target_link_libraries(GeometryLight hppv)

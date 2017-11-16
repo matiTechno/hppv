@@ -41,7 +41,7 @@ private:
 
     void addShader(const char* fragmentSource)
     {
-        shaders_.emplace_back(hppv::Shader({hppv::Renderer::vertexSource, fragmentSource}, ""));
+        shaders_.emplace_back(hppv::Shader({hppv::Renderer::vInstancesSource, fragmentSource}, ""));
     }
 
     void prototypeRender(hppv::Renderer& renderer) override
