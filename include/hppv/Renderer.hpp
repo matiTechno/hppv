@@ -119,6 +119,10 @@ public:
 
     void mode(Mode mode) {getBatchToUpdate().vao = (mode == Mode::Instances ? &vaoInstances_ : &vaoVertices_);}
 
+    // ----- for Vertices mode, default is GL_TRIANGLES
+
+    void primitive(GLenum primitive) {getBatchToUpdate().primitive = primitive;}
+
     // ----- disabled by default
 
     void scissor(glm::ivec4 scissor);
@@ -200,6 +204,7 @@ public:
     // -----
 
     void flush();
+    void breakBatch() {getBatchToUpdate();}
 
     // ----- vertex shaders
 
@@ -278,6 +283,7 @@ private:
     // viewport and scissor have y-axis in opengl coordinate system
     struct Batch
     {
+        GLenum primitive;
         GLvao* vao;
         glm::ivec4 scissor;
         glm::ivec4 viewport;

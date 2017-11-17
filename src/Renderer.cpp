@@ -93,6 +93,7 @@ Renderer::Renderer():
     batches_.emplace_back();
     {
         auto& first = batches_.front();
+        first.primitive = GL_TRIANGLES;
         first.vao = &vaoInstances_;
         first.scissorEnabled = false;
         first.shader = &shaderBasic_;
@@ -512,8 +513,7 @@ void Renderer::flush()
         }
         else
         {
-            assert(batch.vertices.count % 3 == 0);
-            glDrawArrays(GL_TRIANGLES, batch.vertices.start, batch.vertices.count);
+            glDrawArrays(batch.primitive, batch.vertices.start, batch.vertices.count);
         }
     }
 
