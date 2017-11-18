@@ -3,7 +3,7 @@ high performance physics visualization
 
 todo:
 
-* bezier curves
+* bezier curves / lines
 * projection rotation, camera, Space redesign
 * performance test: create transformation matrix on gpu for single vertex,
   emit quad from geometry shader
