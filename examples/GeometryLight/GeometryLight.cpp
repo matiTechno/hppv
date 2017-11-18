@@ -170,29 +170,7 @@ private:
     void prototypeRender(hppv::Renderer& renderer) override
     {
         renderer.mode(hppv::Mode::Vertices);
-        renderer.primitive(GL_LINE_LOOP);
         renderer.shader(hppv::Render::VerticesColor);
-
-        for(auto& loop: lineLoops_)
-        {
-            for(auto& vertex: loop)
-            {
-                renderer.cache(vertex);
-            }
-
-            renderer.breakBatch();
-        }
-
-        for(auto& point: points_)
-        {
-            Vertex v;
-            v.pos = point;
-            v.color = {1.f, 0.f, 0.f, 1.f};
-            renderer.cache(v);
-            v.pos = light_.center;
-            renderer.cache(v);
-            renderer.breakBatch();
-        }
 
         renderer.primitive(GL_TRIANGLES);
 
@@ -211,17 +189,26 @@ private:
             renderer.cache(v);
         }
 
-        renderer.mode(hppv::Mode::Instances);
-        renderer.shader(hppv::Render::CircleColor);
-        renderer.cache(light_);
+        renderer.primitive(GL_LINE_LOOP);
 
+        for(auto& loop: lineLoops_)
+        {
+            for(auto& vertex: loop)
+            {
+                renderer.cache(vertex);
+            }
+
+            renderer.breakBatch();
+        }
         for(auto& point: points_)
         {
-            hppv::Circle circle;
-            circle.center = point;
-            circle.radius = 0.5f;
-            circle.color = light_.color;
-            renderer.cache(circle);
+            Vertex v;
+            v.pos = point;
+            v.color = {1.f, 0.f, 0.f, 1.f};
+            renderer.cache(v);
+            v.pos = light_.center;
+            renderer.cache(v);
+            renderer.breakBatch();
         }
     }
 };
