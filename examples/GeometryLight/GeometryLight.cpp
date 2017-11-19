@@ -2,23 +2,22 @@
 #include <optional>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 #include <glm/trigonometric.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/glad.h>
 
-std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, float rayAngle, glm::vec2 segStart, glm::vec2 segEnd)
+std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayPoint, glm::vec2 segStart, glm::vec2 segEnd)
 {
-    // todo:
-    // * case when the ray is parallel to y-axis
-    // * remove assert
-    assert(rayAngle > 0.f && rayAngle < glm::pi<float>() * 2.f);
+    // todo: case when the ray is parallel to y-axis
 
-    auto rayCoeff = glm::tan(rayAngle);
+    auto rayCoeff = (rayPoint.y - rayStart.y) / (rayPoint.x - rayStart.x);
 
     float x;
 
@@ -32,16 +31,8 @@ std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, float rayAngle, glm::vec
         x = (segStart.y - segCoeff * segStart.x - rayStart.y + rayCoeff * rayStart.x) / (rayCoeff - segCoeff);
     }
 
-    if(rayAngle > glm::pi<float>() / 2.f && rayAngle < 1.5f * glm::pi<float>())
-    {
-        if(x > rayStart.x)
-            return {};
-    }
-    else
-    {
-        if(x < rayStart.x)
-            return {};
-    }
+    if((rayPoint.x - rayStart.x) * (x - rayStart.x) < 0)
+        return {};
 
     if(x < std::min(segStart.x, segEnd.x) || x > std::max(segStart.x, segEnd.x))
         return {};
@@ -109,8 +100,6 @@ public:
             loop.push_back(v3);
             loop.push_back(v4);
         }
-
-        points_.push_back({65, 80});
     }
 
 private:
@@ -123,48 +112,59 @@ private:
     {
         points_.clear();
 
-        constexpr int numRays = 50;
-
-        for(auto angle = 0.01f; angle < glm::pi<float>() * 2.f; angle += glm::pi<float>() * 2.f / numRays)
+        for(auto& loop: lineLoops_)
         {
-            glm::vec2 point(666.f);
-
-            for(auto& loop: lineLoops_)
+            for(int i = -1; i < 2; ++i)
             {
-                for(auto it = loop.begin(); it < loop.end(); ++it)
+                for(auto& vertex: loop)
                 {
-                    auto segEnd = (it == loop.end() - 1 ? loop.begin()->pos : (it + 1)->pos);
+                    glm::vec2 point(666.f);
 
-                    if(auto newPoint = findRayEnd(light_.center, angle, it->pos, segEnd))
+                    for(auto& loop: lineLoops_)
                     {
-                        if(glm::length(*newPoint - light_.center) < glm::length(point - light_.center))
+                        for(auto it = loop.begin(); it < loop.end(); ++it)
                         {
-                            point = *newPoint;
+                            auto segEnd = (it == loop.end() - 1 ? loop.begin()->pos : (it + 1)->pos);
+                            auto rayPos = glm::rotate(vertex.pos, i * 0.00001f);
+
+                            if(auto newPoint = findRayEnd(light_.center, rayPos, it->pos, segEnd))
+                            {
+                                if(glm::length(*newPoint - light_.center) < glm::length(point - light_.center))
+                                {
+                                    point = *newPoint;
+                                }
+                            }
                         }
                     }
+
+                    points_.push_back(point);
                 }
             }
-
-            points_.push_back(point);
         }
+
+        std::sort(points_.begin(), points_.end(), [this](const glm::vec2& l, const glm::vec2& r)
+        {
+            return std::atan2(l.x - light_.center.x, l.y - light_.center.y) <
+                   std::atan2(r.x - light_.center.x, r.y - light_.center.y);
+        });
     }
 
     void prototypeProcessInput(bool isInput) override
     {
-       if(isInput)
-       {
-           auto pos = hppv::mapCursor(frame_.cursorPos, space_.projected, this);
+        if(isInput)
+        {
+            auto pos = hppv::mapCursor(frame_.cursorPos, space_.projected, this);
 
-           if(pos.x - light_.radius > border_.pos.x &&
-              pos.y - light_.radius > border_.pos.y &&
-              pos.x + light_.radius < border_.pos.x + border_.size.x &&
-              pos.y + light_.radius < border_.pos.y + border_.size.y)
-           {
-               light_.center = pos;
-           }
-       }
+            if(pos.x - light_.radius > border_.pos.x &&
+               pos.y - light_.radius > border_.pos.y &&
+               pos.x + light_.radius < border_.pos.x + border_.size.x &&
+               pos.y + light_.radius < border_.pos.y + border_.size.y)
+            {
+                light_.center = pos;
+            }
+        }
 
-       setPoints();
+        setPoints();
     }
 
     void prototypeRender(hppv::Renderer& renderer) override
@@ -179,7 +179,7 @@ private:
             auto last = (it == points_.end() - 1 ? *points_.begin() : *(it + 1));
 
             Vertex v;
-            v.color = {0.5f, 0.f, 0.f, 0.5f};
+            v.color = {0.3f, 0.f, 0.f, 0.5f};
 
             v.pos = light_.center;
             renderer.cache(v);
