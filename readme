@@ -16,7 +16,7 @@ todo:
 included:
 
 * catch.hpp
-* dear ImGui
+* dear imgui
 * glad.c glad.h
 * stb_image.h
 
