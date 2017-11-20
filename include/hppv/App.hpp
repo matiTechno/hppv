@@ -43,6 +43,7 @@ public:
 
     static void setWindow(Frame::Window::State state);
 
+    // internal use
     static const Frame& getFrame() {return frame_;}
 
 private:

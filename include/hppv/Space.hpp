@@ -16,11 +16,13 @@ struct Space
     Space(glm::vec2 pos, glm::vec2 size): pos(pos), size(size) {}
     Space(glm::vec2 pos, float w, float h): pos(pos), size(w, h) {}
     Space(float x, float y, glm::vec2 size): pos(x, y), size(size) {}
-    Space(glm::vec4 vec): pos(vec.x, vec.y), size(vec.z, vec.w) {}
+    explicit Space(glm::vec4 vec): pos(vec.x, vec.y), size(vec.z, vec.w) {}
 
     glm::vec2 pos;
     glm::vec2 size;
 };
+
+// -----
 
 Space expandToMatchAspectRatio(Space space, glm::ivec2 size);
 

@@ -178,7 +178,7 @@ private:
                 fbOcclusion_.setSize(glm::ivec2(LightRays));
                 fbOcclusion_.clear();
                 renderer.viewport(fbOcclusion_);
-                renderer.projection(light.toVec4());
+                renderer.projection(light.toSpace());
                 {
                     renderer.shader(hppv::Render::Color);
 

@@ -9,45 +9,10 @@
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/Renderer.hpp>
-#include <hppv/glad.h>
 #include <hppv/imgui.h>
 #include <hppv/Shader.hpp>
 #include <hppv/Framebuffer.hpp>
-
-static const char* blurSource = R"(
-
-#fragment
-#version 330
-
-in vec2 vTexCoord;
-in vec4 vColor;
-
-uniform sampler2D sampler;
-
-out vec4 color;
-
-const float weights[5] = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
-
-void main()
-{
-    vec4 sample = texture(sampler, vTexCoord) * weights[0];
-    vec2 texOffset  = 1.0 / textureSize(sampler, 0);
-
-    for(int i = 1; i < 5; ++i)
-    {
-        sample += texture(sampler, vTexCoord + vec2(texOffset.x * i, 0)) * weights[i];
-        sample += texture(sampler, vTexCoord - vec2(texOffset.x * i, 0)) * weights[i];
-    }
-
-    for(int i = 1; i < 5; ++i)
-    {
-        sample += texture(sampler, vTexCoord + vec2(0, texOffset.y * i)) * weights[i];
-        sample += texture(sampler, vTexCoord - vec2(0, texOffset.y * i)) * weights[i];
-    }
-
-    color = sample * vColor;
-}
-)";
+#include <hppv/glad.h>
 
 static const char* lightSource = R"(
 
@@ -113,16 +78,13 @@ std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayDir, glm::v
     return rayEnd;
 }
 
-// todo: implement blur
 class GeometryLight: public hppv::PrototypeScene
 {
 public:
     GeometryLight():
         hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
-        shaderBlur_({hppv::Renderer::vInstancesSource, blurSource}, "blur"),
-        fbBlur1_(GL_RGBA8, 1),
-        fbBlur2_(GL_RGBA8, 1)
+        fb_(GL_RGBA8, 1)
     {
         setLineLoops();
     }
@@ -132,8 +94,8 @@ private:
     hppv::Space border_{10.f, 10.f, 80.f, 80.f};
     std::vector<glm::vec2> points_;
     glm::vec2 lightPos_;
-    hppv::Shader shaderLight_, shaderBlur_;
-    hppv::Framebuffer fbBlur1_, fbBlur2_;
+    hppv::Shader shaderLight_;
+    hppv::Framebuffer fb_;
 
     struct
     {
@@ -220,10 +182,10 @@ private:
 
         if(options_.release)
         {
-            fbBlur1_.bind();
-            fbBlur1_.setSize(properties_.size);
-            fbBlur1_.clear();
-            renderer.viewport(fbBlur1_);
+            fb_.bind();
+            fb_.setSize(properties_.size);
+            fb_.clear();
+            renderer.viewport(fb_);
         }
 
         if(options_.drawTriangles || options_.release)
@@ -240,7 +202,7 @@ private:
 
                 if(options_.release)
                 {
-                    v.color = {1.f, 1.f, 0.7f, 1.f};
+                    v.color = {1.f, 1.f, 0.6f, 1.f};
                 }
                 else
                 {
@@ -260,16 +222,17 @@ private:
         {
             renderer.flush();
             renderer.viewport(this);
-            fbBlur1_.unbind();
+            fb_.unbind();
 
             renderer.mode(hppv::Mode::Instances);
-            renderer.shader(shaderLight_);
-            renderer.texture(fbBlur1_.getTexture());
 
             hppv::Circle c;
             c.center = lightPos_;
             c.radius = border_.size.x / 1.4f;
-            c.texRect = hppv::mapToFramebuffer(c.toVec4(), space_.projected, fbBlur1_);
+            c.texRect = hppv::mapToFramebuffer(c.toVec4(), space_.projected, fb_);
+
+            renderer.shader(shaderLight_);
+            renderer.texture(fb_.getTexture());
             renderer.cache(c);
         }
 

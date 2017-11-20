@@ -14,6 +14,7 @@ struct Frame
 {
     float frameTime;
     std::vector<Event> events;
+    // todo: make it optional; if window does not have focus set it empty
     glm::vec2 cursorPos;
     glm::ivec2 framebufferSize;
 

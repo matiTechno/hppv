@@ -39,6 +39,7 @@ struct Text
 struct Circle
 {
     glm::vec4 toVec4() const {return {center - radius, glm::vec2(radius * 2.f)};}
+    Space toSpace() const {return Space(toVec4());}
 
     glm::vec2 center;
     float radius;
@@ -68,6 +69,7 @@ struct Sprite
     {}
 
     glm::vec4 toVec4() const {return {pos, size};}
+    Space toSpace() const {return Space(toVec4());}
 
     glm::vec2 pos;
     glm::vec2 size;

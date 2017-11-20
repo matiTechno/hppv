@@ -46,21 +46,17 @@ Space zoomToPoint(Space space, float zoom, glm::vec2 point)
 glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
 {
     pos -= glm::vec2(scene->properties_.pos);
-    return map(pos, {0.f, 0.f, scene->properties_.size}, projection);
+    return map(pos, {0, 0, scene->properties_.size}, projection);
 }
 
 glm::vec4 mapToFramebuffer(glm::vec4 rect, Space projection, const Framebuffer& fb)
 {
-    auto pos = map({rect.x, rect.y}, projection, {0.f, 0.f, fb.getSize()});
-    auto size = glm::vec2(rect.z, rect.w) * (glm::vec2(fb.getSize()) / projection.size);
-    return {pos, size};
+    return map(rect, projection, {0, 0, fb.getSize()});
 }
 
 glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
 {
-    auto pos = map({rect.x, rect.y}, projection, {0.f, 0.f, scene->properties_.size});
-    auto size = glm::vec2(rect.z, rect.w) * (glm::vec2(scene->properties_.size) / projection.size);
-    return {pos, size};
+    return map(rect, projection, {0, 0, scene->properties_.size});
 }
 
 glm::ivec4 iMapToWindow(glm::vec4 rect, Space projection, const Scene* scene)
