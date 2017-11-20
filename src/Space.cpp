@@ -1,5 +1,6 @@
 #include <hppv/Space.hpp>
 #include <hppv/Scene.hpp>
+#include <hppv/Framebuffer.hpp>
 
 namespace hppv
 {
@@ -42,19 +43,24 @@ Space zoomToPoint(Space space, float zoom, glm::vec2 point)
     return space;
 }
 
-glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
+glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
 {
-
-    auto newPos = (glm::vec2(scene->properties_.size) / projection.size) *
-                  (glm::vec2(rect.x, rect.y) - projection.pos);
-
-    auto newSize = glm::vec2(rect.z, rect.w) * (glm::vec2(scene->properties_.size) / projection.size);
-    return {newPos, newSize};
+    pos -= glm::vec2(scene->properties_.pos);
+    return map(pos, {0.f, 0.f, scene->properties_.size}, projection);
 }
 
-glm::ivec4 iMapToScene(glm::vec4 rect, Space projection, const Scene* scene)
+glm::vec4 mapToFramebuffer(glm::vec4 rect, Space projection, const Framebuffer& fb)
 {
-    return mapToScene(rect, projection, scene) +  0.5f;
+    auto pos = map({rect.x, rect.y}, projection, {0.f, 0.f, fb.getSize()});
+    auto size = glm::vec2(rect.z, rect.w) * (glm::vec2(fb.getSize()) / projection.size);
+    return {pos, size};
+}
+
+glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
+{
+    auto pos = map({rect.x, rect.y}, projection, {0.f, 0.f, scene->properties_.size});
+    auto size = glm::vec2(rect.z, rect.w) * (glm::vec2(scene->properties_.size) / projection.size);
+    return {pos, size};
 }
 
 glm::ivec4 iMapToWindow(glm::vec4 rect, Space projection, const Scene* scene)
@@ -63,12 +69,6 @@ glm::ivec4 iMapToWindow(glm::vec4 rect, Space projection, const Scene* scene)
     mapped.x += scene->properties_.pos.x;
     mapped.y += scene->properties_.pos.y;
     return mapped;
-}
-
-glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
-{
-    pos -= glm::vec2(scene->properties_.pos);
-    return projection.pos + (projection.size / glm::vec2(scene->properties_.size)) * pos;
 }
 
 } // namespace hppv

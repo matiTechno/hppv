@@ -11,45 +11,118 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/glad.h>
 #include <hppv/imgui.h>
+#include <hppv/Shader.hpp>
+#include <hppv/Framebuffer.hpp>
 
-std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayPoint, glm::vec2 segStart, glm::vec2 segEnd)
+static const char* blurSource = R"(
+
+#fragment
+#version 330
+
+in vec2 vTexCoord;
+in vec4 vColor;
+
+uniform sampler2D sampler;
+
+out vec4 color;
+
+const float weights[5] = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+
+void main()
 {
-    auto rayCoeff = (rayPoint.y - rayStart.y) / (rayPoint.x - rayStart.x);
+    vec4 sample = texture(sampler, vTexCoord) * weights[0];
+    vec2 texOffset  = 1.0 / textureSize(sampler, 0);
 
-    float x;
+    for(int i = 1; i < 5; ++i)
+    {
+        sample += texture(sampler, vTexCoord + vec2(texOffset.x * i, 0)) * weights[i];
+        sample += texture(sampler, vTexCoord - vec2(texOffset.x * i, 0)) * weights[i];
+    }
+
+    for(int i = 1; i < 5; ++i)
+    {
+        sample += texture(sampler, vTexCoord + vec2(0, texOffset.y * i)) * weights[i];
+        sample += texture(sampler, vTexCoord - vec2(0, texOffset.y * i)) * weights[i];
+    }
+
+    color = sample * vColor;
+}
+)";
+
+static const char* lightSource = R"(
+
+#fragment
+#version 330
+
+in vec4 vColor;
+in vec2 vTexCoord;
+in vec2 vPos;
+
+uniform sampler2D sampler;
+
+const float radius = 0.5;
+const vec2 center = vec2(0.5, 0.5);
+
+out vec4 color;
+
+void main()
+{
+    float distanceFromCenter = length(vPos - center);
+    float alpha = 1 - smoothstep(0, radius, distanceFromCenter);
+    vec4 sample = texture(sampler, vTexCoord);
+    color = sample * vColor * alpha;
+}
+)";
+
+std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayDir, glm::vec2 segStart, glm::vec2 segEnd)
+{
+    // we don't need to handle this case
+    // for each point we cast three rays with different coefficient
+    if(rayDir.x == 0.f)
+        return {};
+
+    const auto rayCoeff = rayDir.y / rayDir.x;
+    glm::vec2 rayEnd;
 
     if(segStart.x == segEnd.x)
     {
-        x = segStart.x;
+        auto x = segStart.x;
+        rayEnd = {x, rayCoeff * x + rayStart.y - rayCoeff * rayStart.x};
+
+        if(rayEnd.y < std::min(segStart.y, segEnd.y) || rayEnd.y > std::max(segStart.y, segEnd.y))
+            return {};
     }
     else
     {
-        auto segCoeff = (segEnd.y - segStart.y) / (segEnd.x - segStart.x);
+        const auto segCoeff = (segEnd.y - segStart.y) / (segEnd.x - segStart.x);
 
-        if(segCoeff == rayCoeff)
+        if(rayCoeff == segCoeff)
             return {};
 
-        x = (segStart.y - segCoeff * segStart.x - rayStart.y + rayCoeff * rayStart.x) / (rayCoeff - segCoeff);
+        auto x = (segStart.y - segCoeff * segStart.x - rayStart.y + rayCoeff * rayStart.x) / (rayCoeff - segCoeff);
+
+        if(x < std::min(segStart.x, segEnd.x) || (x > std::max(segStart.x, segEnd.x)))
+            return {};
+
+        rayEnd = {x, rayCoeff * x + rayStart.y - rayCoeff * rayStart.x};
     }
 
-    if((rayPoint.x - rayStart.x) * (x - rayStart.x) < 0)
-        return {};
-
-    if(x < std::min(segStart.x, segEnd.x) || x > std::max(segStart.x, segEnd.x))
-        return {};
-
-    glm::vec2 rayEnd(x, rayCoeff * x + rayStart.y - rayCoeff * rayStart.x);
-
-    if(rayEnd.y < std::min(segStart.y, segEnd.y) || rayEnd.y > std::max(segStart.y, segEnd.y))
+    if(rayDir.x * (rayEnd.x - rayStart.x) < 0)
         return {};
 
     return rayEnd;
 }
 
+// todo: implement blur
 class GeometryLight: public hppv::PrototypeScene
 {
 public:
-    GeometryLight(): hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false)
+    GeometryLight():
+        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
+        shaderBlur_({hppv::Renderer::vInstancesSource, blurSource}, "blur"),
+        fbBlur1_(GL_RGBA8, 1),
+        fbBlur2_(GL_RGBA8, 1)
     {
         setLineLoops();
     }
@@ -59,12 +132,15 @@ private:
     hppv::Space border_{10.f, 10.f, 80.f, 80.f};
     std::vector<glm::vec2> points_;
     glm::vec2 lightPos_;
+    hppv::Shader shaderLight_, shaderBlur_;
+    hppv::Framebuffer fbBlur1_, fbBlur2_;
 
     struct
     {
         bool drawPoints = true;
         bool drawLines = true;
         bool drawTriangles = true;
+        bool release = true;
     }
     options_;
 
@@ -76,23 +152,27 @@ private:
 
         for(const auto& loop: lineLoops_)
         {
-            // change to: i = -1; i < 2
-            for(int i = 0; i < 1; ++i)
+            for(auto point: loop)
             {
-                for(auto point: loop)
+                for(int i = -1; i < 2; ++i)
                 {
-                    std::optional<glm::vec2> rayEnd;
+                    auto rayDir = glm::rotate(point - lightPos_, i * 0.00001f);
+                    glm::vec2 rayEnd(1000.f);
+
+                    if(i == 0)
+                    {
+                        rayEnd = point;
+                    }
 
                     for(const auto& loop: lineLoops_)
                     {
                         for(auto it = loop.cbegin(); it < loop.cend(); ++it)
                         {
                             auto segEnd = (it == loop.end() - 1 ? *loop.begin() : *(it + 1));
-                            auto rayPoint = glm::rotate(point, i * 0.00001f);
 
-                            if(auto newRayEnd = findRayEnd(lightPos_, rayPoint, *it, segEnd))
+                            if(auto newRayEnd = findRayEnd(lightPos_, rayDir, *it, segEnd))
                             {
-                                if(!rayEnd || glm::length(*newRayEnd - lightPos_) < glm::length(*rayEnd - lightPos_))
+                                if(glm::length(*newRayEnd - lightPos_) < glm::length(rayEnd - lightPos_))
                                 {
                                     rayEnd = *newRayEnd;
                                 }
@@ -100,10 +180,7 @@ private:
                         }
                     }
 
-                    if(rayEnd)
-                    {
-                        points_.push_back(*rayEnd);
-                    }
+                    points_.push_back(rayEnd);
                 }
             }
         }
@@ -136,14 +213,23 @@ private:
             ImGui::Checkbox("draw points", &options_.drawPoints);
             ImGui::Checkbox("draw lines", &options_.drawLines);
             ImGui::Checkbox("draw triangles", &options_.drawTriangles);
+            ImGui::Checkbox("release", &options_.release);
         }
         ImGui::End();
 
-        renderer.mode(hppv::Mode::Vertices);
-        renderer.shader(hppv::Render::VerticesColor);
 
-        if(options_.drawTriangles)
+        if(options_.release)
         {
+            fbBlur1_.bind();
+            fbBlur1_.setSize(properties_.size);
+            fbBlur1_.clear();
+            renderer.viewport(fbBlur1_);
+        }
+
+        if(options_.drawTriangles || options_.release)
+        {
+            renderer.mode(hppv::Mode::Vertices);
+            renderer.shader(hppv::Render::VerticesColor);
             renderer.primitive(GL_TRIANGLES);
 
             for(auto it = points_.cbegin(); it < points_.cend(); ++it)
@@ -151,7 +237,15 @@ private:
                 auto last = (it == points_.end() - 1 ? *points_.begin() : *(it + 1));
 
                 hppv::Vertex v;
-                v.color = {0.3f, 0.f, 0.f, 0.5f};
+
+                if(options_.release)
+                {
+                    v.color = {1.f, 1.f, 0.7f, 1.f};
+                }
+                else
+                {
+                    v.color = {0.3f, 0.f, 0.f, 1.f};
+                }
 
                 v.pos = lightPos_;
                 renderer.cache(v);
@@ -162,6 +256,25 @@ private:
             }
         }
 
+        if(options_.release)
+        {
+            renderer.flush();
+            renderer.viewport(this);
+            fbBlur1_.unbind();
+
+            renderer.mode(hppv::Mode::Instances);
+            renderer.shader(shaderLight_);
+            renderer.texture(fbBlur1_.getTexture());
+
+            hppv::Circle c;
+            c.center = lightPos_;
+            c.radius = border_.size.x / 1.4f;
+            c.texRect = hppv::mapToFramebuffer(c.toVec4(), space_.projected, fbBlur1_);
+            renderer.cache(c);
+        }
+
+        renderer.mode(hppv::Mode::Vertices);
+        renderer.shader(hppv::Render::VerticesColor);
         renderer.primitive(GL_LINE_LOOP);
 
         for(const auto& loop: lineLoops_)
@@ -176,6 +289,9 @@ private:
 
             renderer.breakBatch();
         }
+
+        if(options_.release)
+            return;
 
         if(options_.drawLines)
         {

@@ -23,6 +23,10 @@ struct Text
 {
     Text(const Font* font): font(font) {}
     Text(const Font& font): font(&font) {}
+
+    glm::vec2 getSize() const;
+    glm::vec4 toVec4() const {return {pos, getSize()};}
+
     glm::vec2 pos; // top left corner
     float scale = 1.f;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
@@ -30,12 +34,12 @@ struct Text
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
     const Font* font;
     std::string text;
-
-    glm::vec2 getSize() const;
 };
 
 struct Circle
 {
+    glm::vec4 toVec4() const {return {center - radius, glm::vec2(radius * 2.f)};}
+
     glm::vec2 center;
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
@@ -63,8 +67,10 @@ struct Sprite
         size(space.size)
     {}
 
-    glm::vec2 pos = {0.f, 0.f};
-    glm::vec2 size = {1.f, 1.f};
+    glm::vec4 toVec4() const {return {pos, size};}
+
+    glm::vec2 pos;
+    glm::vec2 size;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f};
@@ -136,10 +142,7 @@ public:
 
     // ----- projected / visible area
 
-    template<typename T>
-    void projection(const T& projection) {getBatchToUpdate().projection = {projection.pos, projection.size};}
-
-    void projection(Space projection) {getBatchToUpdate().projection = projection;} // for initializer list
+    void projection(Space projection) {getBatchToUpdate().projection = projection;}
 
     // ----- default is Render::Color
 

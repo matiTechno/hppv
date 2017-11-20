@@ -13,7 +13,7 @@ class Shaders: public hppv::PrototypeScene
 {
 public:
     Shaders():
-        PrototypeScene(hppv::Space(0.f, 0.f, 0.f, 0.f), 0.f, false)
+        PrototypeScene(hppv::Space(0.f, 0.f, 1.f, 1.f), 0.f, false)
     {
         addShader(tunnel);
         addShader(lines);
@@ -67,8 +67,7 @@ private:
         renderer.shader(*activeShader_);
         renderer.uniform1f("time", time_);
         renderer.uniform2f("resolution", properties_.size);
-        renderer.projection(hppv::Sprite());
-        renderer.cache(hppv::Sprite());
+        renderer.cache(hppv::Sprite(space_.projected));
     }
 };
 
