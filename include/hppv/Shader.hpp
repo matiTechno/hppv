@@ -118,7 +118,7 @@ private:
     };
 
     std::string id_;
-    bool hotReload_;
+    bool hotReload_ = false;
     Program program_;
     fs::file_time_type fileLastWriteTime_;
     std::map<std::string, GLint, std::less<>> uniformLocations_;
@@ -214,8 +214,7 @@ Shader::Shader(File, const std::string& filename, bool hotReload):
 }
 
 Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view id):
-    id_(id),
-    hotReload_(false)
+    id_(id)
 {
     swapProgram(sources);
 }

@@ -242,7 +242,7 @@ private:
 int main()
 {
     hppv::App app;
-    if(!app.initialize(false)) return -1;
+    if(!app.initialize(false)) return 1;
     app.pushScene<PixelShadows>();
     app.run();
     return 0;
