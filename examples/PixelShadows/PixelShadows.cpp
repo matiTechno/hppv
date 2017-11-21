@@ -1,3 +1,5 @@
+// github.com/mattdesl/lwjgl-basics/wiki/2D-Pixel-Perfect-Shadows
+
 #include <vector>
 
 #include <glm/gtc/constants.hpp>
@@ -18,7 +20,6 @@ static const char* shadowSource = R"(
 in vec2 vTexCoord;
 
 uniform sampler2D sampler;
-uniform float resolution;
 
 const float Pi = 3.14;
 const float threshold = 0.75;
@@ -29,14 +30,16 @@ void main()
 {
     float distance = 1;
 
-    for(float y = 0; y < resolution; y += 1)
+    int texSizeY = textureSize(sampler, 0).y;
+
+    for(float y = 0; y < texSizeY; y += 1)
     {
-        vec2 norm = vec2(vTexCoord.x, y / resolution) * 2 - 1;
+        vec2 norm = vec2(vTexCoord.x, y / texSizeY) * 2 - 1;
         float theta = Pi * 1.5 + norm.x * Pi;
         float r = (1 + norm.y) * 0.5;
         vec2 texCoord = vec2(-r * sin(theta), -r * cos(theta)) / 2 + 0.5;
         vec4 sample = texture(sampler, texCoord);
-        float dst = y / resolution;
+        float dst = y / texSizeY;
         float caster = sample.a;
 
         if(caster > threshold)
@@ -58,7 +61,6 @@ in vec4 vColor;
 in vec2 vTexCoord;
 
 uniform sampler2D sampler;
-uniform float resolution;
 
 const float Pi = 3.14;
 
@@ -77,7 +79,7 @@ void main()
     float coordX = (theta + Pi) / (2 * Pi);
     vec2 tc = vec2(coordX, 0);
     float center = sample(tc, r);
-    float blur = (1 / resolution) * smoothstep(0, 1, r);
+    float blur = (1.0 / textureSize(sampler, 0).x) * smoothstep(0, 1, r);
     float sum = 0;
     sum += sample(vec2(tc.x - 4 * blur, tc.y), r) * 0.05;
     sum += sample(vec2(tc.x - 3 * blur, tc.y), r) * 0.09;
@@ -202,7 +204,6 @@ private:
                     sprite.texRect = {0, 0, occlusionTex.getSize()};
 
                     renderer.shader(shaderShadow_);
-                    renderer.uniform1f("resolution", LightRays);
                     renderer.texture(occlusionTex);
                     renderer.cache(sprite);
                 }
@@ -219,7 +220,6 @@ private:
 
                 renderer.flipTextureY(true); // why?
                 renderer.shader(shaderLight_);
-                renderer.uniform1f("resolution", LightRays);
                 renderer.texture(shadowTex);
                 renderer.cache(sprite);
                 renderer.flipTextureY(false);

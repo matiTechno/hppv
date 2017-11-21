@@ -21,6 +21,8 @@ public:
     }
 
 private:
+    hppv::Font sdfFont_, proggy_;
+
     struct
     {
         glm::vec2 pos = {5.f, 70.f};
@@ -29,7 +31,44 @@ private:
     }
     gnu_;
 
-    hppv::Font sdfFont_, proggy_;
+    struct
+    {
+        char text[256] = {"The slow red squirrel jumps over the hungry bear."};
+        glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
+        float rotation = 0.f;
+        bool sprite = true;
+        glm::vec4 spriteColor = {0.1f, 0.05f, 0.05f, 0.5f};
+        int comboIndex = 1;
+        const char* shaders[5] = {"texture", "default", "outline", "glow", "shadow"};
+
+        struct
+        {
+            glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+            float width = 0.25f;
+        }
+        outline;
+
+        struct
+        {
+            glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+            float width = 0.5f;
+            bool animate = true;
+            float time = 0.f;
+
+        }
+        glow;
+
+        struct
+        {
+            glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
+            float smoothing = 0.2f;
+            glm::vec2 offset = {-0.003, -0.006};
+            bool animate = true;
+            float time = 0.f;
+        }
+        shadow;
+    }
+    sdf_;
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
@@ -46,120 +85,80 @@ private:
         }
         // sdf font
         {
-            // todo: serialize
-            struct
-            {
-                char text[256] = {"The slow red squirrel jumps over the hungry bear."};
-                glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-                float rotation = 0.f;
-                bool sprite = true;
-                glm::vec4 spriteColor = {0.1f, 0.05f, 0.05f, 0.5f};
-                int comboIndex = 1;
-                const char* shaders[5] = {"texture", "default", "outline", "glow", "shadow"};
-
-                struct
-                {
-                    glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
-                    float width = 0.25f;
-                }
-                outline;
-
-                struct
-                {
-                    glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
-                    float width = 0.5f;
-                    bool animate = true;
-                    float time = 0.f;
-
-                }
-                glow;
-
-                struct
-                {
-                    glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
-                    float smoothing = 0.2f;
-                    glm::vec2 offset = {-0.003, -0.006};
-                    bool animate = true;
-                    float time = 0.f;
-                }
-                shadow;
-            }
-            static sdf;
-
             ImGui::Begin("sdf");
-            ImGui::InputTextMultiline("", sdf.text, sizeof(sdf.text) / sizeof(char));
-            ImGui::ColorEdit4("font color", &sdf.color.x);
-            ImGui::SliderFloat("rotation", &sdf.rotation, 0.f, 2 * glm::pi<float>());
-            ImGui::Checkbox("sprite", &sdf.sprite);
-            ImGui::ColorEdit4("sprite color", &sdf.spriteColor.x);
-            ImGui::Combo("shader", &sdf.comboIndex, sdf.shaders, sizeof(sdf.shaders) / sizeof(char*));
+            ImGui::InputTextMultiline("", sdf_.text, sizeof(sdf_.text) / sizeof(char));
+            ImGui::ColorEdit4("font color", &sdf_.color.x);
+            ImGui::SliderFloat("rotation", &sdf_.rotation, 0.f, 2 * glm::pi<float>());
+            ImGui::Checkbox("sprite", &sdf_.sprite);
+            ImGui::ColorEdit4("sprite color", &sdf_.spriteColor.x);
+            ImGui::Combo("shader", &sdf_.comboIndex, sdf_.shaders, sizeof(sdf_.shaders) / sizeof(char*));
 
             hppv::Text text(sdfFont_);
-            text.text = sdf.text;
+            text.text = sdf_.text;
             text.scale = 0.4f;
             text.pos = space_.initial.pos + space_.initial.size / 2.f;
             text.pos -= text.getSize() / 2.f;
-            text.color = sdf.color;
-            text.rotation = sdf.rotation;
+            text.color = sdf_.color;
+            text.rotation = sdf_.rotation;
 
-            if(sdf.sprite)
+            if(sdf_.sprite)
             {
                 hppv::Sprite sprite(text);
-                sprite.color = sdf.spriteColor;
+                sprite.color = sdf_.spriteColor;
 
                 renderer.shader(hppv::Render::Color);
                 renderer.cache(sprite);
             }
 
-            if(sdf.comboIndex == 0)
+            if(sdf_.comboIndex == 0)
             {
                 renderer.shader(hppv::Render::Tex);
             }
             else
             {
-                auto shader = hppv::Render(int(hppv::Render::Sdf) + sdf.comboIndex - 1);
+                auto shader = hppv::Render(int(hppv::Render::Sdf) + sdf_.comboIndex - 1);
                 renderer.shader(shader);
 
                 if(shader == hppv::Render::SdfOutline)
                 {
-                    ImGui::ColorEdit4("outline color", &sdf.outline.color.x);
-                    ImGui::SliderFloat("outline width", &sdf.outline.width, 0.f, 0.5f);
+                    ImGui::ColorEdit4("outline color", &sdf_.outline.color.x);
+                    ImGui::SliderFloat("outline width", &sdf_.outline.width, 0.f, 0.5f);
 
-                    renderer.uniform4f("outlineColor", sdf.outline.color);
-                    renderer.uniform1f("outlineWidth", sdf.outline.width);
+                    renderer.uniform4f("outlineColor", sdf_.outline.color);
+                    renderer.uniform1f("outlineWidth", sdf_.outline.width);
                 }
                 else if(shader == hppv::Render::SdfGlow)
                 {
-                    if(sdf.glow.animate)
+                    if(sdf_.glow.animate)
                     {
-                        sdf.glow.time += frame_.frameTime;
-                        sdf.glow.width = (glm::sin(sdf.glow.time * 2.f * glm::pi<float>() / 4.f) + 1.f) / 4.f;
+                        sdf_.glow.time += frame_.frameTime;
+                        sdf_.glow.width = (glm::sin(sdf_.glow.time * 2.f * glm::pi<float>() / 4.f) + 1.f) / 4.f;
                     }
 
-                    ImGui::ColorEdit4("glow color", &sdf.glow.color.x);
-                    ImGui::SliderFloat("glow width", &sdf.glow.width, 0.f, 0.5f);
-                    ImGui::Checkbox("animate", &sdf.glow.animate);
+                    ImGui::ColorEdit4("glow color", &sdf_.glow.color.x);
+                    ImGui::SliderFloat("glow width", &sdf_.glow.width, 0.f, 0.5f);
+                    ImGui::Checkbox("animate", &sdf_.glow.animate);
 
-                    renderer.uniform4f("glowColor", sdf.glow.color);
-                    renderer.uniform1f("glowWidth", sdf.glow.width);
+                    renderer.uniform4f("glowColor", sdf_.glow.color);
+                    renderer.uniform1f("glowWidth", sdf_.glow.width);
                 }
                 else if(shader == hppv::Render::SdfShadow)
                 {
-                    if(sdf.shadow.animate)
+                    if(sdf_.shadow.animate)
                     {
-                        sdf.shadow.time += frame_.frameTime;
-                        sdf.shadow.offset.x = glm::sin(sdf.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
-                        sdf.shadow.offset.y = glm::cos(sdf.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
+                        sdf_.shadow.time += frame_.frameTime;
+                        sdf_.shadow.offset.x = glm::sin(sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
+                        sdf_.shadow.offset.y = glm::cos(sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
                     }
 
-                    ImGui::ColorEdit4("shadow color", &sdf.shadow.color.x);
-                    ImGui::SliderFloat("shadow smoothing", &sdf.shadow.smoothing, 0.f, 0.5f);
-                    ImGui::SliderFloat2("shadow offset", &sdf.shadow.offset.x, -0.01f, 0.01f);
-                    ImGui::Checkbox("animate", &sdf.shadow.animate);
+                    ImGui::ColorEdit4("shadow color", &sdf_.shadow.color.x);
+                    ImGui::SliderFloat("shadow smoothing", &sdf_.shadow.smoothing, 0.f, 0.5f);
+                    ImGui::SliderFloat2("shadow offset", &sdf_.shadow.offset.x, -0.01f, 0.01f);
+                    ImGui::Checkbox("animate", &sdf_.shadow.animate);
 
-                    renderer.uniform4f("shadowColor", sdf.shadow.color);
-                    renderer.uniform1f("shadowSmoothing", sdf.shadow.smoothing);
-                    renderer.uniform2f("shadowOffset", sdf.shadow.offset);
+                    renderer.uniform4f("shadowColor", sdf_.shadow.color);
+                    renderer.uniform1f("shadowSmoothing", sdf_.shadow.smoothing);
+                    renderer.uniform2f("shadowOffset", sdf_.shadow.offset);
                 }
             }
             ImGui::End();

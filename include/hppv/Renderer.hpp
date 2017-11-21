@@ -86,10 +86,10 @@ struct Vertex
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 };
 
-enum class Mode
+enum class RenderMode
 {
-    Instances,
-    Vertices
+    Instances, // Text, Circle, Sprite
+    Vertices // Vertex
 };
 
 enum class Render
@@ -125,7 +125,10 @@ public:
 
     // -----
 
-    void mode(Mode mode) {getBatchToUpdate().vao = (mode == Mode::Instances ? &vaoInstances_ : &vaoVertices_);}
+    void mode(RenderMode mode)
+    {
+        getBatchToUpdate().vao = (mode == RenderMode::Instances ? &vaoInstances_ : &vaoVertices_);
+    }
 
     // ----- for Vertices mode, default is GL_TRIANGLES
 
@@ -209,6 +212,9 @@ public:
     // -----
 
     void flush();
+
+    // useful when rendering in Vertices mode with GL_LINE_LOOP primitive
+    // todo: replace with breakShape()
     void breakBatch() {getBatchToUpdate();}
 
     // ----- vertex shaders

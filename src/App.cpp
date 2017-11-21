@@ -21,6 +21,7 @@ App::~App() = default;
 GLFWwindow* App::window_;
 Frame App::frame_;
 bool App::handleQuitEvent_ = true;
+std::vector<Request> App::requests_;
 
 bool App::initialize(bool printDebugInfo)
 {
@@ -81,6 +82,7 @@ bool App::initialize(bool printDebugInfo)
     scenes_.reserve(ReservedScenes);
     scenesToRender_.reserve(ReservedScenes);
     frame_.events.reserve(ReservedEvents);
+    requests_.reserve(ReservedRequests);
 
     refreshFrame();
     frame_.window.previousState = frame_.window.state;
@@ -147,6 +149,10 @@ void App::run()
            renderer_->flush();
        }
 
+       ImGui::Render();
+
+       glfwSwapBuffers(window_);
+
        {
            auto& topScene = *scenes_.back();
            auto sceneToPush = std::move(topScene.properties_.sceneToPush);
@@ -160,17 +166,70 @@ void App::run()
            }
        }
 
-       ImGui::Render();
+       for(auto& request: requests_)
+       {
+           switch(request.type)
+           {
+           case Request::Quit: glfwSetWindowShouldClose(window_, GLFW_TRUE); break;
 
-       glfwSwapBuffers(window_);
+           case Request::Vsync: glfwSwapInterval(request.vsync.on); break;
+
+           case Request::Cursor:
+           {
+               auto mode = request.cursor.visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
+               glfwSetInputMode(window_, GLFW_CURSOR, mode);
+               break;
+           }
+
+           case Request::Window:
+           {
+               auto state = request.window.state;
+               assert(frame_.window.state != state);
+
+               if(state == Frame::Window::Fullscreen)
+               {
+                   auto* monitor = glfwGetPrimaryMonitor();
+                   const auto* mode = glfwGetVideoMode(monitor);
+                   glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+               }
+               else if(state == Frame::Window::Maximized)
+               {
+                   assert(frame_.window.state != Frame::Window::Fullscreen);
+                   glfwMaximizeWindow(window_);
+               }
+               else
+               {
+                   if(frame_.window.state == Frame::Window::Fullscreen)
+                   {
+                       glfwSetWindowMonitor(window_, nullptr, frame_.window.restored.pos.x, frame_.window.restored.pos.y,
+                                            frame_.window.restored.size.x, frame_.window.restored.size.y, 0);
+
+                       if(frame_.window.previousState == Frame::Window::Maximized)
+                       {
+                           glfwMaximizeWindow(window_);
+                       }
+                   }
+                   else
+                   {
+                       glfwRestoreWindow(window_);
+                   }
+               }
+           }
+           }
+       }
+
+       requests_.clear();
    }
 }
 
 void App::refreshFrame()
 {
-    glm::dvec2 cursorPos;
-    glfwGetCursorPos(window_, &cursorPos.x, &cursorPos.y);
-    frame_.cursorPos = cursorPos;
+    if(glfwGetWindowAttrib(window_, GLFW_FOCUSED))
+    {
+        glm::dvec2 cursorPos;
+        glfwGetCursorPos(window_, &cursorPos.x, &cursorPos.y);
+        frame_.cursorPos = cursorPos;
+    }
 
     glfwGetFramebufferSize(window_, &frame_.framebufferSize.x, &frame_.framebufferSize.y);
 
@@ -197,57 +256,6 @@ void App::refreshFrame()
     }
 }
 
-void App::quit()
-{
-    glfwSetWindowShouldClose(window_, GLFW_TRUE);
-}
-
-void App::setVsync(bool on)
-{
-    glfwSwapInterval(on);
-}
-
-void App::setCursor(bool visible)
-{
-    auto mode = visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
-    glfwSetInputMode(window_, GLFW_CURSOR, mode);
-}
-
-// frame_.window.state and frame_.window.previousState are set in refreshFrame()
-void App::setWindow(Frame::Window::State state)
-{
-    assert(frame_.window.state != state);
-
-    if(state == Frame::Window::Fullscreen)
-    {
-        auto* monitor = glfwGetPrimaryMonitor();
-        const auto* mode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-    }
-    else if(state == Frame::Window::Maximized)
-    {
-        assert(frame_.window.state != Frame::Window::Fullscreen);
-        glfwMaximizeWindow(window_);
-    }
-    else
-    {
-        if(frame_.window.state == Frame::Window::Fullscreen)
-        {
-            glfwSetWindowMonitor(window_, nullptr, frame_.window.restored.pos.x, frame_.window.restored.pos.y,
-                                 frame_.window.restored.size.x, frame_.window.restored.size.y, 0);
-
-            if(frame_.window.previousState == Frame::Window::Maximized)
-            {
-                glfwMaximizeWindow(window_);
-            }
-        }
-        else
-        {
-            glfwRestoreWindow(window_);
-        }
-    }
-}
-
 void App::errorCallback(int, const char* description)
 {
     std::cout << description << std::endl;
@@ -259,7 +267,7 @@ void App::windowCloseCallback(GLFWwindow*)
         return;
 
     glfwSetWindowShouldClose(window_, GLFW_FALSE);
-    frame_.events.push_back(Event(Event::Quit));
+    frame_.events.push_back(Event::Quit);
 }
 
 void App::windowFocusCallback(GLFWwindow*, int focused)
@@ -321,13 +329,9 @@ void App::charCallback(GLFWwindow* window, unsigned int codepoint)
     ImGui_ImplGlfwGL3_CharCallback(window, codepoint);
 }
 
-// frame_.framebufferSize is set in refreshFrame()
-void App::framebufferSizeCallback(GLFWwindow*, int width, int height)
+void App::framebufferSizeCallback(GLFWwindow*, int, int)
 {
-    Event event(Event::FramebufferSize);
-    event.framebufferSize.prevSize = frame_.framebufferSize;
-    event.framebufferSize.newSize = {width, height};
-    frame_.events.push_back(event);
+    frame_.events.push_back(Event::FramebufferSize);
 }
 
 } // namespace hppv

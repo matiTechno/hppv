@@ -1,3 +1,5 @@
+// ncase.me/sight-and-light
+
 #include <vector>
 #include <optional>
 #include <algorithm>
@@ -170,15 +172,14 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
-        ImGui::Begin("light options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("light draw options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         {
-            ImGui::Checkbox("draw points", &options_.drawPoints);
-            ImGui::Checkbox("draw lines", &options_.drawLines);
-            ImGui::Checkbox("draw triangles", &options_.drawTriangles);
+            ImGui::Checkbox("points", &options_.drawPoints);
+            ImGui::Checkbox("lines", &options_.drawLines);
+            ImGui::Checkbox("triangles", &options_.drawTriangles);
             ImGui::Checkbox("release", &options_.release);
         }
         ImGui::End();
-
 
         if(options_.release)
         {
@@ -190,7 +191,7 @@ private:
 
         if(options_.drawTriangles || options_.release)
         {
-            renderer.mode(hppv::Mode::Vertices);
+            renderer.mode(hppv::RenderMode::Vertices);
             renderer.shader(hppv::Render::VerticesColor);
             renderer.primitive(GL_TRIANGLES);
 
@@ -202,7 +203,7 @@ private:
 
                 if(options_.release)
                 {
-                    v.color = {1.f, 1.f, 0.6f, 1.f};
+                    v.color = {1.f, 1.f, 0.5f, 1.f};
                 }
                 else
                 {
@@ -224,11 +225,11 @@ private:
             renderer.viewport(this);
             fb_.unbind();
 
-            renderer.mode(hppv::Mode::Instances);
+            renderer.mode(hppv::RenderMode::Instances);
 
             hppv::Circle c;
             c.center = lightPos_;
-            c.radius = border_.size.x / 1.4f;
+            c.radius = border_.size.x * 0.65f;;
             c.texRect = hppv::mapToFramebuffer(c.toVec4(), space_.projected, fb_);
 
             renderer.shader(shaderLight_);
@@ -236,7 +237,7 @@ private:
             renderer.cache(c);
         }
 
-        renderer.mode(hppv::Mode::Vertices);
+        renderer.mode(hppv::RenderMode::Vertices);
         renderer.shader(hppv::Render::VerticesColor);
         renderer.primitive(GL_LINE_LOOP);
 
@@ -272,7 +273,7 @@ private:
 
         if(options_.drawPoints)
         {
-            renderer.mode(hppv::Mode::Instances);
+            renderer.mode(hppv::RenderMode::Instances);
             renderer.shader(hppv::Render::CircleColor);
 
             for(auto point: points_)

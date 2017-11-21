@@ -12,26 +12,19 @@ struct Event
         Quit,
         FocusLost,
         FocusGained,
-        FramebufferSize,
         Key,
         Cursor,
         MouseButton,
-        Scroll
+        Scroll,
+        FramebufferSize
     }
     type;
 
-    Event() = default;
     Event(Type type): type(type) {}
+    Event() = default;
 
     union
     {
-        struct
-        {
-            glm::ivec2 prevSize;
-            glm::ivec2 newSize;
-        }
-        framebufferSize;
-
         struct
         {
             int key;

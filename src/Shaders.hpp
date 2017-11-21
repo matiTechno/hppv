@@ -46,7 +46,7 @@ void main()
 }
 )";
 
-static const char* fBasicSource = R"(
+const char* fBasicSource = R"(
 
 #fragment
 #version 330
@@ -128,7 +128,7 @@ void main()
 }
 )";
 
-static const char* fSdfSource = R"(
+const char* fSdfSource = R"(
 
 #fragment
 #version 330
@@ -218,7 +218,7 @@ void main()
 }
 )";
 
-const char* fVerticesBasicSource = R"(
+const char* fVerticesSource = R"(
 
 #fragment
 #version 330

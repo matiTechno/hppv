@@ -95,7 +95,9 @@ void PrototypeScene::render(Renderer& renderer)
 
         if(ImGui::Checkbox("vsync", &vsync_))
         {
-            App::setVsync(vsync_);
+            Request request(Request::Vsync);
+            request.vsync.on = vsync_;
+            App::request(request);
         }
 
         // window state
@@ -103,14 +105,18 @@ void PrototypeScene::render(Renderer& renderer)
         {
             if(ImGui::Button("restore"))
             {
-                App::setWindow(Frame::Window::Restored);
+                Request request(Request::Window);
+                request.window.state = Frame::Window::Restored;
+                App::request(request);
             }
         }
         else
         {
             if(ImGui::Button("set fullscreen"))
             {
-                App::setWindow(Frame::Window::Fullscreen);
+                Request request(Request::Window);
+                request.window.state = Frame::Window::Fullscreen;
+                App::request(request);
             }
 
             ImGui::SameLine();
@@ -119,21 +125,25 @@ void PrototypeScene::render(Renderer& renderer)
             {
                 if(ImGui::Button("restore"))
                 {
-                    App::setWindow(Frame::Window::Restored);
+                    Request request(Request::Window);
+                    request.window.state = Frame::Window::Restored;
+                    App::request(request);
                 }
             }
             else
             {
                 if(ImGui::Button("maximize"))
                 {
-                    App::setWindow(Frame::Window::Maximized);
+                    Request request(Request::Window);
+                    request.window.state = Frame::Window::Maximized;
+                    App::request(request);
                 }
             }
         }
 
         if(ImGui::Button("quit"))
         {
-            App::quit();
+            App::request(Request::Quit);
         }
 
         ImGui::Separator();

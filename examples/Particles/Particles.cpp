@@ -28,7 +28,6 @@ private:
 
         ImGui::Begin("Particles", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         {
-            // todo: set emitter properties and serialize
             ImGui::Text("count: %lu", emitter_.getCount());
             int hz = emitter_.spawn.hz;
             ImGui::SliderInt("spawn.hz", &hz, 60, 100000);

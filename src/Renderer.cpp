@@ -75,7 +75,7 @@ Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation,
 Renderer::Renderer():
     shaderBasic_({vInstancesSource, fBasicSource}, "Renderer::shaderBasic_"),
     shaderSdf_({vInstancesSource, fSdfSource}, "Renderer::shaderSdf_"),
-    shaderVertices_({vVerticesSource, fVerticesBasicSource}, "Renderer::shaderVertices_")
+    shaderVertices_({vVerticesSource, fVerticesSource}, "Renderer::shaderVertices_")
 {
     glEnable(GL_BLEND);
 

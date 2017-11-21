@@ -4,14 +4,12 @@ high performance physics visualization
 todo:
 
 * bezier curves / lines
-* projection rotation, camera, Space redesign
-* performance test: create transformation matrix on gpu for single vertex,
-  emit quad from geometry shader
+* Space rotation, Camera class?
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * load font from ttf
+* flat_map
 * license
-* stack allocator / vector with static buffer / flat map / general performance
 
 included:
 
@@ -26,4 +24,4 @@ dependencies:
 * glm
 
 compiles with gcc 7.2.0 on linux
-works with OpenGL 4.5 (3.3 if some extensions are available)
+runs with OpenGL 4.5 (3.3 if some extensions are available)
