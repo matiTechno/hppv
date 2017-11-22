@@ -44,7 +44,7 @@ struct Circle
     glm::vec2 center;
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-    glm::vec4 texRect;
+    glm::vec4 texRect; // OpenGL texCoords are calculated based on this and the last bound texture
 };
 
 struct Sprite
@@ -291,7 +291,7 @@ private:
         };
     };
 
-    // viewport and scissor have y-axis in opengl coordinate system
+    // viewport and scissor have y-axis in the opengl coordinate system
     struct Batch
     {
         GLenum primitive;

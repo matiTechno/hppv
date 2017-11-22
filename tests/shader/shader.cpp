@@ -39,16 +39,16 @@ TEST_CASE("shader")
     hppv::App app;
     REQUIRE(app.initialize(false));
 
-    hppv::Shader shader(hppv::File(), "shaders/fragment.sh");
+    hppv::Shader shader(hppv::Shader::File(), "shaders/fragment.sh");
     REQUIRE(shader.isValid());
 
-    shader = hppv::Shader(hppv::File(), "shaders/vertex.sh");
+    shader = hppv::Shader(hppv::Shader::File(), "shaders/vertex.sh");
     REQUIRE(shader.isValid());
 
     shader = hppv::Shader({vertex, fragment}, "1");
     REQUIRE(shader.isValid());
 
-    shader = hppv::Shader(hppv::File(), "fragment.sh", true);
+    shader = hppv::Shader(hppv::Shader::File(), "fragment.sh", true);
     REQUIRE(shader.isValid() == false);
 
     shader = hppv::Shader({vertex, fragment, fragment}, "2");

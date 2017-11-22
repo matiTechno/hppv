@@ -9,6 +9,26 @@
 namespace hppv
 {
 
+struct Window
+{
+    enum State
+    {
+        Restored,
+        Fullscreen,
+        Maximized
+    };
+
+    State state;
+    State previousState;
+
+    struct
+    {
+        glm::ivec2 pos;
+        glm::ivec2 size;
+    }
+    restored;
+};
+
 // initialized in App::initialize()
 struct Frame
 {
@@ -17,26 +37,7 @@ struct Frame
     glm::vec2 cursorPos;
     glm::ivec2 framebufferSize;
 
-    struct Window
-    {
-        enum State
-        {
-            Restored,
-            Fullscreen,
-            Maximized
-        };
-
-        State state;
-        State previousState;
-
-        struct
-        {
-            glm::ivec2 pos;
-            glm::ivec2 size;
-        }
-        restored;
-    }
-    window;
+    Window window;
 };
 
 } // namespace hppv

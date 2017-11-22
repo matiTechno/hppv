@@ -101,12 +101,12 @@ void PrototypeScene::render(Renderer& renderer)
         }
 
         // window state
-        if(frame_.window.state == Frame::Window::Fullscreen)
+        if(frame_.window.state == Window::Fullscreen)
         {
             if(ImGui::Button("restore"))
             {
                 Request request(Request::Window);
-                request.window.state = Frame::Window::Restored;
+                request.window.state = Window::Restored;
                 App::request(request);
             }
         }
@@ -115,18 +115,18 @@ void PrototypeScene::render(Renderer& renderer)
             if(ImGui::Button("set fullscreen"))
             {
                 Request request(Request::Window);
-                request.window.state = Frame::Window::Fullscreen;
+                request.window.state = Window::Fullscreen;
                 App::request(request);
             }
 
             ImGui::SameLine();
 
-            if(frame_.window.state == Frame::Window::Maximized)
+            if(frame_.window.state == Window::Maximized)
             {
                 if(ImGui::Button("restore"))
                 {
                     Request request(Request::Window);
-                    request.window.state = Frame::Window::Restored;
+                    request.window.state = Window::Restored;
                     App::request(request);
                 }
             }
@@ -135,7 +135,7 @@ void PrototypeScene::render(Renderer& renderer)
                 if(ImGui::Button("maximize"))
                 {
                     Request request(Request::Window);
-                    request.window.state = Frame::Window::Maximized;
+                    request.window.state = Window::Maximized;
                     App::request(request);
                 }
             }

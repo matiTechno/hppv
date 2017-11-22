@@ -48,11 +48,10 @@ namespace hppv
 
 namespace fs = std::experimental::filesystem;
 
-struct File {};
-
 class Shader
 {
 public:
+    struct File {};
     using GLint = int;
     using GLuint = unsigned int;
 
@@ -62,7 +61,7 @@ public:
 
     bool isValid() const {return program_.getId();}
 
-    GLint getUniformLocation(std::string_view name) const;
+    GLint getUniformLocation(std::string_view name);
 
     // after successful reload:
     // * shader must be rebound
@@ -122,7 +121,7 @@ private:
     Program program_;
     fs::file_time_type fileLastWriteTime_;
     std::map<std::string, GLint, std::less<>> uniformLocations_;
-    mutable std::set<std::string, std::less<>> inactiveUniforms_;
+    std::set<std::string, std::less<>> inactiveUniforms_;
 
     // returns true on success
     bool swapProgram(std::initializer_list<std::string_view> sources);
@@ -176,10 +175,22 @@ std::string loadSourceFromFile(const fs::path& path)
     while((start = source.find(includeDirective, start)) != std::string::npos)
     {
         auto startQuot = source.find('"', start + includeDirective.size());
-        assert(startQuot != std::string::npos);
+
+        if(startQuot == std::string::npos)
+        {
+            std::cout << "Shader: include directive - \" missing, file = " << path << std::endl;
+            return {};
+        }
+
         auto startPath = startQuot + 1;
         auto endPath = source.find('"', startPath);
-        assert(endPath != std::string::npos);
+
+        if(endPath == std::string::npos)
+        {
+            std::cout << "Shader: include directive - \" missing, file = " << path << std::endl;
+            return {};
+        }
+
         fs::path includePath(source.substr(startPath, endPath - startPath));
         std::string includedStr;
 
@@ -219,7 +230,7 @@ Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view
     swapProgram(sources);
 }
 
-GLint Shader::getUniformLocation(const std::string_view name) const
+GLint Shader::getUniformLocation(const std::string_view name)
 {
     auto it = uniformLocations_.find(name);
 

@@ -51,7 +51,7 @@ struct Request
 
         struct
         {
-            Frame::Window::State state;
+            Window::State state;
         }
         window;
     };

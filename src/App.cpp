@@ -186,25 +186,25 @@ void App::run()
                auto state = request.window.state;
                assert(frame_.window.state != state);
 
-               if(state == Frame::Window::Fullscreen)
+               if(state == Window::Fullscreen)
                {
                    auto* monitor = glfwGetPrimaryMonitor();
                    const auto* mode = glfwGetVideoMode(monitor);
                    glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
                }
-               else if(state == Frame::Window::Maximized)
+               else if(state == Window::Maximized)
                {
-                   assert(frame_.window.state != Frame::Window::Fullscreen);
+                   assert(frame_.window.state != Window::Fullscreen);
                    glfwMaximizeWindow(window_);
                }
                else
                {
-                   if(frame_.window.state == Frame::Window::Fullscreen)
+                   if(frame_.window.state == Window::Fullscreen)
                    {
                        glfwSetWindowMonitor(window_, nullptr, frame_.window.restored.pos.x, frame_.window.restored.pos.y,
                                             frame_.window.restored.size.x, frame_.window.restored.size.y, 0);
 
-                       if(frame_.window.previousState == Frame::Window::Maximized)
+                       if(frame_.window.previousState == Window::Maximized)
                        {
                            glfwMaximizeWindow(window_);
                        }
@@ -237,15 +237,15 @@ void App::refreshFrame()
 
     if(glfwGetWindowMonitor(window_))
     {
-        frame_.window.state = Frame::Window::Fullscreen;
+        frame_.window.state = Window::Fullscreen;
     }
     else if(glfwGetWindowAttrib(window_, GLFW_MAXIMIZED))
     {
-        frame_.window.state = Frame::Window::Maximized;
+        frame_.window.state = Window::Maximized;
     }
     else
     {
-        frame_.window.state = Frame::Window::Restored;
+        frame_.window.state = Window::Restored;
         glfwGetWindowPos(window_, &frame_.window.restored.pos.x, &frame_.window.restored.pos.y);
         glfwGetWindowSize(window_, &frame_.window.restored.size.x, &frame_.window.restored.size.y);
     }
