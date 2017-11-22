@@ -44,7 +44,9 @@ struct Circle
     glm::vec2 center;
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-    glm::vec4 texRect; // OpenGL texCoords are calculated based on this and the last bound texture
+    // OpenGL texCoords are calculated based on this and the last registered texture
+    // in Renderer
+    glm::vec4 texRect;
 };
 
 struct Sprite

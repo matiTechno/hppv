@@ -30,7 +30,7 @@ Font::Font(const std::string& filename)
 
     if(!file)
     {
-        std::cout << "Font, could not open file: " << filename << std::endl;
+        std::cout << "Font: could not open file = " << filename << std::endl;
         return;
     }
 
