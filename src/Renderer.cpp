@@ -43,7 +43,7 @@ glm::vec2 Text::getSize() const
 }
 
 Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
-                                  glm::vec4 color, glm::vec4 texRect, const Texture& texture)
+                                  glm::vec4 color, glm::vec4 texRect, glm::vec2 texSize)
 {
     Renderer::Instance i;
 
@@ -61,8 +61,6 @@ Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation,
     i.matrix = glm::scale(i.matrix, glm::vec3(size, 1.f));
 
     i.color = color;
-
-    auto texSize = texture.getSize();
 
     i.normTexRect.x = texRect.x / texSize.x;
     i.normTexRect.z = texRect.z / texSize.x;
@@ -334,7 +332,7 @@ void Renderer::cache(const Sprite* sprite, std::size_t count)
     for(auto i = start; i < end; ++i, ++sprite)
     {
         instances_[i] = createInstance(sprite->pos, sprite->size, sprite->rotation, sprite->rotationPoint,
-                                       sprite->color, sprite->texRect, *texUnits_.back().texture);
+                                       sprite->color, sprite->texRect, texUnits_.back().texture->getSize());
     }
 }
 
@@ -354,7 +352,7 @@ void Renderer::cache(const Circle* circle, std::size_t count)
     for(auto i = start; i < end; ++i, ++circle)
     {
         instances_[i] = createInstance(circle->center - circle->radius, glm::vec2(circle->radius * 2.f), 0.f, {},
-                                       circle->color, circle->texRect, *texUnits_.back().texture);
+                                       circle->color, circle->texRect, texUnits_.back().texture->getSize());
     }
 }
 
@@ -389,7 +387,7 @@ void Renderer::cache(const Text& text)
 
         instances_[i] = createInstance(pos, size, text.rotation, text.rotationPoint + text.pos + halfTextSize - pos
                                        - size / 2.f, // this correction is needed, see createInstance()
-                                       text.color, glyph.texRect, *texUnits_.back().texture);
+                                       text.color, glyph.texRect, texUnits_.back().texture->getSize());
 
         penPos.x += glyph.advance * text.scale;
         ++i;

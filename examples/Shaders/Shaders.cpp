@@ -13,7 +13,7 @@ class Shaders: public hppv::PrototypeScene
 {
 public:
     Shaders():
-        PrototypeScene(hppv::Space(0.f, 0.f, 1.f, 1.f), 0.f, false)
+        PrototypeScene(hppv::Space(0.f, 0.f, 1.f, 1.f), 1.f, false)
     {
         addShader(tunnel);
         addShader(lines);
