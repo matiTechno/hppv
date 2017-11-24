@@ -6,10 +6,10 @@
 
 #include "GLobjects.hpp"
 
+using GLenum = unsigned int;
+
 namespace hppv
 {
-
-using GLenum = unsigned int;
 
 class Texture
 {

@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cassert>
+#include <utility>
+
+using GLuint = unsigned int;
 
 namespace hppv
 {
-
-using GLuint = unsigned int;
 
 class GLobject
 {
@@ -15,19 +16,14 @@ public:
     ~GLobject() {clean();}
     GLobject(const GLobject&) = delete;
     GLobject& operator=(const GLobject&) = delete;
-
-    GLobject(GLobject&& rhs):
-        id_(rhs.id_),
-        deleter_(rhs.deleter_)
-    {
-        rhs.id_ = 0;
-    }
+    GLobject(GLobject&& rhs) {*this = std::move(rhs);}
 
     GLobject& operator=(GLobject&& rhs)
     {
         assert(this != &rhs);
         clean();
         id_ = rhs.id_;
+        deleter_ = rhs.deleter_;
         rhs.id_ = 0;
         return *this;
     }
@@ -44,7 +40,6 @@ private:
 
     void clean() {if(id_) deleter_(id_);}
 };
-
 
 class GLvao: public GLobject
 {

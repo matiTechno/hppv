@@ -32,8 +32,8 @@ struct Request
     }
     type;
 
-    Request(Type type): type(type) {}
     Request() = default;
+    Request(Type type): type(type) {}
 
     union
     {

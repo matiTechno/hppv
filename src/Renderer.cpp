@@ -77,8 +77,8 @@ Renderer::Renderer():
 {
     glEnable(GL_BLEND);
 
-    glSamplerParameteri(samplerLinear.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glSamplerParameteri(samplerNearest.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glSamplerParameteri(samplerLinear_.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glSamplerParameteri(samplerNearest_.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     batches_.reserve(ReservedBatches);
     instances_.resize(ReservedInstances);
@@ -533,8 +533,8 @@ void Renderer::setTexUnitsDefault()
     texUnits_.emplace_back();
     auto& first = texUnits_.front();
     first.unit = 0;
-    first.texture = &texDummy;
-    first.sampler = &samplerLinear;
+    first.texture = &texDummy_;
+    first.sampler = &samplerLinear_;
 }
 
 Renderer::Batch& Renderer::getBatchToUpdate()

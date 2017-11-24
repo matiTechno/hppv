@@ -13,6 +13,8 @@
 #include "Shader.hpp"
 #include "Texture.hpp"
 
+using GLint = int;
+
 namespace hppv
 {
 
@@ -122,8 +124,6 @@ enum class Sample
 class Renderer
 {
 public:
-    using GLint = int;
-
     Renderer();
 
     // -----
@@ -173,7 +173,7 @@ public:
 
     void sampler(Sample mode, GLenum unit = 0)
     {
-        sampler(mode == Sample::Linear ? samplerLinear : samplerNearest, unit);
+        sampler(mode == Sample::Linear ? samplerLinear_ : samplerNearest_, unit);
     }
 
     // ----- default is GL_ONE, GL_ONE_MINUS_SRC_ALPHA
@@ -255,9 +255,9 @@ private:
     GLvao vaoInstances_, vaoVertices_;
     GLbo boQuad_, boInstances_, boVertices_;
     Shader shaderBasic_, shaderSdf_, shaderVertices_;
-    Texture texDummy;
-    GLsampler samplerLinear;
-    GLsampler samplerNearest;
+    Texture texDummy_;
+    GLsampler samplerLinear_;
+    GLsampler samplerNearest_;
 
     struct TexUnit
     {

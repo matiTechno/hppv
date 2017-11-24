@@ -20,8 +20,8 @@ struct Event
     }
     type;
 
-    Event(Type type): type(type) {}
     Event() = default;
+    Event(Type type): type(type) {}
 
     union
     {

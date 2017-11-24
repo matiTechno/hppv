@@ -43,6 +43,9 @@
 #include <glm/mat4x4.hpp>
 #endif
 
+using GLint = int;
+using GLuint = unsigned int;
+
 namespace hppv
 {
 
@@ -52,12 +55,10 @@ class Shader
 {
 public:
     struct File {};
-    using GLint = int;
-    using GLuint = unsigned int;
 
+    Shader() = default;
     Shader(File, const std::string& filename, bool hotReload = false);
     Shader(std::initializer_list<std::string_view> sources, std::string_view id);
-    Shader() = default;
 
     bool isValid() const {return program_.getId();}
 
@@ -94,12 +95,12 @@ private:
     class Program
     {
     public:
-        Program(): id_(0) {}
+        Program() = default;
         Program(GLuint id): id_(id) {}
         ~Program() {clean();}
         Program(const Program&) = delete;
         Program& operator=(const Program&) = delete;
-        Program(Program&& rhs): id_(rhs.id_) {rhs.id_ = 0;}
+        Program(Program&& rhs) {*this = std::move(rhs);}
 
         Program& operator=(Program&& rhs)
         {
@@ -113,7 +114,7 @@ private:
         GLuint getId() const {return id_;}
 
     private:
-        GLuint id_;
+        GLuint id_ = 0;
 
         void clean();
     };

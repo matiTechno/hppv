@@ -15,12 +15,7 @@ public:
     ~Deleter() {clean();}
     Deleter(const Deleter&) = delete;
     Deleter& operator=(const Deleter&) = delete;
-
-    Deleter(Deleter&& rhs):
-        callback_(rhs.callback_)
-    {
-        rhs.callback_ = nullptr;
-    }
+    Deleter(Deleter&& rhs) {*this = std::move(rhs);}
 
     Deleter& operator=(Deleter&& rhs)
     {
