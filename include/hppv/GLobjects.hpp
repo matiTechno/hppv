@@ -12,7 +12,7 @@ class GLobject
 public:
     using Deleter = void(*)(GLuint);
 
-    ~GLobject() {if(id_) deleter_(id_);}
+    ~GLobject() {clean();}
     GLobject(const GLobject&) = delete;
     GLobject& operator=(const GLobject&) = delete;
 
@@ -26,7 +26,7 @@ public:
     GLobject& operator=(GLobject&& rhs)
     {
         assert(this != &rhs);
-        this->~GLobject();
+        clean();
         id_ = rhs.id_;
         rhs.id_ = 0;
         return *this;
@@ -41,6 +41,8 @@ protected:
 
 private:
     Deleter deleter_;
+
+    void clean() {if(id_) deleter_(id_);}
 };
 
 

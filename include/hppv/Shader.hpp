@@ -96,7 +96,7 @@ private:
     public:
         Program(): id_(0) {}
         Program(GLuint id): id_(id) {}
-        ~Program();
+        ~Program() {clean();}
         Program(const Program&) = delete;
         Program& operator=(const Program&) = delete;
         Program(Program&& rhs): id_(rhs.id_) {rhs.id_ = 0;}
@@ -104,7 +104,7 @@ private:
         Program& operator=(Program&& rhs)
         {
             assert(this != &rhs);
-            this->~Program();
+            clean();
             id_ = rhs.id_;
             rhs.id_ = 0;
             return *this;
@@ -114,6 +114,8 @@ private:
 
     private:
         GLuint id_;
+
+        void clean();
     };
 
     std::string id_;
@@ -290,7 +292,7 @@ void Shader::uniform4f(std::string_view name, const float* value) {glUniform4fv(
 void Shader::uniformMat4f(std::string_view name, const float* value){glUniformMatrix4fv(getUniformLocation(name),
                                                                                         1, GL_FALSE, value);}
 
-Shader::Program::~Program() {if(id_) glDeleteProgram(id_);}
+void Shader::Program::clean() {if(id_) glDeleteProgram(id_);}
 
 template<bool isProgram>
 std::optional<std::string> getError(GLuint id, GLenum flag)

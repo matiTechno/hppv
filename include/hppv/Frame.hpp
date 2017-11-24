@@ -36,7 +36,6 @@ struct Frame
     std::vector<Event> events;
     glm::vec2 cursorPos;
     glm::ivec2 framebufferSize;
-
     Window window;
 };
 

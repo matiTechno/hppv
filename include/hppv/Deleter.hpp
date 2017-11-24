@@ -12,7 +12,7 @@ class Deleter
 {
 public:
     Deleter() = default;
-    ~Deleter() {if(callback_) callback_();}
+    ~Deleter() {clean();}
     Deleter(const Deleter&) = delete;
     Deleter& operator=(const Deleter&) = delete;
 
@@ -25,7 +25,7 @@ public:
     Deleter& operator=(Deleter&& rhs)
     {
         assert(this != &rhs);
-        this->~Deleter();
+        clean();
         callback_ = rhs.callback_;
         rhs.callback_ = nullptr;
         return *this;
@@ -40,6 +40,8 @@ public:
 
 private:
     std::function<void(void)> callback_;
+
+    void clean() {if(callback_) callback_();}
 };
 
 } // namespace hppv

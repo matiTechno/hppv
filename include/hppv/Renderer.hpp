@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -139,7 +140,7 @@ public:
     // ----- disabled by default
 
     void scissor(glm::ivec4 scissor);
-    void disableScissor() {getBatchToUpdate().scissorEnabled = false;}
+    void disableScissor() {getBatchToUpdate().scissor.reset();}
 
     // -----
 
@@ -293,14 +294,13 @@ private:
         };
     };
 
-    // viewport and scissor have y-axis in the opengl coordinate system
+    // viewport and scissor have y component in the opengl coordinate system
     struct Batch
     {
         GLenum primitive;
         GLvao* vao;
-        glm::ivec4 scissor;
+        std::optional<glm::ivec4> scissor;
         glm::ivec4 viewport;
-        bool scissorEnabled;
         Space projection;
         Shader* shader;
         GLenum srcAlpha;

@@ -93,7 +93,6 @@ Renderer::Renderer():
         auto& first = batches_.front();
         first.primitive = GL_TRIANGLES;
         first.vao = &vaoInstances_;
-        first.scissorEnabled = false;
         first.shader = &shaderBasic_;
         first.srcAlpha = GL_ONE;
         first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
@@ -186,9 +185,7 @@ Renderer::Renderer():
 void Renderer::scissor(glm::ivec4 scissor)
 {
     scissor.y = App::getFrame().framebufferSize.y - scissor.y - scissor.w;
-    auto& batch = getBatchToUpdate();
-    batch.scissor = scissor;
-    batch.scissorEnabled = true;
+    getBatchToUpdate().scissor = scissor;
 }
 
 void Renderer::viewport(glm::ivec4 viewport)
@@ -429,10 +426,10 @@ void Renderer::flush()
 
     for(auto& batch: batches_)
     {
-        if(batch.scissorEnabled)
+        if(batch.scissor)
         {
             glEnable(GL_SCISSOR_TEST);
-            glScissor(batch.scissor.x, batch.scissor.y, batch.scissor.z, batch.scissor.w);
+            glScissor(batch.scissor->x, batch.scissor->y, batch.scissor->z, batch.scissor->w);
         }
         else
         {
