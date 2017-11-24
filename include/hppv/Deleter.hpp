@@ -6,8 +6,9 @@
 namespace hppv
 {
 
-// when embedding in class with move semantics,
+// when embedding in a class with move semantics,
 // always capture by value in the callback
+
 class Deleter
 {
 public:
@@ -21,7 +22,7 @@ public:
     {
         assert(this != &rhs);
         clean();
-        callback_ = rhs.callback_;
+        callback_ = std::move(rhs.callback_);
         rhs.callback_ = nullptr;
         return *this;
     }

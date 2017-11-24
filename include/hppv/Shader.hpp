@@ -177,15 +177,15 @@ std::string loadSourceFromFile(const fs::path& path)
     std::size_t start = 0;
     while((start = source.find(includeDirective, start)) != std::string::npos)
     {
-        auto startQuot = source.find('"', start + includeDirective.size());
+        auto startQuote = source.find('"', start + includeDirective.size());
 
-        if(startQuot == std::string::npos)
+        if(startQuote == std::string::npos)
         {
             std::cout << "Shader: include directive - \" missing, file = " << path << std::endl;
             return {};
         }
 
-        auto startPath = startQuot + 1;
+        auto startPath = startQuote + 1;
         auto endPath = source.find('"', startPath);
 
         if(endPath == std::string::npos)
