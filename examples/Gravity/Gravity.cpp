@@ -99,11 +99,12 @@ public:
         shCompute_({computeSource}, "shCompute_"),
         shRender_({renderSource}, "shRender_")
     {
-        assert(NumParticles % ComputeLocalGroup == 0);
+        assert(NumParticles % ComputeLocalSize == 0);
 
         std::vector<glm::vec2> buffer(NumParticles);
 
         // we don't want to divide by 0
+        // todo: threshold value in the shader
         std::fill(buffer.begin(), buffer.end(), glm::vec2(0.00001f));
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, boVel_.getId());
@@ -140,7 +141,7 @@ private:
     enum
     {
         NumParticles = 1000000,
-        ComputeLocalGroup = 1000
+        ComputeLocalSize = 1000
     };
 
     hppv::GLvao vao_;
@@ -164,7 +165,7 @@ private:
             shCompute_.uniform1i("isActive", false);
         }
 
-        glDispatchCompute(NumParticles / ComputeLocalGroup, 1, 1);
+        glDispatchCompute(NumParticles / ComputeLocalSize, 1, 1);
         glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
     }
 
