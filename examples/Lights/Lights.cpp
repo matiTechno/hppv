@@ -72,7 +72,7 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
-        time_ += frame_.frameTime;
+        time_ += frame_.time;
 
         // scene background
         {

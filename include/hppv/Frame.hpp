@@ -32,7 +32,7 @@ struct Window
 // initialized in App::initialize()
 struct Frame
 {
-    float frameTime;
+    float time; // in seconds
     std::vector<Event> events;
     glm::vec2 cursorPos;
     glm::ivec2 framebufferSize;

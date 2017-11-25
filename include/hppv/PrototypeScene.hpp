@@ -10,6 +10,7 @@
 namespace hppv
 {
 
+// this class needs a better design
 class PrototypeScene: public Scene
 {
 public:
@@ -19,8 +20,9 @@ public:
     void render(Renderer& renderer)  final override;
 
 protected:
-
     void prototypeRenderImGui(bool on) {renderImGui_ = on;}
+    bool prototypeLmb() const {return lmb_;}
+    glm::vec2 prototypeCursorPos() const {return cursorPos_;}
 
     class PrototypeSpace
     {
@@ -72,12 +74,11 @@ private:
     // we should get the value from App
     bool vsync_ = true;
 
-    struct
-    {
-        bool pressed;
-        glm::vec2 pos;
-    }
-    rmb_;
+    bool rmb_ = false;
+    bool lmb_ = false;
+
+    // event based unlike frame_.cursorPos
+    glm::vec2 cursorPos_;
 };
 
 } // namespace hppv

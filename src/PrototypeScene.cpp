@@ -16,9 +16,7 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
     alwaysZoomToCursor_(alwaysZoomToCursor)
 {
     properties_.maximize = true;
-    rmb_.pressed = false;
-
-    rmb_.pos = frame_.cursorPos;
+    cursorPos_ = frame_.cursorPos;
 }
 
 void PrototypeScene::processInput(bool hasInput)
@@ -29,26 +27,30 @@ void PrototypeScene::processInput(bool hasInput)
     {
         if(event.type == Event::Cursor)
         {
-            if(rmb_.pressed && hasInput)
+            if(rmb_ && hasInput)
             {
                 auto newSpaceCoords = mapCursor(event.cursor.pos, space_.projected, this);
-                auto prevSpaceCoords = mapCursor(rmb_.pos, space_.projected, this);
+                auto prevSpaceCoords = mapCursor(cursorPos_, space_.projected, this);
                 space_.set({space_.current.pos - (newSpaceCoords - prevSpaceCoords), space_.current.size});
             }
 
-            rmb_.pos = event.cursor.pos;
+            cursorPos_ = event.cursor.pos;
         }
-        else if(event.type == Event::MouseButton && event.mouseButton.button == GLFW_MOUSE_BUTTON_RIGHT)
+        else if(event.type == Event::MouseButton)
         {
-            rmb_.pressed = event.mouseButton.action == GLFW_PRESS;
+            switch(event.mouseButton.button)
+            {
+            case GLFW_MOUSE_BUTTON_RIGHT: rmb_ = event.mouseButton.action == GLFW_PRESS; break;
+            case GLFW_MOUSE_BUTTON_LEFT: lmb_ = event.mouseButton.action == GLFW_PRESS;
+            }
         }
         else if(event.type == Event::Scroll && hasInput)
         {
             auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
 
-            if(rmb_.pressed || alwaysZoomToCursor_)
+            if(rmb_ || lmb_ || alwaysZoomToCursor_)
             {
-                auto spaceCoords = mapCursor(rmb_.pos, space_.projected, this);
+                auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
                 space_.set(zoomToPoint(space_.current, zoom, spaceCoords));
             }
             else
@@ -58,7 +60,7 @@ void PrototypeScene::processInput(bool hasInput)
         }
         else if(event.type == Event::FramebufferSize)
         {
-            rmb_.pos = frame_.cursorPos;
+            cursorPos_ = frame_.cursorPos;
         }
     }
 
@@ -74,7 +76,7 @@ void PrototypeScene::render(Renderer& renderer)
         return;
 
     ++frameCount_;
-    accumulator_ += frame_.frameTime;
+    accumulator_ += frame_.time;
 
     if(accumulator_ >= 1.f)
     {
@@ -157,13 +159,14 @@ void PrototypeScene::render(Renderer& renderer)
         }
         else
         {
-            zoomInfo += "center / cursor if rmb";
+            zoomInfo += "center /\n"
+                        "                 cursor, if rmb or lmb";
         }
 
         ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = mapCursor(rmb_.pos, space_.projected, this);
+        auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
     }
     ImGui::End();

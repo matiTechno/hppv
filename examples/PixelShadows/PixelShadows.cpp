@@ -162,7 +162,7 @@ private:
 
     void update() override
     {
-        time_ += frame_.frameTime;
+        time_ += frame_.time;
 
         lights_[2].center.x = 90.f + 40 * glm::sin(time_);
         lights_[2].center.y = 80.f + 40 * glm::cos(time_);

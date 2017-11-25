@@ -46,7 +46,7 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
-        time_ += frame_.frameTime;
+        time_ += frame_.time;
 
         ImGui::Begin("next", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
         {

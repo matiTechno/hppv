@@ -23,7 +23,7 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
-        emitter_.update(frame_.frameTime);
+        emitter_.update(frame_.time);
         emitter_.render(renderer);
 
         ImGui::Begin("Particles", nullptr, ImGuiWindowFlags_AlwaysAutoResize);

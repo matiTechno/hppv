@@ -131,7 +131,7 @@ private:
                 {
                     if(sdf_.glow.animate)
                     {
-                        sdf_.glow.time += frame_.frameTime;
+                        sdf_.glow.time += frame_.time;
                         sdf_.glow.width = (glm::sin(sdf_.glow.time * 2.f * glm::pi<float>() / 4.f) + 1.f) / 4.f;
                     }
 
@@ -146,7 +146,7 @@ private:
                 {
                     if(sdf_.shadow.animate)
                     {
-                        sdf_.shadow.time += frame_.frameTime;
+                        sdf_.shadow.time += frame_.time;
                         sdf_.shadow.offset.x = glm::sin(sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
                         sdf_.shadow.offset.y = glm::cos(sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
                     }

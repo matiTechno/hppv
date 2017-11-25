@@ -2,6 +2,8 @@ h p p v
 
 todo:
 
+* PrototypeScene + Gravity
+* const correctness (local variables, for loops)?
 * bezier curves / lines
 * Space rotation, Camera class?
 * App init parameters

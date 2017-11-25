@@ -102,7 +102,7 @@ void App::run()
        ImGui_ImplGlfwGL3_NewFrame();
 
        float newTime = glfwGetTime();
-       frame_.frameTime = newTime - time;
+       frame_.time = newTime - time;
        time = newTime;
 
        refreshFrame();

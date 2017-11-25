@@ -67,7 +67,7 @@ private:
 
     void render(hppv::Renderer& renderer) override
     {
-        transition_.progressTime += frame_.frameTime;
+        transition_.progressTime += frame_.time;
 
         ImGui::Begin("transition");
         {
