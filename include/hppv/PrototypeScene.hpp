@@ -10,7 +10,6 @@
 namespace hppv
 {
 
-// this class needs a better design
 class PrototypeScene: public Scene
 {
 public:
@@ -20,6 +19,7 @@ public:
     void render(Renderer& renderer)  final override;
 
 protected:
+    // this needs a better design
     void prototypeRenderImGui(bool on) {renderImGui_ = on;}
     bool prototypeLmb() const {return lmb_;}
     glm::vec2 prototypeCursorPos() const {return cursorPos_;}

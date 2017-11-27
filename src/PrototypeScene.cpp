@@ -69,26 +69,22 @@ void PrototypeScene::processInput(bool hasInput)
 
 void PrototypeScene::render(Renderer& renderer)
 {
-    renderer.projection(space_.projected);
-    prototypeRender(renderer);
-
-    if(!renderImGui_)
-        return;
-
-    ++frameCount_;
-    accumulator_ += frame_.time;
-
-    if(accumulator_ >= 1.f)
+    if(renderImGui_)
     {
-        auto averageFrameTime = accumulator_ / frameCount_;
-        averageFrameTimeMs_ = averageFrameTime * 1000.f;
-        averageFps_ = 1.f / averageFrameTime + 0.5f;
-        frameCount_ = 0;
-        accumulator_ = 0.f;
-    }
+        ++frameCount_;
+        accumulator_ += frame_.time;
 
-    ImGui::Begin("PrototypeScene", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-    {
+        if(accumulator_ >= 1.f)
+        {
+            auto averageFrameTime = accumulator_ / frameCount_;
+            averageFrameTimeMs_ = averageFrameTime * 1000.f;
+            averageFps_ = 1.f / averageFrameTime + 0.5f;
+            frameCount_ = 0;
+            accumulator_ = 0.f;
+        }
+
+        ImGui::Begin("PrototypeScene", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
         ImGui::Text("h p p v");
         ImGui::Text("made by            m a t i T e c h n o");
         ImGui::Text("frameTime          %f ms", averageFrameTimeMs_);
@@ -168,8 +164,12 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Separator();
         auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+
+        ImGui::End();
     }
-    ImGui::End();
+
+    renderer.projection(space_.projected);
+    prototypeRender(renderer);
 }
 
 } // namespace hppv

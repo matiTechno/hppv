@@ -1,4 +1,3 @@
-#include <optional>
 #include <random>
 #include <cassert>
 #include <vector>
@@ -6,7 +5,6 @@
 #include <iostream>
 
 #include <hppv/glad.h>
-#include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <hppv/App.hpp>
@@ -14,6 +12,7 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/GLobjects.hpp>
 #include <hppv/Shader.hpp>
+#include <hppv/imgui.h>
 
 static const char* renderSource = R"(
 
@@ -186,6 +185,12 @@ private:
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glBindVertexArray(vao_.getId());
         glDrawArrays(GL_POINTS, 0, NumParticles);
+
+        ImGui::Begin("gravity");
+        {
+            ImGui::Text("lmb - activate gravity");
+        }
+        ImGui::End();
     }
 };
 

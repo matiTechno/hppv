@@ -47,8 +47,9 @@ struct Circle
     glm::vec2 center;
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
-    // OpenGL texCoords are calculated based on this and the last registered texture
-    // in the current batch
+
+    // OpenGL texCoords are calculated in the cache() function based on this
+    // and the last registered texture
     glm::vec4 texRect;
 };
 
@@ -294,7 +295,7 @@ private:
         };
     };
 
-    // viewport and scissor have y component in the opengl coordinate system
+    // viewport and scissor have y component in the OpenGL coordinate system
     struct Batch
     {
         GLenum primitive;
