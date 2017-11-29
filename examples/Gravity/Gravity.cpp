@@ -94,7 +94,7 @@ class Gravity: public hppv::PrototypeScene
 {
 public:
     Gravity():
-        hppv::PrototypeScene(hppv::Space{0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         shCompute_({computeSource}, "shCompute_"),
         shRender_({renderSource}, "shRender_")
     {

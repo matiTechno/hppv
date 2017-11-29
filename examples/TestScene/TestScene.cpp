@@ -13,7 +13,7 @@ class TestScene: public hppv::PrototypeScene
 {
 public:
     TestScene():
-        PrototypeScene(hppv::Space(0.f, 0.f, 180.f, 100.f), 1.1f, false),
+        PrototypeScene({0.f, 0.f, 180.f, 100.f}, 1.1f, false),
         sdfFont_("res/sdf.fnt"),
         proggy_("res/proggy.fnt")
     {
