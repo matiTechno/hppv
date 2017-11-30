@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <string_view>
 
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
@@ -10,6 +11,31 @@
 #include <hppv/glad.h>
 
 // todo: Renderer support for projection with y-axis growing upwards
+
+struct Node
+{
+    std::size_t id;
+    glm::vec2 pos;
+};
+
+template<typename It>
+Node findNode(It start, It end, std::size_t id)
+{
+    auto mid = start + (end - start) / 2;
+
+    if(mid->id == id)
+    {
+        return *mid;
+    }
+    else if(mid->id > id)
+    {
+        return findNode(start, mid - 1, id);
+    }
+    else
+    {
+        return findNode(mid + 1, end, id);
+    }
+}
 
 class OSM: public hppv::PrototypeScene
 {
@@ -20,28 +46,83 @@ public:
     {
         std::ifstream file("map.osm");
 
+        std::vector<Node> nodes;
+
         std::string line;
+
         while(std::getline(file, line))
         {
-            if(auto pos = line.find("<node"); pos != std::string::npos)
+            if(auto pos = line.find("<node id="); pos != std::string::npos)
             {
                 pos = line.find('"', pos);
-                pos = line.find('"', pos + 1);
-                pos = line.find('"', pos + 1);
                 ++pos;
                 auto end = line.find('"', pos);
 
-                glm::vec2 point;
-                // hack
-                point.y = -std::stof(line.substr(pos, end - pos));
+                Node node;
+                node.id = std::stoul(line.substr(pos, end - pos));
 
                 pos = line.find('"', end + 1);
                 ++pos;
                 end = line.find('"', pos);
 
-                point.x = std::stof(line.substr(pos, end - pos));
+                // hack
+                node.pos.y = -std::stof(line.substr(pos, end - pos));
 
-                vertices_.push_back({point, {}, glm::vec4(0.5f, 0.20f, 0.1f, 0.f)});
+                pos = line.find('"', end + 1);
+                ++pos;
+                end = line.find('"', pos);
+
+                node.pos.x = std::stof(line.substr(pos, end - pos));
+
+                nodes.push_back(node);
+            }
+        }
+
+        std::sort(nodes.begin(), nodes.end(), [](const Node& l, const Node& r){return l.id < r.id;});
+
+        file.clear();
+        file.seekg(0);
+
+        std::vector<std::size_t> way;
+        std::string_view highway = "<tag k=\"highway\"";
+        glm::vec4 color;
+
+        while(std::getline(file, line))
+        {
+            if(auto pos = line.find("<nd ref="); pos != std::string::npos)
+            {
+                pos = line.find('"', pos);
+                ++pos;
+                auto end = line.find('"', pos);
+                way.push_back(std::stoul(line.substr(pos, end - pos)));
+            }
+            else if(auto pos = line.find(highway); pos != std::string::npos)
+            {
+                pos += highway.size();
+                pos = line.find('"', pos);
+                ++pos;
+                auto end = line.find('"', pos);
+
+                if(auto type = line.substr(pos, end - pos); type == "motorway" || type == "trunk" || type == "primary")
+                {
+                    color = {0.f, 1.f, 0.f, 0.f};
+                }
+                else
+                {
+                    color = {0.5f, 0.2f, 0.1f, 0.f};
+                }
+            }
+            else if(line.find("</way>") != std::string::npos)
+            {
+                for(auto it = way.begin(); it < way.end() - 1; ++it)
+                {
+                    for(int i = 0; i < 2; ++i)
+                    {
+                        vertices_.push_back({findNode(nodes.begin(), nodes.end(), *(it + i)).pos, {}, color});
+                    }
+                }
+
+                way.clear();
             }
         }
     }
@@ -52,7 +133,7 @@ private:
     void prototypeRender(hppv::Renderer& renderer)
     {
         renderer.mode(hppv::RenderMode::Vertices);
-        renderer.primitive(GL_POINTS);
+        renderer.primitive(GL_LINES);
         renderer.shader(hppv::Render::VerticesColor);
         renderer.cache(vertices_.data(), vertices_.size());
     }
