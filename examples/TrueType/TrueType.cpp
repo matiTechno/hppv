@@ -50,8 +50,8 @@ public:
 
         renderer.shader(hppv::Render::Font);
 
-        text.color = {1.f, 0.f, 1.f, 1.f};
         text.pos = {20.f, 100.f};
+        text.color = {1.f, 0.f, 1.f, 1.f};
         text.text = "Wiatr drzewa spienia. Ziemia dojrzała.\n"
                     "Kłosy brzuch ciężki w górę unoszą\n"
                     "i tylko chmury - palcom lub włosom\n"
@@ -64,10 +64,10 @@ public:
 
         renderer.cache(text);
 
+        text.pos = {350.f, 400.f};
+        text.scale = 3.f;
         text.color = {0.f, 1.f, 0.f, 1.f};
         text.text = "SCALED!!!\n{  ... :D}";
-        text.scale = 3.f;
-        text.pos = {350.f, 400.f};
 
         renderer.cache(text);
 
@@ -76,14 +76,13 @@ public:
         text.pos.y += text.getSize().y;
         text.font = &font2_;
         text.scale = 1.f;
+        text.color = {1.f, 0.5f, 0.f, 1.f};
         text.text = "#include <iostream>\n"
                     "int main()\n"
                     "{\n"
                     "    std::cout << \"Hello World!\" << std::endl;\n"
                     "    return 0;\n"
                     "}";
-
-        text.color = {1.f, 0.5f, 0.f, 1.f};
 
         renderer.cache(text);
     }
