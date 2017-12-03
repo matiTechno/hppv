@@ -7,7 +7,6 @@ todo:
 * Space rotation, Camera class?
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
-* load font from ttf
 * flat_map
 * license
 

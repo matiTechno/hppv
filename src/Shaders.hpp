@@ -104,6 +104,12 @@ void main()
     {
         vec4 sample = texture(sampler, vTexCoord);
 
+        if(mode == 4)
+        {
+            color = vec4(sample.r) * vColor;
+            return;
+        }
+
         if(premultiplyAlpha)
         {
             sample = vec4(sample.rgb * sample.a, sample.a);
@@ -156,26 +162,26 @@ void main()
     float smoothing = fwidth(length(vPos - center)) * 2;
     float distance = texture(sampler, vTexCoord).a;
 
-    if(mode == 4) // Sdf
+    if(mode == 5) // Sdf
     {
         float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
         color = vColor * alpha;
     }
-    else if(mode == 5) // SdfOutline
+    else if(mode == 6) // SdfOutline
     {
         float outlineFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
         float oOutlineWidth = 0.5 - outlineWidth;
         float alpha = smoothstep(oOutlineWidth - smoothing, oOutlineWidth + smoothing, distance);
         color = mix(outlineColor, vColor, outlineFactor) * alpha;
     }
-    else if(mode == 6) // SdfGlow
+    else if(mode == 7) // SdfGlow
     {
         float glowFactor = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
         float glowSmoothing = max(smoothing, glowWidth);
         float alpha = smoothstep(0.5 - glowSmoothing, 0.5 + smoothing, distance);
         color = mix(glowColor, vColor, glowFactor) * alpha;
     }
-    else if(mode == 7) // SdfShadow
+    else if(mode == 8) // SdfShadow
     {
         float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
         vec4 textColor = vColor * alpha;
@@ -234,11 +240,11 @@ out vec4 color;
 
 void main()
 {
-    if(mode == 8) // VerticesColor
+    if(mode == 9) // VerticesColor
     {
         color = vColor;
     }
-    else if(mode == 9) // VerticesTex
+    else if(mode == 10) // VerticesTex
     {
         vec4 sample = texture(sampler, vTexCoord);
 

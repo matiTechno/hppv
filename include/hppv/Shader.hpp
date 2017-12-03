@@ -158,6 +158,11 @@ fs::file_time_type getFileLastWriteTime(const std::string& filename)
     return time;
 }
 
+void printMissingQuoteError(const fs::path& path)
+{
+    std::cout << "Shader: include directive - \" missing, file = " << path << std::endl;
+}
+
 std::string loadSourceFromFile(const fs::path& path)
 {
     std::ifstream file(path);
@@ -181,7 +186,7 @@ std::string loadSourceFromFile(const fs::path& path)
 
         if(startQuote == std::string::npos)
         {
-            std::cout << "Shader: include directive - \" missing, file = " << path << std::endl;
+            printMissingQuoteError(path);
             return {};
         }
 
@@ -190,7 +195,7 @@ std::string loadSourceFromFile(const fs::path& path)
 
         if(endPath == std::string::npos)
         {
-            std::cout << "Shader: include directive - \" missing, file = " << path << std::endl;
+            printMissingQuoteError(path);
             return {};
         }
 

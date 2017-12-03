@@ -19,7 +19,7 @@ Texture::Texture(const std::string& filename)
 
     if(!data)
     {
-        std::cout << "Texture: stbi_load failed, filename = " << filename << std::endl;
+        std::cout << "Texture: stbi_load() failed, filename = " << filename << std::endl;
         createDefault();
         return;
     }

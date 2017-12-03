@@ -30,3 +30,7 @@ add_library(hppv
 
 target_include_directories(hppv PRIVATE ../include/hppv) # for imgui
 target_link_libraries(hppv PUBLIC -lglfw PRIVATE -lGL -ldl -lstdc++fs)
+
+target_compile_definitions(hppv PRIVATE
+    IMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION
+    IMGUI_DISABLE_STB_RECT_PACK_IMPLEMENTATION)

@@ -54,7 +54,10 @@ bool App::initialize(bool printDebugInfo)
     glfwMakeContextCurrent(window_);
 
     if(!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+    {
+        std::cout << "gladLoadGLLoader() failed" << std::endl;
         return false;
+    }
 
     if(printDebugInfo)
     {

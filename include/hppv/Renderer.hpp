@@ -24,8 +24,8 @@ class Framebuffer;
 
 struct Text
 {
-    Text(const Font* font): font(font) {}
-    Text(const Font& font): font(&font) {}
+    explicit Text(const Font* font): font(font) {}
+    explicit Text(const Font& font): font(&font) {}
 
     glm::vec2 getSize() const;
     glm::vec4 toVec4() const {return {pos, getSize()};}
@@ -57,19 +57,19 @@ struct Sprite
 {
     Sprite() = default;
 
-    Sprite(const Text& text):
+    explicit Sprite(const Text& text):
         pos(text.pos),
         size(text.getSize()),
         rotation(text.rotation),
         rotationPoint(text.rotationPoint)
     {}
 
-    Sprite(const Circle& circle):
+    explicit Sprite(const Circle& circle):
         pos(circle.center - circle.radius),
         size(circle.radius * 2.f)
     {}
 
-    Sprite(Space space):
+    explicit Sprite(Space space):
         pos(space.pos),
         size(space.size)
     {}
@@ -104,12 +104,13 @@ enum class Render
     Tex = 1,
     CircleColor = 2,
     CircleTex = 3,
-    Sdf = 4,
-    SdfOutline = 5, // vec4 outlineColor; float outlineWidth [0, 0.5]
-    SdfGlow = 6, // vec4 glowColor; float glowWidth [0, 0.5]
-    SdfShadow = 7, // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
-    VerticesColor = 8,
-    VerticesTex = 9
+    Font = 4,
+    Sdf = 5,
+    SdfOutline = 6, // vec4 outlineColor; float outlineWidth [0, 0.5]
+    SdfGlow = 7, // vec4 glowColor; float glowWidth [0, 0.5]
+    SdfShadow = 8, // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
+    VerticesColor = 9,
+    VerticesTex = 10
 };
 
 enum class Sample

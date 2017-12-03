@@ -209,11 +209,11 @@ void Renderer::shader(Render mode)
     auto modeId = static_cast<int>(mode);
     auto& batch = getBatchToUpdate();
 
-    if(modeId < 4)
+    if(modeId < static_cast<int>(Render::Sdf))
     {
         batch.shader = &shaderBasic_;
     }
-    else if(modeId < 8)
+    else if(modeId < static_cast<int>(Render::VerticesColor))
     {
         batch.shader = &shaderSdf_;
     }
