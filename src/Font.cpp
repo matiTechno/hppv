@@ -3,9 +3,11 @@
 #include <experimental/filesystem>
 #include <vector>
 #include <algorithm>
+#include <set>
 
 #include <hppv/Font.hpp>
 #include <hppv/glad.h>
+#include <hppv/utf8.h>
 
 // imgui needs it
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -19,7 +21,7 @@ namespace hppv
 
 namespace fs = std::experimental::filesystem;
 
-Font::Font(const std::string& filename, int sizePx)
+Font::Font(const std::string& filename, int sizePx, std::string_view additionalChars)
 {
     // replace find with regex (*.ext)?
 
@@ -30,7 +32,7 @@ Font::Font(const std::string& filename, int sizePx)
     else if(filename.find(".ttf") != std::string::npos ||
             filename.find(".otf") != std::string::npos)
     {
-        loadTrueType(filename, sizePx);
+        loadTrueType(filename, sizePx, additionalChars);
     }
     else
     {
@@ -130,7 +132,7 @@ void Font::loadFnt(const std::string& filename)
     }
 }
 
-void Font::loadTrueType(const std::string& filename, int sizePx)
+void Font::loadTrueType(const std::string& filename, int sizePx, std::string_view additionalChars)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
 
@@ -167,17 +169,33 @@ void Font::loadTrueType(const std::string& filename, int sizePx)
         lineHeight_ = (ascent - descent + lineGap) * scale;
     }
 
+    std::set<int> codePoints;
+
+    // ASCII
+    for(int i = 32; i < 127; ++i)
+    {
+        codePoints.insert(i);
+    }
+
+    {
+        auto it = additionalChars.cbegin();
+        while(it != additionalChars.cend())
+        {
+            codePoints.insert(utf8::unchecked::next(it));
+        }
+    }
+
     std::map<int, unsigned char*> bitmaps;
     int maxBitmapSizeY = 0;
     glm::ivec2 pos(0);
 
-    for(int i = 32; i < 127; ++i)
+    for(auto codePoint: codePoints)
     {
-        int id = stbtt_FindGlyphIndex(&fontInfo, i);
+        int id = stbtt_FindGlyphIndex(&fontInfo, codePoint);
 
         if(id == 0)
         {
-            std::cout << "Font: stbtt_FindGlyphIndex() failed (" << i << ") - " << filename << std::endl;
+            std::cout << "Font: stbtt_FindGlyphIndex(" << codePoint << ") failed - " << filename << std::endl;
             continue;
         }
 
@@ -188,8 +206,8 @@ void Font::loadTrueType(const std::string& filename, int sizePx)
 
         int offsetY;
 
-        bitmaps[i] = stbtt_GetGlyphBitmap(&fontInfo, scale, scale, id, &glyph.texRect.z, &glyph.texRect.w,
-                                          &glyph.offset.x, &offsetY);
+        bitmaps[codePoint] = stbtt_GetGlyphBitmap(&fontInfo, scale, scale, id, &glyph.texRect.z, &glyph.texRect.w,
+                                                  &glyph.offset.x, &offsetY);
 
         glyph.offset.y = ascent_ + offsetY;
 
@@ -203,7 +221,7 @@ void Font::loadTrueType(const std::string& filename, int sizePx)
         glyph.texRect.x = pos.x;
         glyph.texRect.y = pos.y;
 
-        glyphs_.emplace(i, glyph);
+        glyphs_.emplace(codePoint, glyph);
 
         pos.x += glyph.texRect.z + Offset;
         maxBitmapSizeY = std::max(maxBitmapSizeY, glyph.texRect.w);

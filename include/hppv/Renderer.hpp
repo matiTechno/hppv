@@ -36,7 +36,7 @@ struct Text
     float rotation = 0.f; // angle in radians
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
     const Font* font;
-    std::string text;
+    std::string text; // UTF-8
 };
 
 struct Circle

@@ -12,6 +12,7 @@
 #include <hppv/Scene.hpp>
 #include <hppv/Font.hpp>
 #include <hppv/Framebuffer.hpp>
+#include <hppv/utf8.h>
 
 #include "Shaders.hpp"
 
@@ -368,8 +369,12 @@ void Renderer::cache(const Text& text)
     auto i = batch.instances.start + batch.instances.count;
     const auto halfTextSize = text.getSize() / 2.f;
 
-    for(auto c: text.text)
+    //for(auto c: text.text)
+    auto it = text.text.cbegin();
+    while(it != text.text.cend())
     {
+        int c = utf8::unchecked::next(it);
+
         if(c == '\n')
         {
             penPos.x = text.pos.x;

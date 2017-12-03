@@ -2,6 +2,7 @@ h p p v
 
 todo:
 
+* UTF-8 support (input, better glyph caching)?
 * const correctness (local variables, for loops)?
 * bezier curves / lines
 * Space rotation, Camera class?
@@ -16,6 +17,7 @@ included:
 * dear imgui
 * glad.c glad.h
 * stb_image.h
+* UTF8-CPP (utfcpp) (do we need it? maybe imgui has some nice api for UTF-8?)
 
 dependencies:
 
