@@ -103,14 +103,15 @@ public:
         hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         fbOcclusion_(GL_RGBA8, 1),
         fbShadow_(GL_RGBA8, 1),
+        texTile_("tile.png"),
         shaderShadow_({hppv::Renderer::vInstancesSource, shadowSource}, "shadow"),
         shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light")
     {
         {
             hppv::Circle circle;
             circle.center = {50.f, 50.f};
-            circle.radius = 70.f;
-            circle.color = {1.f, 0.5f, 0.2f, 0.f};
+            circle.radius = 35.f;
+            circle.color = {1.f, 0.4f, 0.2f, 0.f};
             lights_.push_back(circle);
         }
         {
@@ -122,31 +123,31 @@ public:
         }
         {
             hppv::Circle circle;
-            circle.radius = 30.f;
+            circle.radius = 55.f;
             circle.color = {0.f, 1.f, 0.f, 0.f};
             lights_.push_back(circle);
         }
+
+        hppv::Sprite sprite;
+        sprite.color = {0.6f, 0.3f, 0.3f, 1.f};
+        sprite.texRect = {0, 0, texTile_.getSize()};
+
         {
-            hppv::Sprite sprite;
             sprite.pos = {10.f, 10.f};
             sprite.size = {30.f, 8.f};
-            sprite.color = {0.7f, 0.f, 0.f, 1.f};
             sprite.rotation = glm::pi<float>() / 8.f;
             objects_.push_back(sprite);
         }
         {
-            hppv::Sprite sprite;
             sprite.pos = {60.f, 60.f};
             sprite.size = {40.f, 40.f};
-            sprite.color = {0.f, 0.3f, 0.f, 1.f};
             sprite.rotation = -0.1f;
             objects_.push_back(sprite);
         }
         {
-            hppv::Sprite sprite;
             sprite.pos = {40.f, 30.f};
             sprite.size = {5.f, 5.f};
-            sprite.color = {0.7f, 0.f, 0.f, 1.f};
+            sprite.rotation = 0.f;
             objects_.push_back(sprite);
         }
     }
@@ -155,6 +156,7 @@ private:
     enum {LightRays = 256};
 
     hppv::Framebuffer fbOcclusion_, fbShadow_;
+    hppv::Texture texTile_;
     hppv::Shader shaderShadow_, shaderLight_;
     std::vector<hppv::Circle> lights_;
     std::vector<hppv::Sprite> objects_;
@@ -229,7 +231,8 @@ private:
 
         // objects
         {
-            renderer.shader(hppv::Render::Color);
+            renderer.shader(hppv::Render::Tex);
+            renderer.texture(texTile_);
 
             for(auto& object: objects_)
             {
