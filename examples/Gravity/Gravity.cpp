@@ -1,11 +1,10 @@
 #include <random>
 #include <cassert>
 #include <vector>
-#include <algorithm>
 #include <iostream>
 
-#include <hppv/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/trigonometric.hpp>
 
 #include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
@@ -13,29 +12,38 @@
 #include <hppv/GLobjects.hpp>
 #include <hppv/Shader.hpp>
 #include <hppv/imgui.h>
+#include <hppv/glad.h>
 
 static const char* renderSource = R"(
 
 #vertex
 #version 330
 
-in vec2 pos;
+layout(location = 0) in vec2 currentPos;
+layout(location = 1) in vec2 prevPos;
 
 uniform mat4 projection;
+uniform float alpha;
+
+out float vPosDelta;
 
 void main()
 {
+    vec2 pos = alpha * currentPos + (1 - alpha) * prevPos;
     gl_Position = projection * vec4(pos, 0, 1);
+    vPosDelta = length(currentPos - prevPos);
 }
 
 #fragment
-#version 430
+#version 330
+
+in float vPosDelta;
 
 out vec4 color;
 
 void main()
 {
-    color = vec4(0.30, 0.15, 0, 0.1);
+    color = vec4(0.3, 0.15, vPosDelta / 8, 0.2);
 }
 )";
 
@@ -46,69 +54,93 @@ static const char* computeSource = R"(
 
 layout(local_size_x = 1000, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430, binding = 0) buffer buf1
+layout(std430, binding = 0) buffer buf0
 {
-    vec2 positions[];
+    vec2 currentPos[];
 };
 
-layout(std430, binding = 1) buffer buf2
+layout(std430, binding = 1) buffer buf1
 {
-    vec2 vels[];
+    vec2 prevPos[];
+};
+
+layout(std430, binding = 2) buffer buf2
+{
+    vec2 vel[];
 };
 
 uniform vec2 gravityPos;
 uniform bool isActive;
 uniform float dt;
 
-uniform float dragCoeff = 0.05;
-uniform float gravityCoeff = 50000;
-uniform float maxGravity = 2000;
+const float mass = 1;
+const float threshold = 0.00001;
+const float gravityCoeff = 100000;
+const float maxGravity = 100;
+const float dragCoeff = 0.01;
 
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
 
     vec2 gravity = vec2(0);
+    vec2 gravityDist = gravityPos - currentPos[id];
+    float r = length(gravityDist);
 
-    if(isActive)
+    if(isActive && r > threshold)
     {
-        vec2 diff = gravityPos - positions[id];
-        gravity = normalize(diff) * min(maxGravity, (1 / pow(length(diff), 2)) * gravityCoeff);
+        gravity = (gravityDist / r) * min(maxGravity, gravityCoeff / pow(r, 2));
     }
 
-    vec2 drag = clamp(-normalize(vels[id]) * pow(length(vels[id]), 2) * dragCoeff,
-                      -abs(vels[id] / dt),
-                      abs(vels[id]));
+    float velLen = length(vel[id]);
+    vec2 dragVelDelta = vec2(0);
 
-    vec2 force = gravity + drag;
-    positions[id] += vels[id] * dt + 0.5 * force * pow(dt, 2);
-    vels[id] += force * dt;
+    if(velLen > threshold)
+    {
+        dragVelDelta = -(vel[id] / velLen) * min(velLen, pow(velLen, 2) * dragCoeff / mass * dt);
+    }
+
+    prevPos[id] = currentPos[id];
+    vel[id] += gravity / mass * dt + dragVelDelta;
+    currentPos[id] += vel[id] * dt;
 }
 )";
 
-// todo:
-// * fixed dt + position interpolation
-// * particle movement is somewhat wrong
+void setBuffer(GLuint boId, int numParticles, const glm::vec2* data, GLuint id, bool vertexAttrib)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, boId);
+    glBufferData(GL_ARRAY_BUFFER, numParticles * sizeof(glm::vec2), data, GL_DYNAMIC_DRAW);
+
+    if(vertexAttrib)
+    {
+        glVertexAttribPointer(id, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(id);
+    }
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, boId);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, id, boId);
+}
 
 class Gravity: public hppv::PrototypeScene
 {
 public:
     Gravity():
-        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, true),
         shCompute_({computeSource}, "shCompute_"),
         shRender_({renderSource}, "shRender_")
     {
         assert(NumParticles % ComputeLocalSize == 0);
 
-        std::vector<glm::vec2> buffer(NumParticles);
+        shCompute_.bind();
+        shCompute_.uniform1f("dt", dt_);
 
-        // we don't want to divide by 0
-        // todo: threshold value in the shader
-        std::fill(buffer.begin(), buffer.end(), glm::vec2(0.00001f));
+        std::vector<glm::vec2> buffer(NumParticles, glm::vec2(0.f));
 
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, boVel_.getId());
-        glBufferData(GL_SHADER_STORAGE_BUFFER, NumParticles * sizeof(glm::vec2), buffer.data(), GL_DYNAMIC_DRAW);
+        glBindVertexArray(vao_.getId());
 
+        setBuffer(boVel_.getId(), NumParticles, buffer.data(), VelId, false);
+
+        // initial positions
         {
             std::random_device rd;
             std::mt19937 rng(rd());
@@ -123,38 +155,56 @@ public:
             }
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, boPos_.getId());
-        glBufferData(GL_ARRAY_BUFFER, NumParticles * sizeof(glm::vec2), buffer.data(), GL_DYNAMIC_DRAW);
-
-        glBindVertexArray(vao_.getId());
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, boPos_.getId());
-
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, boPos_.getId());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, boVel_.getId());
+        setBuffer(boCurrentPos_.getId(), NumParticles, buffer.data(), CurrentPosId, true);
+        setBuffer(boPrevPos_.getId(), NumParticles, nullptr, PrevPosId, true);
     }
 
 private:
     enum
     {
         NumParticles = 1000000,
-        ComputeLocalSize = 1000
+        ComputeLocalSize = 1000,
+        CurrentPosId = 0,
+        PrevPosId = 1,
+        VelId = 2
     };
 
     hppv::GLvao vao_;
-    hppv::GLbo boPos_, boVel_;
+    hppv::GLbo boVel_, boCurrentPos_, boPrevPos_;
     hppv::Shader shCompute_, shRender_;
+    float time_ = 0.f;
+
+    struct
+    {
+        glm::vec2 pos;
+        bool active = false;
+    }
+    pilot_;
+
+    // gafferongames.com/post/fix_your_timestep
+
+    float accumulator_ = 0.f;
+    const float dt_ = 0.01f;
 
     void prototypeProcessInput(bool hasInput) override
     {
-        shCompute_.bind();
-        shCompute_.uniform1f("dt", frame_.time);
+        time_ += frame_.time;
 
-        if(prototypeLmb() && hasInput)
         {
-            shCompute_.uniform2f("gravityPos", hppv::mapCursor(prototypeCursorPos(), space_.projected, this));
+            auto space = space_.initial;
+            pilot_.pos.x = glm::sin(time_ * 1.2f);
+            pilot_.pos.y = glm::cos(time_ * 1.2f);
+            pilot_.pos *= space.size / 2.5f;
+            pilot_.pos += space.pos + space.size / 2.f;
+        }
+
+        shCompute_.bind();
+
+        if((prototypeLmb() && hasInput) || pilot_.active)
+        {
+            glm::vec2 pos = pilot_.active ? pilot_.pos : hppv::mapCursor(prototypeCursorPos(), space_.projected, this);
+
+            shCompute_.uniform2f("gravityPos", pos);
 
             // glsl - error: illegal use of reserved word `active'
             shCompute_.uniform1i("isActive", true);
@@ -164,8 +214,14 @@ private:
             shCompute_.uniform1i("isActive", false);
         }
 
-        glDispatchCompute(NumParticles / ComputeLocalSize, 1, 1);
-        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+        accumulator_ += frame_.time;
+        while(accumulator_ > dt_)
+        {
+            accumulator_ -= dt_;
+
+            glDispatchCompute(NumParticles / ComputeLocalSize, 1, 1);
+            glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+        }
     }
 
     // note: we are rendering outside the Renderer framework
@@ -174,6 +230,7 @@ private:
         glViewport(0, 0, properties_.size.x, properties_.size.y);
 
         shRender_.bind();
+        shRender_.uniform1f("alpha", accumulator_ / dt_);
 
         {
             auto pos = space_.projected.pos;
@@ -189,6 +246,7 @@ private:
         ImGui::Begin("gravity");
         {
             ImGui::Text("lmb - activate gravity");
+            ImGui::Checkbox("pilot", &pilot_.active);
         }
         ImGui::End();
     }
