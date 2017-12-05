@@ -218,10 +218,11 @@ private:
         while(accumulator_ > dt_)
         {
             accumulator_ -= dt_;
-
             glDispatchCompute(NumParticles / ComputeLocalSize, 1, 1);
-            glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // is this correct?
         }
+
+        glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
     }
 
     // note: we are rendering outside the Renderer framework
