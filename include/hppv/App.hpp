@@ -14,12 +14,8 @@ namespace hppv
 class Scene;
 class Renderer;
 
-// note: glfw does not detect if window is fullscreen when set
-// externally by the window manager (xfce4, i3) and there is no way to
-// restore it from the application
-
-// if windowState == Restored and window was maximized before
-// being fullscreen it will be set to maximized
+// note: glfw does not detect if the window is fullscreen when set
+// externally by the window manager (i3, xfce4)
 
 struct Request
 {
@@ -51,6 +47,9 @@ struct Request
 
         struct
         {
+            // if state == Restored and window was maximized before
+            // being fullscreen it will be set maximized
+
             Window::State state;
         }
         window;

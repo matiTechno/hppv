@@ -6,7 +6,7 @@
 
 #include <hppv/glad.h>
 #define SHADER_IMPLEMENTATION
-#include <hppv/Shader.hpp> // must be included before Renderer.hpp
+#include <hppv/Shader.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/App.hpp>
 #include <hppv/Scene.hpp>
@@ -369,11 +369,10 @@ void Renderer::cache(const Text& text)
     auto i = batch.instances.start + batch.instances.count;
     const auto halfTextSize = text.getSize() / 2.f;
 
-    //for(auto c: text.text)
     auto it = text.text.cbegin();
     while(it != text.text.cend())
     {
-        int c = utf8::unchecked::next(it);
+        auto c = utf8::unchecked::next(it);
 
         if(c == '\n')
         {
