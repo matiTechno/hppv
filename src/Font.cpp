@@ -91,9 +91,6 @@ void Font::loadFnt(const std::string& filename)
     auto value = getValue(line, 0);
     lineHeight_ = value.value;
 
-    value = getValue(line, value.posNext);
-    ascent_ = value.value;
-
     std::getline(file, line);
 
     texture_ = Texture(fs::path(filename).parent_path() /= getValue(line, 0, '"', '"').str);
@@ -160,13 +157,14 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
     }
 
     auto scale = stbtt_ScaleForPixelHeight(&fontInfo, sizePx);
+    int ascent;
 
     {
-        int ascent, descent, lineGap;
+        int descent, lineGap;
         stbtt_GetFontVMetrics(&fontInfo, &ascent, &descent, &lineGap);
 
-        ascent_ = ascent * scale;
         lineHeight_ = (ascent - descent + lineGap) * scale;
+        ascent *= scale;
     }
 
     std::set<int> codePoints;
@@ -209,7 +207,7 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
         bitmaps[codePoint] = stbtt_GetGlyphBitmap(&fontInfo, scale, scale, id, &glyph.texRect.z, &glyph.texRect.w,
                                                   &glyph.offset.x, &offsetY);
 
-        glyph.offset.y = ascent_ + offsetY;
+        glyph.offset.y = ascent + offsetY;
 
         if(pos.x + glyph.texRect.z > TexSizeX)
         {

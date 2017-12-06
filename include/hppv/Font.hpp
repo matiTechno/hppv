@@ -41,8 +41,9 @@ public:
     explicit Font(const std::string& filename, int sizePx = 20, std::string_view additionalChars = "");
 
     Texture& getTexture() {return texture_;}
+
     Glyph getGlyph(int code) const;
-    int getAscent() const {return ascent_;}
+
     int getLineHeight() const {return lineHeight_;}
 
 private:
@@ -50,7 +51,6 @@ private:
 
     Texture texture_;
     std::map<int, Glyph> glyphs_;
-    int ascent_;
     int lineHeight_;
 
     void loadFnt(const std::string& filename);
