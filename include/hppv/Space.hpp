@@ -52,8 +52,8 @@ inline glm::ivec2 iMap(glm::vec2 point, Space from, Space to)
 
 inline glm::vec4 map(glm::vec4 rect, Space from, Space to)
 {
-    auto pos = map({rect.x, rect.y}, from, to);
-    auto size = glm::vec2(rect.z, rect.w) * to.size / from.size;
+    const auto pos = map({rect.x, rect.y}, from, to);
+    const auto size = glm::vec2(rect.z, rect.w) * to.size / from.size;
     return {pos, size};
 }
 

@@ -21,7 +21,7 @@ namespace hppv
 
 namespace fs = std::experimental::filesystem;
 
-Font::Font(const std::string& filename, int sizePx, std::string_view additionalChars)
+Font::Font(const std::string& filename, const int sizePx, const std::string_view additionalChars)
 {
     // replace find with regex (*.ext)?
 
@@ -40,12 +40,12 @@ Font::Font(const std::string& filename, int sizePx, std::string_view additionalC
     }
 }
 
-Glyph Font::getGlyph(int code) const
+Glyph Font::getGlyph(const int code) const
 {
-    if(auto it = glyphs_.find(code); it != glyphs_.end())
+    if(const auto it = glyphs_.find(code); it != glyphs_.end())
         return it->second;
 
-    if(auto it = glyphs_.find('?'); it != glyphs_.end())
+    if(const auto it = glyphs_.find('?'); it != glyphs_.end())
         return it->second;
 
     return {};
@@ -63,11 +63,11 @@ struct Value
     std::size_t posNext;
 };
 
-Value getValue(const std::string& str, std::size_t pos, char prev = '=', char end = ' ')
+Value getValue(const std::string& str, const std::size_t pos, const char prev = '=', const char end = ' ')
 {
-    auto start = str.find(prev, pos) + 1;
-    auto count = str.find(end, start) - start;
-    auto substr = str.substr(start, count);
+    const auto start = str.find(prev, pos) + 1;
+    const auto count = str.find(end, start) - start;
+    const auto substr = str.substr(start, count);
     return {std::atoi(substr.c_str()), substr, start + count};
 }
 
@@ -83,7 +83,7 @@ void Font::loadFnt(const std::string& filename)
 
     std::string line;
 
-    for(int i = 0; i < 2; ++i)
+    for(auto i = 0; i < 2; ++i)
     {
         std::getline(file, line);
     }
@@ -97,9 +97,9 @@ void Font::loadFnt(const std::string& filename)
 
     std::getline(file, line);
 
-    auto numGlyphs = getValue(line, 0).value;
+    const auto numGlyphs = getValue(line, 0).value;
 
-    for(int i = 0; i < numGlyphs; ++i)
+    for(auto i = 0; i < numGlyphs; ++i)
     {
         std::getline(file, line);
 
@@ -129,7 +129,7 @@ void Font::loadFnt(const std::string& filename)
     }
 }
 
-void Font::loadTrueType(const std::string& filename, int sizePx, std::string_view additionalChars)
+void Font::loadTrueType(const std::string& filename, const int sizePx, const std::string_view additionalChars)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
 
@@ -142,7 +142,7 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
     std::vector<unsigned char> ttfData;
 
     {
-        auto size = file.tellg();
+        const auto size = file.tellg();
         ttfData.resize(size);
         file.seekg(0);
         file.read(reinterpret_cast<char*>(ttfData.data()), size);
@@ -156,7 +156,7 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
         return;
     }
 
-    auto scale = stbtt_ScaleForPixelHeight(&fontInfo, sizePx);
+    const auto scale = stbtt_ScaleForPixelHeight(&fontInfo, sizePx);
     int ascent;
 
     {
@@ -170,7 +170,7 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
     std::set<int> codePoints;
 
     // ASCII
-    for(int i = 32; i < 127; ++i)
+    for(auto i = 32; i < 127; ++i)
     {
         codePoints.insert(i);
     }
@@ -187,9 +187,9 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
     int maxBitmapSizeY = 0;
     glm::ivec2 pos(0);
 
-    for(auto codePoint: codePoints)
+    for(const auto codePoint: codePoints)
     {
-        int id = stbtt_FindGlyphIndex(&fontInfo, codePoint);
+        const auto id = stbtt_FindGlyphIndex(&fontInfo, codePoint);
 
         if(id == 0)
         {
@@ -238,15 +238,15 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
     // clear the texture color
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texSize.x, texSize.y, GL_RED, GL_BYTE, vec.data());
 
-    for(auto& glyph: glyphs_)
+    for(const auto& glyph: glyphs_)
     {
         auto texRect = glyph.second.texRect;
         const auto* bitmap = bitmaps.at(glyph.first);
 
         // flip the bitmap vertically, so it plays nice with the Renderer framework
-        for(int j = 0; j < texRect.w; ++j)
+        for(auto j = 0; j < texRect.w; ++j)
         {
-            for(int i = 0; i < texRect.z; ++i)
+            for(auto i = 0; i < texRect.z; ++i)
             {
                 vec[j * texRect.z + i] = bitmap[(texRect.w - j - 1) * texRect.z + i];
             }
@@ -261,7 +261,7 @@ void Font::loadTrueType(const std::string& filename, int sizePx, std::string_vie
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
 
-    for(auto& bitmap: bitmaps)
+    for(const auto bitmap: bitmaps)
     {
         stbtt_FreeBitmap(bitmap.second, nullptr);
     }

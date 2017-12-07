@@ -32,7 +32,7 @@ Texture::Texture(const std::string& filename)
     stbi_image_free(data);
 }
 
-Texture::Texture(GLenum format, glm::ivec2 size):
+Texture::Texture(const GLenum format, const glm::ivec2 size):
     size_(size)
 {
     bind();
@@ -46,7 +46,7 @@ Texture::Texture()
     createDefault();
 }
 
-void Texture::bind(GLuint unit)
+void Texture::bind(const GLuint unit)
 {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, texture_.getId());
@@ -58,7 +58,7 @@ void Texture::createDefault()
 
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, size_.x, size_.y);
 
-    unsigned char pixel[] = {0, 255, 0, 255};
+    const unsigned char pixel[] = {0, 255, 0, 255};
 
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size_.x, size_.y, GL_RGBA,
                     GL_UNSIGNED_BYTE, pixel);

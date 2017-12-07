@@ -72,6 +72,8 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
+        renderer.antialiasedSprites(true);
+
         // gnu
         {
             hppv::Sprite sprite;
@@ -116,10 +118,10 @@ private:
             }
             else
             {
-                auto shader = hppv::Render(int(hppv::Render::Sdf) + sdf_.comboIndex - 1);
-                renderer.shader(shader);
+                const auto renderMode = hppv::Render(static_cast<int>(hppv::Render::Sdf) + sdf_.comboIndex - 1);
+                renderer.shader(renderMode);
 
-                if(shader == hppv::Render::SdfOutline)
+                if(renderMode == hppv::Render::SdfOutline)
                 {
                     ImGui::ColorEdit4("outline color", &sdf_.outline.color.x);
                     ImGui::SliderFloat("outline width", &sdf_.outline.width, 0.f, 0.5f);
@@ -127,7 +129,7 @@ private:
                     renderer.uniform4f("outlineColor", sdf_.outline.color);
                     renderer.uniform1f("outlineWidth", sdf_.outline.width);
                 }
-                else if(shader == hppv::Render::SdfGlow)
+                else if(renderMode == hppv::Render::SdfGlow)
                 {
                     if(sdf_.glow.animate)
                     {
@@ -142,7 +144,7 @@ private:
                     renderer.uniform4f("glowColor", sdf_.glow.color);
                     renderer.uniform1f("glowWidth", sdf_.glow.width);
                 }
-                else if(shader == hppv::Render::SdfShadow)
+                else if(renderMode == hppv::Render::SdfShadow)
                 {
                     if(sdf_.shadow.animate)
                     {
@@ -186,9 +188,9 @@ private:
             hppv::Text text(proggy_);
             text.text = "This is a small gnu creature!";
             {
-                auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, space_.projected, this);
-                glm::ivec2 size = text.getSize();
-                text.pos = {rect.x + rect.z / 2 - size.x / 2, rect.y - size.y};
+                const auto rect = hppv::iMapToScene({gnu_.pos, gnu_.size}, space_.projected, this);
+                const glm::ivec2 size = text.getSize();
+                text.pos = {rect.x + (rect.z - size.x) / 2, rect.y - size.y};
             }
 
             hppv::Sprite sprite(text);

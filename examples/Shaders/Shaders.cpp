@@ -39,7 +39,7 @@ private:
     std::vector<hppv::Shader>::iterator activeShader_;
     float time_ = 0.f;
 
-    void addShader(const char* fragmentSource)
+    void addShader(const char* const fragmentSource)
     {
         shaders_.emplace_back(hppv::Shader({hppv::Renderer::vInstancesSource, fragmentSource}, ""));
     }

@@ -174,7 +174,7 @@ private:
     {
         renderer.antialiasedSprites(true);
 
-        for(auto& light: lights_)
+        for(const auto& light: lights_)
         {
             // occlusion map
             {
@@ -186,7 +186,7 @@ private:
                 {
                     renderer.shader(hppv::Render::Color);
 
-                    for(auto& object: objects_)
+                    for(const auto& object: objects_)
                     {
                         renderer.cache(object);
                     }
@@ -234,7 +234,7 @@ private:
             renderer.shader(hppv::Render::Tex);
             renderer.texture(texTile_);
 
-            for(auto& object: objects_)
+            for(const auto& object: objects_)
             {
                 renderer.cache(object);
             }

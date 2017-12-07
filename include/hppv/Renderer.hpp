@@ -123,6 +123,8 @@ enum class Sample
 // * state changes on non-empty batch break it
 // * texture / sampler / uniform states are lost after flush()
 
+// todo: remove code duplication in cache() and sampler() / texture() functions
+
 class Renderer
 {
 public:

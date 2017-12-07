@@ -23,6 +23,7 @@ void Emitter::update(float frameTime)
             killParticle(i); // note: swap()
         }
 
+        // note: acceleration is constant
         circles_[i].center += particles_[i].acc * frameTime * frameTime * 0.5f + particles_[i].vel * frameTime;
         particles_[i].vel += particles_[i].acc * frameTime;
         circles_[i].color += particles_[i].colorVel * frameTime;
@@ -30,7 +31,7 @@ void Emitter::update(float frameTime)
 
     accumulator_ += frameTime;
 
-    auto spawnDelay = 1.f / spawn.hz;
+    const auto spawnDelay = 1.f / spawn.hz;
 
     while(accumulator_ > spawnDelay)
     {
@@ -46,7 +47,7 @@ void Emitter::render(hppv::Renderer& renderer)
     renderer.cache(circles_.data(), count_);
 }
 
-void Emitter::killParticle(std::size_t index)
+void Emitter::killParticle(const std::size_t index)
 {
     std::swap(particles_[index], particles_[count_ - 1]);
     std::swap(circles_[index], circles_[count_ - 1]);

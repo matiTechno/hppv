@@ -43,7 +43,7 @@ protected:
         void newFrame(glm::ivec2 sceneSize)
         {
             sceneSize_ = sceneSize;
-            projected_ = expandToMatchAspectRatio(current, sceneSize);
+            projected_ = expandToMatchAspectRatio(current_, sceneSize);
         }
 
         const Space initial;

@@ -106,7 +106,8 @@ void main()
 }
 )";
 
-void setBuffer(GLuint boId, int numParticles, const glm::vec2* data, GLuint id, bool vertexAttrib)
+void setBuffer(const GLuint boId, const int numParticles, const glm::vec2* const data,
+               const GLuint id, const bool vertexAttrib)
 {
     glBindBuffer(GL_ARRAY_BUFFER, boId);
     glBufferData(GL_ARRAY_BUFFER, numParticles * sizeof(glm::vec2), data, GL_DYNAMIC_DRAW);
@@ -144,8 +145,8 @@ public:
         {
             std::random_device rd;
             std::mt19937 rng(rd());
-            auto pos = space_.initial.pos;
-            auto size = space_.initial.size;
+            const auto pos = space_.initial.pos;
+            const auto size = space_.initial.size;
             std::uniform_real_distribution<float> distX(pos.x, pos.x + size.x);
             std::uniform_real_distribution<float> distY(pos.y, pos.y + size.y);
 
@@ -186,12 +187,12 @@ private:
     float accumulator_ = 0.f;
     const float dt_ = 0.01f;
 
-    void prototypeProcessInput(bool hasInput) override
+    void prototypeProcessInput(const bool hasInput) override
     {
         time_ += frame_.time;
 
         {
-            auto space = space_.initial;
+            const auto space = space_.initial;
             pilot_.pos.x = glm::sin(time_ * 1.2f);
             pilot_.pos.y = glm::cos(time_ * 1.2f);
             pilot_.pos *= space.size / 2.5f;
@@ -202,7 +203,8 @@ private:
 
         if((prototypeLmb() && hasInput) || pilot_.active)
         {
-            glm::vec2 pos = pilot_.active ? pilot_.pos : hppv::mapCursor(prototypeCursorPos(), space_.projected, this);
+            const glm::vec2 pos = pilot_.active ? pilot_.pos :
+                                                  hppv::mapCursor(prototypeCursorPos(), space_.projected, this);
 
             shCompute_.uniform2f("gravityPos", pos);
 
@@ -234,9 +236,9 @@ private:
         shRender_.uniform1f("alpha", accumulator_ / dt_);
 
         {
-            auto pos = space_.projected.pos;
-            auto size = space_.projected.size;
-            auto projection = glm::ortho(pos.x, pos.x + size.x, pos.y + size.y, pos.y);
+            const auto pos = space_.projected.pos;
+            const auto size = space_.projected.size;
+            const auto projection = glm::ortho(pos.x, pos.x + size.x, pos.y + size.y, pos.y);
             shRender_.uniformMat4f("projection", projection);
         }
 

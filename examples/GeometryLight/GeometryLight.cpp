@@ -41,7 +41,8 @@ void main()
 }
 )";
 
-std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayDir, glm::vec2 segStart, glm::vec2 segEnd)
+std::optional<glm::vec2> findRayEnd(const glm::vec2 rayStart, const glm::vec2 rayDir, const glm::vec2 segStart,
+                                    const glm::vec2 segEnd)
 {
     // we don't need to handle this case
     // for each point we cast three rays with different coefficient
@@ -53,7 +54,7 @@ std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayDir, glm::v
 
     if(segStart.x == segEnd.x)
     {
-        auto x = segStart.x;
+        const auto x = segStart.x;
         rayEnd = {x, rayCoeff * x + rayStart.y - rayCoeff * rayStart.x};
 
         if(rayEnd.y < std::min(segStart.y, segEnd.y) || rayEnd.y > std::max(segStart.y, segEnd.y))
@@ -66,7 +67,7 @@ std::optional<glm::vec2> findRayEnd(glm::vec2 rayStart, glm::vec2 rayDir, glm::v
         if(rayCoeff == segCoeff)
             return {};
 
-        auto x = (segStart.y - segCoeff * segStart.x - rayStart.y + rayCoeff * rayStart.x) / (rayCoeff - segCoeff);
+        const auto x = (segStart.y - segCoeff * segStart.x - rayStart.y + rayCoeff * rayStart.x) / (rayCoeff - segCoeff);
 
         if(x < std::min(segStart.x, segEnd.x) || (x > std::max(segStart.x, segEnd.x)))
             return {};
@@ -93,7 +94,7 @@ public:
 
 private:
     std::vector<std::vector<glm::vec2>> lineLoops_;
-    hppv::Space border_{10.f, 10.f, 80.f, 80.f};
+    const hppv::Space border_{10.f, 10.f, 80.f, 80.f};
     std::vector<glm::vec2> points_;
     glm::vec2 lightPos_;
     hppv::Shader shaderLight_;
@@ -116,11 +117,12 @@ private:
 
         for(const auto& loop: lineLoops_)
         {
-            for(auto point: loop)
+            for(const auto point: loop)
             {
-                for(int i = -1; i < 2; ++i)
+                for(auto i = -1; i < 2; ++i)
                 {
-                    auto rayDir = glm::rotate(point - lightPos_, i * 0.00001f);
+                    const auto rayDir = glm::rotate(point - lightPos_, i * 0.00001f);
+
                     glm::vec2 rayEnd(1000.f);
 
                     if(i == 0)
@@ -132,9 +134,9 @@ private:
                     {
                         for(auto it = loop.cbegin(); it < loop.cend(); ++it)
                         {
-                            auto segEnd = (it == loop.end() - 1 ? *loop.begin() : *(it + 1));
+                            const auto segEnd = (it == loop.end() - 1 ? *loop.begin() : *(it + 1));
 
-                            if(auto newRayEnd = findRayEnd(lightPos_, rayDir, *it, segEnd))
+                            if(const auto newRayEnd = findRayEnd(lightPos_, rayDir, *it, segEnd))
                             {
                                 if(glm::length(*newRayEnd - lightPos_) < glm::length(rayEnd - lightPos_))
                                 {
@@ -156,7 +158,7 @@ private:
         });
     }
 
-    void prototypeProcessInput(bool isInput) override
+    void prototypeProcessInput(const bool isInput) override
     {
         if(isInput)
         {
@@ -197,7 +199,7 @@ private:
 
             for(auto it = points_.cbegin(); it < points_.cend(); ++it)
             {
-                auto last = (it == points_.end() - 1 ? *points_.begin() : *(it + 1));
+                const auto last = (it == points_.end() - 1 ? *points_.begin() : *(it + 1));
 
                 hppv::Vertex v;
 
@@ -243,7 +245,7 @@ private:
 
         for(const auto& loop: lineLoops_)
         {
-            for(auto point: loop)
+            for(const auto point: loop)
             {
                 hppv::Vertex v;
                 v.pos = point;
@@ -259,7 +261,7 @@ private:
 
         if(options_.drawLines)
         {
-            for(auto point: points_)
+            for(const auto point: points_)
             {
                 hppv::Vertex v;
                 v.pos = point;
@@ -276,7 +278,7 @@ private:
             renderer.mode(hppv::RenderMode::Instances);
             renderer.shader(hppv::Render::CircleColor);
 
-            for(auto point: points_)
+            for(const auto point: points_)
             {
                 hppv::Circle c;
                 c.center = point;

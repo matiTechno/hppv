@@ -95,7 +95,7 @@ bool App::initialize(bool printDebugInfo)
 
 void App::run()
 {
-   float time = glfwGetTime();
+   auto time = glfwGetTime();
 
    while(!glfwWindowShouldClose(window_) && scenes_.size())
    {
@@ -104,14 +104,16 @@ void App::run()
        glfwPollEvents();
        ImGui_ImplGlfwGL3_NewFrame();
 
-       float newTime = glfwGetTime();
-       frame_.time = newTime - time;
-       time = newTime;
+       {
+           const auto newTime = glfwGetTime();
+           frame_.time = newTime - time;
+           time = newTime;
+       }
 
        refreshFrame();
 
-       auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
-                              ImGui::GetIO().WantCaptureMouse;
+       const auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
+                                    ImGui::GetIO().WantCaptureMouse;
 
        for(auto it = scenes_.begin(); it != scenes_.end(); ++it)
        {
@@ -123,7 +125,7 @@ void App::run()
                scene.properties_.size = frame_.framebufferSize;
            }
 
-           auto isTop = it == scenes_.end() - 1;
+           const auto isTop = it == scenes_.end() - 1;
 
            scene.processInput(isTop && !imguiWantsInput);
 
@@ -135,7 +137,7 @@ void App::run()
 
        scenesToRender_.clear();
 
-       for(auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
+       for(auto it = scenes_.crbegin(); it != scenes_.crend(); ++it)
        {
            scenesToRender_.insert(scenesToRender_.begin(), &**it);
 
@@ -159,9 +161,12 @@ void App::run()
        {
            auto& topScene = *scenes_.back();
            auto sceneToPush = std::move(topScene.properties_.sceneToPush);
-           auto numToPop = topScene.properties_.numScenesToPop;
-           assert(numToPop <= scenes_.size());
-           scenes_.erase(scenes_.end() - numToPop, scenes_.end());
+
+           {
+               const auto numToPop = topScene.properties_.numScenesToPop;
+               assert(numToPop <= scenes_.size());
+               scenes_.erase(scenes_.end() - numToPop, scenes_.end());
+           }
 
            if(sceneToPush)
            {
@@ -169,7 +174,7 @@ void App::run()
            }
        }
 
-       for(auto& request: requests_)
+       for(const auto& request: requests_)
        {
            switch(request.type)
            {
@@ -179,14 +184,14 @@ void App::run()
 
            case Request::Cursor:
            {
-               auto mode = request.cursor.visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
+               const auto mode = request.cursor.visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
                glfwSetInputMode(window_, GLFW_CURSOR, mode);
                break;
            }
 
            case Request::Window:
            {
-               auto state = request.window.state;
+               const auto state = request.window.state;
                assert(frame_.window.state != state);
 
                if(state == Window::Fullscreen)
@@ -236,7 +241,7 @@ void App::refreshFrame()
 
     glfwGetFramebufferSize(window_, &frame_.framebufferSize.x, &frame_.framebufferSize.y);
 
-    auto previousState = frame_.window.state;
+    const auto previousState = frame_.window.state;
 
     if(glfwGetWindowMonitor(window_))
     {

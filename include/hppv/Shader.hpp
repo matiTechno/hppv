@@ -148,7 +148,7 @@ namespace hppv
 fs::file_time_type getFileLastWriteTime(const std::string& filename)
 {
     std::error_code ec;
-    auto time = fs::last_write_time(filename, ec);
+    const auto time = fs::last_write_time(filename, ec);
 
     if(ec)
     {
@@ -179,27 +179,27 @@ std::string loadSourceFromFile(const fs::path& path)
 
     const std::string_view includeDirective = "#include";
 
-    std::size_t start = 0;
-    while((start = source.find(includeDirective, start)) != std::string::npos)
+    std::size_t includeStart = 0;
+    while((includeStart = source.find(includeDirective, includeStart)) != std::string::npos)
     {
-        auto startQuote = source.find('"', start + includeDirective.size());
+        const auto quoteStart = source.find('"', includeStart + includeDirective.size());
 
-        if(startQuote == std::string::npos)
+        if(quoteStart == std::string::npos)
         {
             printMissingQuoteError(path);
             return {};
         }
 
-        auto startPath = startQuote + 1;
-        auto endPath = source.find('"', startPath);
+        const auto pathStart = quoteStart + 1;
+        const auto pathEnd = source.find('"', pathStart);
 
-        if(endPath == std::string::npos)
+        if(pathEnd == std::string::npos)
         {
             printMissingQuoteError(path);
             return {};
         }
 
-        fs::path includePath(source.substr(startPath, endPath - startPath));
+        const fs::path includePath(source.substr(pathStart, pathEnd - pathStart));
         std::string includedStr;
 
         if(includePath.is_absolute())
@@ -211,28 +211,28 @@ std::string loadSourceFromFile(const fs::path& path)
             includedStr = loadSourceFromFile(path.parent_path() /= includePath);
         }
 
-        auto addSize = includedStr.size();
-        source.erase(start, endPath + 1 - start);
-        source.insert(start, std::move(includedStr));
-        start += addSize;
+        const auto addSize = includedStr.size();
+        source.erase(includeStart, pathEnd + 1 - includeStart);
+        source.insert(includeStart, std::move(includedStr));
+        includeStart += addSize;
     }
 
     return source;
 }
 
-Shader::Shader(File, const std::string& filename, bool hotReload):
+Shader::Shader(File, const std::string& filename, const bool hotReload):
     id_(filename),
     hotReload_(hotReload)
 {
     fileLastWriteTime_ = getFileLastWriteTime(filename);
 
-    if(auto source = loadSourceFromFile(filename); source.size())
+    if(const auto source = loadSourceFromFile(filename); source.size())
     {
         swapProgram({source});
     }
 }
 
-Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view id):
+Shader::Shader(const std::initializer_list<std::string_view> sources, const std::string_view id):
     id_(id)
 {
     swapProgram(sources);
@@ -240,7 +240,7 @@ Shader::Shader(std::initializer_list<std::string_view> sources, std::string_view
 
 GLint Shader::getUniformLocation(const std::string_view name)
 {
-    auto it = uniformLocations_.find(name);
+    const auto it = uniformLocations_.find(name);
 
     if(it == uniformLocations_.end() &&
        inactiveUniforms_.find(name) == inactiveUniforms_.end())
@@ -255,12 +255,12 @@ GLint Shader::getUniformLocation(const std::string_view name)
 
 void Shader::reload()
 {
-    if(auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
+    if(const auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
     {
         fileLastWriteTime_ = time;
     }
 
-    if(auto source = loadSourceFromFile(id_); source.size())
+    if(const auto source = loadSourceFromFile(id_); source.size())
     {
         if(swapProgram({source}))
         {
@@ -273,11 +273,11 @@ void Shader::bind()
 {
     if(hotReload_)
     {
-        if(auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
+        if(const auto time = getFileLastWriteTime(id_); time > fileLastWriteTime_)
         {
             fileLastWriteTime_ = time;
 
-            if(auto source = loadSourceFromFile(id_); source.size())
+            if(const auto source = loadSourceFromFile(id_); source.size())
             {
                 if(swapProgram({source}))
                 {
@@ -290,18 +290,18 @@ void Shader::bind()
     glUseProgram(program_.getId());
 }
 
-void Shader::uniform1i(std::string_view name, int value) {glUniform1i(getUniformLocation(name), value);}
-void Shader::uniform1f(std::string_view name, float value) {glUniform1f(getUniformLocation(name), value);}
-void Shader::uniform2f(std::string_view name, const float* value) {glUniform2fv(getUniformLocation(name), 1, value);}
-void Shader::uniform3f(std::string_view name, const float* value) {glUniform3fv(getUniformLocation(name), 1, value);}
-void Shader::uniform4f(std::string_view name, const float* value) {glUniform4fv(getUniformLocation(name), 1, value);}
-void Shader::uniformMat4f(std::string_view name, const float* value){glUniformMatrix4fv(getUniformLocation(name),
-                                                                                        1, GL_FALSE, value);}
+void Shader::uniform1i(const std::string_view name, const int value) {glUniform1i(getUniformLocation(name), value);}
+void Shader::uniform1f(const std::string_view name, const float value) {glUniform1f(getUniformLocation(name), value);}
+void Shader::uniform2f(const std::string_view name, const float* value) {glUniform2fv(getUniformLocation(name), 1, value);}
+void Shader::uniform3f(const std::string_view name, const float* value) {glUniform3fv(getUniformLocation(name), 1, value);}
+void Shader::uniform4f(const std::string_view name, const float* value) {glUniform4fv(getUniformLocation(name), 1, value);}
+void Shader::uniformMat4f(const std::string_view name, const float* value){glUniformMatrix4fv(getUniformLocation(name),
+                                                                                              1, GL_FALSE, value);}
 
 void Shader::Program::clean() {if(id_) glDeleteProgram(id_);}
 
 template<bool isProgram>
-std::optional<std::string> getError(GLuint id, GLenum flag)
+std::optional<std::string> getError(const GLuint id, const GLenum flag)
 {
     GLint success;
 
@@ -347,10 +347,10 @@ std::optional<std::string> getError(GLuint id, GLenum flag)
 }
 
 // shader must be deleted by caller with glDeleteShader()
-GLuint createAndCompileShader(GLenum type, const std::string& source)
+GLuint createAndCompileShader(const GLenum type, const std::string& source)
 {
-    auto id = glCreateShader(type);
-    auto* str = source.c_str();
+    const auto id = glCreateShader(type);
+    const auto* str = source.c_str();
     glShaderSource(id, 1, &str, nullptr);
     glCompileShader(id);
     return id;
@@ -358,7 +358,7 @@ GLuint createAndCompileShader(GLenum type, const std::string& source)
 
 // returns 0 on error
 // if return value != 0 program must be deleted by caller with glDeleteProgram()
-GLuint createProgram(std::initializer_list<std::string_view> sources, const std::string& id)
+GLuint createProgram(const std::initializer_list<std::string_view> sources, const std::string_view id)
 {
     struct ShaderType
     {
@@ -382,22 +382,23 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
     bool compilationError = false;
 
     std::vector<ShaderData> shaderData;
-    for(auto source: sources)
+
+    for(const auto source: sources)
     {
         shaderData.clear();
 
-        for(auto& shaderType: shaderTypes)
+        for(const auto shaderType: shaderTypes)
         {
-            if(auto pos = source.find(shaderType.name); pos != std::string::npos)
+            if(const auto pos = source.find(shaderType.name); pos != std::string::npos)
             {
                 shaderData.push_back({pos + shaderType.name.size(), shaderType});
             }
         }
 
-        std::sort(shaderData.begin(), shaderData.end(), [](ShaderData& l, ShaderData& r)
+        std::sort(shaderData.begin(), shaderData.end(), [](const ShaderData& l, const ShaderData& r)
                                                         {return l.start < r.start;});
 
-        for(auto it = shaderData.begin(); it != shaderData.end(); ++it)
+        for(auto it = shaderData.cbegin(); it != shaderData.cend(); ++it)
         {
             std::size_t count;
 
@@ -407,14 +408,14 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
             }
             else
             {
-                auto nextIt = it + 1;
+                const auto nextIt = it + 1;
                 count = nextIt->start - nextIt->type.name.size() - it->start;
             }
 
-            auto shaderSource = source.substr(it->start, count);
+            const auto shaderSource = source.substr(it->start, count);
             shaders.push_back(createAndCompileShader(it->type.value, std::string(shaderSource)));
 
-            if(auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
+            if(const auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
             {
                 std::cout << "Shader, " << id << ": " << it->type.name << " shader compilation failed\n"
                           << *error << '\n';
@@ -426,7 +427,7 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
 
                     for(;;)
                     {
-                        auto start = end;
+                        const auto start = end;
 
                         if(end = shaderSource.find('\n', end); end != std::string::npos)
                         {
@@ -452,7 +453,7 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
 
     if(compilationError)
     {
-        for(auto shader: shaders)
+        for(const auto shader: shaders)
         {
             glDeleteShader(shader);
         }
@@ -460,22 +461,22 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
         return 0;
     }
 
-    auto program = glCreateProgram();
+    const auto program = glCreateProgram();
 
-    for(auto shader: shaders)
+    for(const auto shader: shaders)
     {
         glAttachShader(program, shader);
     }
 
     glLinkProgram(program);
 
-    for(auto shader: shaders)
+    for(const auto shader: shaders)
     {
         glDetachShader(program, shader);
         glDeleteShader(shader);
     }
 
-    if(auto error = getError<true>(program, GL_LINK_STATUS))
+    if(const auto error = getError<true>(program, GL_LINK_STATUS))
     {
         std::cout << "Shader, " << id << ": program linking failed\n" << *error << std::endl;
         glDeleteProgram(program);
@@ -485,9 +486,9 @@ GLuint createProgram(std::initializer_list<std::string_view> sources, const std:
     return program;
 }
 
-bool Shader::swapProgram(std::initializer_list<std::string_view> sources)
+bool Shader::swapProgram(const std::initializer_list<std::string_view> sources)
 {
-    auto newProgram = createProgram(sources, id_);
+    const auto newProgram = createProgram(sources, id_);
 
     if(!newProgram)
         return false;
@@ -502,7 +503,7 @@ bool Shader::swapProgram(std::initializer_list<std::string_view> sources)
 
     std::vector<char> uniformName(256);
 
-    for(int i = 0; i < numUniforms; ++i)
+    for(auto i = 0; i < numUniforms; ++i)
     {
         GLint dum1;
         GLenum dum2;
@@ -510,7 +511,7 @@ bool Shader::swapProgram(std::initializer_list<std::string_view> sources)
         glGetActiveUniform(program_.getId(), i, uniformName.size(), nullptr, &dum1, &dum2,
                            uniformName.data());
 
-        auto uniformLocation = glGetUniformLocation(program_.getId(), uniformName.data());
+        const auto uniformLocation = glGetUniformLocation(program_.getId(), uniformName.data());
         uniformLocations_[uniformName.data()] = uniformLocation;
     }
 

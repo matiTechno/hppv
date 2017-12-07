@@ -50,7 +50,7 @@ private:
     }
     transition_;
 
-    void addShader(const std::string& transition, const char* name)
+    void addShader(const std::string& transition, const char* const name)
     {
         shaders_.push_back(hppv::Shader({hppv::Renderer::vInstancesSource,
                                          fragStart + transition + fragEnd},

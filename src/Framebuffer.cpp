@@ -4,14 +4,14 @@
 namespace hppv
 {
 
-Framebuffer::Framebuffer(GLenum textureFormat, int numAttachments):
+Framebuffer::Framebuffer(const GLenum textureFormat, const int numAttachments):
     textureFormat_(textureFormat)
 {
     bind();
 
     std::vector<GLenum> attachments(numAttachments);
 
-    for(int i = 0; i < numAttachments; ++i)
+    for(auto i = 0; i < numAttachments; ++i)
     {
         attachments[i] = GL_COLOR_ATTACHMENT0 + i;
     }
@@ -33,7 +33,7 @@ void Framebuffer::unbind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Framebuffer::setSize(glm::ivec2 size)
+void Framebuffer::setSize(const glm::ivec2 size)
 {
     for(std::size_t i = 0; i < textures_.size(); ++i)
     {

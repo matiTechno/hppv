@@ -28,7 +28,7 @@ public:
         return *this;
     }
 
-    GLuint getId() const {return id_;}
+    GLuint getId() {return id_;}
 
 protected:
     GLuint id_ = 0;

@@ -22,10 +22,10 @@ namespace hppv
 glm::vec2 Text::getSize() const
 {
     auto x = 0.f;
-    auto lineHeight = font->getLineHeight() * scale;
+    const auto lineHeight = font->getLineHeight() * scale;
     glm::vec2 size(0.f, lineHeight);
 
-    for(auto c: text)
+    for(const auto c: text)
     {
         if(c == '\n')
         {
@@ -35,7 +35,7 @@ glm::vec2 Text::getSize() const
             continue;
         }
 
-        auto glyph = font->getGlyph(c);
+        const auto glyph = font->getGlyph(c);
         x += glyph.advance * scale;
     }
 
@@ -43,8 +43,8 @@ glm::vec2 Text::getSize() const
     return size;
 }
 
-Renderer::Instance createInstance(glm::vec2 pos, glm::vec2 size, float rotation, glm::vec2 rotationPoint,
-                                  glm::vec4 color, glm::vec4 texRect, glm::vec2 texSize)
+Renderer::Instance createInstance(const glm::vec2 pos, const glm::vec2 size, const float rotation, const glm::vec2 rotationPoint,
+                                  const glm::vec4 color, const glm::vec4 texRect, const glm::vec2 texSize)
 {
     Renderer::Instance i;
 
@@ -195,7 +195,7 @@ void Renderer::viewport(glm::ivec4 viewport)
     getBatchToUpdate().viewport = viewport;
 }
 
-void Renderer::viewport(const Scene* scene)
+void Renderer::viewport(const Scene* const scene)
 {
     viewport({scene->properties_.pos, scene->properties_.size});
 }
@@ -205,9 +205,9 @@ void Renderer::viewport(const Framebuffer& framebuffer)
     getBatchToUpdate().viewport = {0, 0, framebuffer.getSize()};
 }
 
-void Renderer::shader(Render mode)
+void Renderer::shader(const Render mode)
 {
-    auto modeId = static_cast<int>(mode);
+    const auto modeId = static_cast<int>(mode);
     auto& batch = getBatchToUpdate();
 
     if(modeId < static_cast<int>(Render::Sdf))
@@ -226,35 +226,35 @@ void Renderer::shader(Render mode)
     uniform1i("mode", modeId);
 }
 
-void Renderer::uniform1i(const std::string& name, int value)
+void Renderer::uniform1i(const std::string& name, const int value)
 {
     uniforms_.emplace_back(Uniform::I1, name);
     uniforms_.back().i1 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform1f(const std::string& name, float value)
+void Renderer::uniform1f(const std::string& name, const float value)
 {
     uniforms_.emplace_back(Uniform::F1, name);
     uniforms_.back().f1 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform2f(const std::string& name, glm::vec2 value)
+void Renderer::uniform2f(const std::string& name, const glm::vec2 value)
 {
     uniforms_.emplace_back(Uniform::F2, name);
     uniforms_.back().f2 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform3f(const std::string& name, glm::vec3 value)
+void Renderer::uniform3f(const std::string& name, const glm::vec3 value)
 {
     uniforms_.emplace_back(Uniform::F3, name);
     uniforms_.back().f3 = value;
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::uniform4f(const std::string& name, glm::vec4 value)
+void Renderer::uniform4f(const std::string& name, const glm::vec4 value)
 {
     uniforms_.emplace_back(Uniform::F4, name);
     uniforms_.back().f4 = value;
@@ -268,7 +268,7 @@ void Renderer::uniformMat4f(const std::string& name, const glm::mat4& value)
     ++getBatchToUpdate().uniforms.count;
 }
 
-void Renderer::texture(Texture& texture, GLenum unit)
+void Renderer::texture(Texture& texture, const GLenum unit)
 {
     auto& batch = getBatchToUpdate();
     const auto start = batch.texUnits.start;
@@ -291,7 +291,7 @@ void Renderer::texture(Texture& texture, GLenum unit)
     ++batch.texUnits.count;
 }
 
-void Renderer::sampler(GLsampler& sampler, GLenum unit)
+void Renderer::sampler(GLsampler& sampler, const GLenum unit)
 {
     auto& batch = getBatchToUpdate();
     const auto start = batch.texUnits.start;
@@ -314,7 +314,7 @@ void Renderer::sampler(GLsampler& sampler, GLenum unit)
     ++batch.texUnits.count;
 }
 
-void Renderer::cache(const Sprite* sprite, std::size_t count)
+void Renderer::cache(const Sprite* sprite, const std::size_t count)
 {
     auto& batch = batches_.back();
     assert(batch.vao == &vaoInstances_);
@@ -334,7 +334,7 @@ void Renderer::cache(const Sprite* sprite, std::size_t count)
     }
 }
 
-void Renderer::cache(const Circle* circle, std::size_t count)
+void Renderer::cache(const Circle* circle, const std::size_t count)
 {
     auto& batch = batches_.back();
     assert(batch.vao == &vaoInstances_);
@@ -358,11 +358,14 @@ void Renderer::cache(const Text& text)
 {
     auto& batch = batches_.back();
     assert(batch.vao == &vaoInstances_);
-    auto maxInstances = batch.instances.start + batch.instances.count + text.text.size();
 
-    if(maxInstances > instances_.size())
     {
-        instances_.resize(maxInstances);
+        const auto end = batch.instances.start + batch.instances.count + text.text.size();
+
+        if(end > instances_.size())
+        {
+            instances_.resize(end);
+        }
     }
 
     auto penPos = text.pos;
@@ -372,7 +375,7 @@ void Renderer::cache(const Text& text)
     auto it = text.text.cbegin();
     while(it != text.text.cend())
     {
-        auto c = utf8::unchecked::next(it);
+        const auto c = utf8::unchecked::next(it);
 
         if(c == '\n')
         {
@@ -381,10 +384,10 @@ void Renderer::cache(const Text& text)
             continue;
         }
 
-        auto glyph = text.font->getGlyph(c);
+        const auto glyph = text.font->getGlyph(c);
 
-        auto pos = penPos + glm::vec2(glyph.offset) * text.scale;
-        auto size = glm::vec2(glyph.texRect.z, glyph.texRect.w) * text.scale;
+        const auto pos = penPos + glm::vec2(glyph.offset) * text.scale;
+        const auto size = glm::vec2(glyph.texRect.z, glyph.texRect.w) * text.scale;
 
         instances_[i] = createInstance(pos, size, text.rotation, text.rotationPoint + text.pos + halfTextSize - pos
                                        - size / 2.f, // this correction is needed, see createInstance()
@@ -396,7 +399,7 @@ void Renderer::cache(const Text& text)
     }
 }
 
-void Renderer::cache(const Vertex* vertex, std::size_t count)
+void Renderer::cache(const Vertex* vertex, const std::size_t count)
 {
     auto& batch = batches_.back();
     assert(batch.vao == &vaoVertices_);
@@ -418,17 +421,17 @@ void Renderer::cache(const Vertex* vertex, std::size_t count)
 void Renderer::flush()
 {
     {
-        auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
+        const auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
         glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
         glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(Instance), instances_.data(), GL_STREAM_DRAW);
     }
     {
-        auto numVertices = batches_.back().vertices.start + batches_.back().vertices.count;
+        const auto numVertices = batches_.back().vertices.start + batches_.back().vertices.count;
         glBindBuffer(GL_ARRAY_BUFFER, boVertices_.getId());
         glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(Vertex), vertices_.data(), GL_STREAM_DRAW);
     }
 
-    for(auto& batch: batches_)
+    for(const auto& batch: batches_)
     {
         if(batch.scissor)
         {
@@ -464,9 +467,9 @@ void Renderer::flush()
         shader.uniform1i("flipTextureY", batch.flipTextureY);
 
         {
-            auto projection = batch.projection;
+            const auto projection = batch.projection;
 
-            auto matrix = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
+            const auto matrix = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
                                      projection.pos.y + projection.size.y, projection.pos.y);
 
             shader.uniformMat4f("projection", matrix);

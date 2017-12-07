@@ -36,7 +36,9 @@ public:
     // TrueType - *.ttf
     // OpenType - *.otf
 
-    // todo: move font loading to free functions / overload the constructor
+    // todo:
+    // * move font loading to free functions / overload the constructor
+    // * replace additionalChars with something like imgui GlyphRanges
 
     explicit Font(const std::string& filename, int sizePx = 20, std::string_view additionalChars = "");
 

@@ -2,10 +2,10 @@ h p p v
 
 todo:
 
-* UTF-8 - input, better glyph caching?
-* const correctness (local variables, for loops)?
-* bezier curves / lines
+* fluid, spring (soft body) examples
+* curves, lines
 * Space rotation, Camera class?
+* UTF-8 - input, dynamic glyph caching?
 * App init parameters
 * better cmake (finding libraries / cross-compilation)
 * flat_map

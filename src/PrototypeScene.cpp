@@ -10,7 +10,7 @@
 namespace hppv
 {
 
-PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToCursor):
+PrototypeScene::PrototypeScene(const Space space, const float zoomFactor, const bool alwaysZoomToCursor):
     space_(space),
     zoomFactor_(zoomFactor),
     alwaysZoomToCursor_(alwaysZoomToCursor)
@@ -19,18 +19,18 @@ PrototypeScene::PrototypeScene(Space space, float zoomFactor, bool alwaysZoomToC
     cursorPos_ = frame_.cursorPos;
 }
 
-void PrototypeScene::processInput(bool hasInput)
+void PrototypeScene::processInput(const bool hasInput)
 {
     space_.newFrame(properties_.size);
 
-    for(auto& event: frame_.events)
+    for(const auto& event: frame_.events)
     {
         if(event.type == Event::Cursor)
         {
             if(rmb_ && hasInput)
             {
-                auto newSpaceCoords = mapCursor(event.cursor.pos, space_.projected, this);
-                auto prevSpaceCoords = mapCursor(cursorPos_, space_.projected, this);
+                const auto newSpaceCoords = mapCursor(event.cursor.pos, space_.projected, this);
+                const auto prevSpaceCoords = mapCursor(cursorPos_, space_.projected, this);
                 space_.set({space_.current.pos - (newSpaceCoords - prevSpaceCoords), space_.current.size});
             }
 
@@ -46,11 +46,11 @@ void PrototypeScene::processInput(bool hasInput)
         }
         else if(event.type == Event::Scroll && hasInput)
         {
-            auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
+            const auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
 
             if(rmb_ || lmb_ || alwaysZoomToCursor_)
             {
-                auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
+                const auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
                 space_.set(zoomToPoint(space_.current, zoom, spaceCoords));
             }
             else
@@ -76,7 +76,7 @@ void PrototypeScene::render(Renderer& renderer)
 
         if(accumulator_ >= 1.f)
         {
-            auto averageFrameTime = accumulator_ / frameCount_;
+            const auto averageFrameTime = accumulator_ / frameCount_;
             averageFrameTimeMs_ = averageFrameTime * 1000.f;
             averageFps_ = 1.f / averageFrameTime + 0.5f;
             frameCount_ = 0;
@@ -162,7 +162,7 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Text("%s", zoomInfo.c_str());
 
         ImGui::Separator();
-        auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
+        const auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
 
         ImGui::End();

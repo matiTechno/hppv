@@ -7,10 +7,10 @@ namespace hppv
 
 static_assert(std::numeric_limits<float>::is_iec559);
 
-Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
+Space expandToMatchAspectRatio(const Space space, const glm::ivec2 size)
 {
-    auto spaceAspect = space.size.x / space.size.y;
-    auto targetAspect = static_cast<float>(size.x) / size.y;
+    const auto spaceAspect = space.size.x / space.size.y;
+    const auto targetAspect = static_cast<float>(size.x) / size.y;
     auto newSize = space.size;
 
     if(spaceAspect < targetAspect)
@@ -22,44 +22,44 @@ Space expandToMatchAspectRatio(Space space, glm::ivec2 size)
         newSize.y = newSize.x / targetAspect;
     }
 
-    auto newPos = space.pos - (newSize - space.size) / 2.f;
+    const auto newPos = space.pos - (newSize - space.size) / 2.f;
     return {newPos, newSize};
 }
 
-Space zoomToCenter(Space space, float zoom)
+Space zoomToCenter(Space space, const float zoom)
 {
-    auto prevSize = space.size;
+    const auto prevSize = space.size;
     space.size *= 1.f / zoom;
     space.pos += (prevSize - space.size) / 2.f;
     return space;
 }
 
-Space zoomToPoint(Space space, float zoom, glm::vec2 point)
+Space zoomToPoint(Space space, const float zoom, const glm::vec2 point)
 {
-    auto ratio = (point - space.pos) / space.size;
+    const auto ratio = (point - space.pos) / space.size;
     space.size *= 1.f / zoom;
-    auto newRatio = (point - space.pos) / space.size;
+    const auto newRatio = (point - space.pos) / space.size;
     space.pos -= (ratio - newRatio) * space.size;
     return space;
 }
 
-glm::vec2 mapCursor(glm::vec2 pos, Space projection, const Scene* scene)
+glm::vec2 mapCursor(glm::vec2 pos, const Space projection, const Scene* const scene)
 {
     pos -= glm::vec2(scene->properties_.pos);
     return map(pos, {0, 0, scene->properties_.size}, projection);
 }
 
-glm::vec4 mapToFramebuffer(glm::vec4 rect, Space projection, const Framebuffer& fb)
+glm::vec4 mapToFramebuffer(const glm::vec4 rect, const Space projection, const Framebuffer& fb)
 {
     return map(rect, projection, {0, 0, fb.getSize()});
 }
 
-glm::vec4 mapToScene(glm::vec4 rect, Space projection, const Scene* scene)
+glm::vec4 mapToScene(const glm::vec4 rect, const Space projection, const Scene* const scene)
 {
     return map(rect, projection, {0, 0, scene->properties_.size});
 }
 
-glm::ivec4 iMapToWindow(glm::vec4 rect, Space projection, const Scene* scene)
+glm::ivec4 iMapToWindow(const glm::vec4 rect, const Space projection, const Scene* const scene)
 {
     auto mapped = iMapToScene(rect, projection, scene);
     mapped.x += scene->properties_.pos.x;

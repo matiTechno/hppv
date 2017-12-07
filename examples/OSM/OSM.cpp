@@ -19,9 +19,9 @@ struct Node
 };
 
 template<typename It>
-Node findNode(It start, It end, std::size_t id)
+Node findNode(const It start, const It end, const std::size_t id)
 {
-    auto mid = start + (end - start) / 2;
+    const auto mid = start + (end - start) / 2;
 
     if(mid->id == id)
     {
@@ -84,7 +84,7 @@ public:
         file.seekg(0);
 
         std::vector<std::size_t> way;
-        std::string_view highway = "<tag k=\"highway\"";
+        const std::string_view highway = "<tag k=\"highway\"";
         glm::vec4 color;
 
         while(std::getline(file, line))
@@ -93,7 +93,7 @@ public:
             {
                 pos = line.find('"', pos);
                 ++pos;
-                auto end = line.find('"', pos);
+                const auto end = line.find('"', pos);
                 way.push_back(std::stoul(line.substr(pos, end - pos)));
             }
             else if(auto pos = line.find(highway); pos != std::string::npos)
@@ -101,9 +101,9 @@ public:
                 pos += highway.size();
                 pos = line.find('"', pos);
                 ++pos;
-                auto end = line.find('"', pos);
+                const auto end = line.find('"', pos);
 
-                if(auto type = line.substr(pos, end - pos); type == "motorway" || type == "trunk" || type == "primary")
+                if(const auto type = line.substr(pos, end - pos); type == "motorway" || type == "trunk" || type == "primary")
                 {
                     color = {0.f, 1.f, 0.f, 0.f};
                 }
@@ -114,9 +114,9 @@ public:
             }
             else if(line.find("</way>") != std::string::npos)
             {
-                for(auto it = way.begin(); it < way.end() - 1; ++it)
+                for(auto it = way.cbegin(); it < way.cend() - 1; ++it)
                 {
-                    for(int i = 0; i < 2; ++i)
+                    for(auto i = 0; i < 2; ++i)
                     {
                         vertices_.push_back({findNode(nodes.begin(), nodes.end(), *(it + i)).pos, {}, color});
                     }
