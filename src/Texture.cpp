@@ -15,7 +15,7 @@ Texture::Texture(const std::string& filename)
 
     stbi_set_flip_vertically_on_load(true);
 
-    unsigned char* data = stbi_load(filename.c_str(), &size_.x, &size_.y, nullptr, 4);
+    unsigned char* const data = stbi_load(filename.c_str(), &size_.x, &size_.y, nullptr, 4);
 
     if(!data)
     {

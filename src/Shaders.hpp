@@ -1,6 +1,6 @@
 #include "Renderer.hpp"
 
-const char* hppv::Renderer::vInstancesSource = R"(
+const char* const hppv::Renderer::vInstancesSource = R"(
 
 #vertex
 #version 330
@@ -46,7 +46,7 @@ void main()
 }
 )";
 
-const char* fBasicSource = R"(
+static const char* const fBasicSource = R"(
 
 #fragment
 #version 330
@@ -104,7 +104,7 @@ void main()
     {
         vec4 sample = texture(sampler, vTexCoord);
 
-        if(mode == 4)
+        if(mode == 4) // Font
         {
             color = vec4(sample.r) * vColor;
             return;
@@ -134,7 +134,7 @@ void main()
 }
 )";
 
-const char* fSdfSource = R"(
+static const char* const fSdfSource = R"(
 
 #fragment
 #version 330
@@ -196,7 +196,7 @@ void main()
 }
 )";
 
-const char* hppv::Renderer::vVerticesSource = R"(
+const char* const hppv::Renderer::vVerticesSource = R"(
 
 #vertex
 #version 330
@@ -224,7 +224,7 @@ void main()
 }
 )";
 
-const char* fVerticesSource = R"(
+static const char* const fVerticesSource = R"(
 
 #fragment
 #version 330

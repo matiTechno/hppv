@@ -47,8 +47,10 @@ struct Request
 
         struct
         {
-            // if state == Restored and window was maximized before
-            // being fullscreen it will be set maximized
+            // if the requested window state == Window::Restored and
+            // the current window state == Window::Fullscreen and
+            // the previous window state == Window::Maximized,
+            // the possible new window state will be Window::Maximized
 
             Window::State state;
         }

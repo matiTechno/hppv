@@ -7,7 +7,7 @@ class TrueType: public hppv::Scene
 {
 public:
     TrueType():
-        font1_("SourceCodePro-Regular.otf", 26, "ĄąĆćĘęŁłŃńÓóŚśŹźŻż"),
+        font1_("SourceCodePro-Regular.otf", 26, u8"ĄąĆćĘęŁłŃńÓóŚśŹźŻż"),
         font2_("ProggyClean.ttf", 13)
     {
         properties_.maximize = true;
@@ -52,7 +52,7 @@ public:
 
         text.pos = {20.f, 100.f};
         text.color = {1.f, 0.f, 1.f, 1.f};
-        text.text = "Wiatr drzewa spienia. Ziemia dojrzała.\n"
+        text.text = u8"Wiatr drzewa spienia. Ziemia dojrzała.\n"
                     "Kłosy brzuch ciężki w górę unoszą\n"
                     "i tylko chmury - palcom lub włosom\n"
                     "podobne - suną drapieżnie w mrok.\n\n"

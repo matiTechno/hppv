@@ -88,7 +88,7 @@ struct Sprite
 struct Vertex
 {
     glm::vec2 pos;
-    glm::vec2 texCoord; // [0, 1]
+    glm::vec2 texCoord;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 };
 
@@ -220,7 +220,7 @@ public:
 
     void flush();
 
-    // useful when rendering in Vertices mode with GL_LINE_LOOP primitive
+    // useful when rendering in the Vertices mode with GL_LINE_LOOP primitive
     // todo: replace with breakShape()
     void breakBatch() {getBatchToUpdate();}
 
@@ -230,12 +230,12 @@ public:
     // out vec2 vTexCoord;
     // out vec2 vPos; // [0, 1], used for circle shading and fwidth()
 
-    static const char* vInstancesSource;
+    static const char* const vInstancesSource;
 
     // out vec4 vColor;
     // out vec2 vTexCoord;
 
-    static const char* vVerticesSource;
+    static const char* const vVerticesSource;
 
     // ----- internal use
 

@@ -39,7 +39,7 @@ private:
         bool sprite = true;
         glm::vec4 spriteColor = {0.1f, 0.05f, 0.05f, 0.5f};
         int comboIndex = 1;
-        const char* shaders[5] = {"texture", "default", "outline", "glow", "shadow"};
+        const char* const shaders[5] = {"texture", "default", "outline", "glow", "shadow"};
 
         struct
         {

@@ -196,8 +196,8 @@ void App::run()
 
                if(state == Window::Fullscreen)
                {
-                   auto* monitor = glfwGetPrimaryMonitor();
-                   const auto* mode = glfwGetVideoMode(monitor);
+                   auto* const monitor = glfwGetPrimaryMonitor();
+                   const auto* const mode = glfwGetVideoMode(monitor);
                    glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
                }
                else if(state == Window::Maximized)
@@ -264,7 +264,7 @@ void App::refreshFrame()
     }
 }
 
-void App::errorCallback(int, const char* description)
+void App::errorCallback(int, const char* const description)
 {
     std::cout << description << std::endl;
 }
@@ -278,7 +278,7 @@ void App::windowCloseCallback(GLFWwindow*)
     frame_.events.push_back(Event::Quit);
 }
 
-void App::windowFocusCallback(GLFWwindow*, int focused)
+void App::windowFocusCallback(GLFWwindow*, const int focused)
 {
     Event event;
 
@@ -294,7 +294,7 @@ void App::windowFocusCallback(GLFWwindow*, int focused)
     frame_.events.push_back(event);
 }
 
-void App::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void App::keyCallback(GLFWwindow* const window, const int key, const int scancode, const int action, const int mods)
 {
     Event event(Event::Key);
     event.key.key = key;
@@ -305,14 +305,14 @@ void App::keyCallback(GLFWwindow* window, int key, int scancode, int action, int
     ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
 }
 
-void App::cursorPosCallback(GLFWwindow*, double xpos, double ypos)
+void App::cursorPosCallback(GLFWwindow*, const double xpos, const double ypos)
 {
     Event event(Event::Cursor);
     event.cursor.pos = {xpos, ypos};
     frame_.events.push_back(event);
 }
 
-void App::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void App::mouseButtonCallback(GLFWwindow* const window, const int button, const int action, const int mods)
 {
     Event event(Event::MouseButton);
     event.mouseButton.button = button;
@@ -323,7 +323,7 @@ void App::mouseButtonCallback(GLFWwindow* window, int button, int action, int mo
     ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
 }
 
-void App::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+void App::scrollCallback(GLFWwindow* const window, const double xoffset, const double yoffset)
 {
     Event event(Event::Scroll);
     event.scroll.offset = {xoffset, yoffset};
@@ -332,7 +332,7 @@ void App::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
     ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
 }
 
-void App::charCallback(GLFWwindow* window, unsigned int codepoint)
+void App::charCallback(GLFWwindow* const window, const unsigned int codepoint)
 {
     ImGui_ImplGlfwGL3_CharCallback(window, codepoint);
 }

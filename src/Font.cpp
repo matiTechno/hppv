@@ -241,7 +241,7 @@ void Font::loadTrueType(const std::string& filename, const int sizePx, const std
     for(const auto& glyph: glyphs_)
     {
         auto texRect = glyph.second.texRect;
-        const auto* bitmap = bitmaps.at(glyph.first);
+        const auto* const bitmap = bitmaps.at(glyph.first);
 
         // flip the bitmap vertically, so it plays nice with the Renderer framework
         for(auto j = 0; j < texRect.w; ++j)
@@ -252,7 +252,7 @@ void Font::loadTrueType(const std::string& filename, const int sizePx, const std
             }
         }
 
-        // convert to the OpenGL coordinate system
+        // convert to the OpenGL texture coordinate system
         texRect.y = texSize.y - (texRect.y + texRect.w);
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, texRect.x, texRect.y, texRect.z, texRect.w,

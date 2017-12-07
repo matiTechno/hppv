@@ -16,7 +16,7 @@
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>
 
-static const char* lightSource = R"(
+static const char* const lightSource = R"(
 
 #fragment
 #version 330

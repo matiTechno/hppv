@@ -2,10 +2,10 @@
 
 // #include "glad.h" or "glew.h" or ...
 // #define SHADER_IMPLEMENTATION
-// #define SHADER_GLM (for more convenient uniform interface)
+// #define SHADER_GLM (for more convenient uniform functions)
 // #include "Shader.h"
 
-// shader source format
+// shader source format (order of the shader type directives does not matter)
 
 // #vertex
 // ...
@@ -13,16 +13,19 @@
 // ...
 // #fragment
 // ...
+
 // or
+
 // #compute
 // ...
+
 // or
 // #include "vertex.glsl"
 // #fragment
 // ...
 
-// directives might be placed anywhere
-// #include only works when loading from file
+// #include only works when a shader is loaded from a file,
+// might be placed anywhere
 
 // code is exception free
 
@@ -73,7 +76,7 @@ public:
 
     void reload(); // does not check if file was modified
 
-    void bind(); // if hotReload is on and file was modified does reload
+    void bind(); // if hotReload is on and file was modified, reloads the shader
 
     // call bind before these
 
@@ -292,11 +295,11 @@ void Shader::bind()
 
 void Shader::uniform1i(const std::string_view name, const int value) {glUniform1i(getUniformLocation(name), value);}
 void Shader::uniform1f(const std::string_view name, const float value) {glUniform1f(getUniformLocation(name), value);}
-void Shader::uniform2f(const std::string_view name, const float* value) {glUniform2fv(getUniformLocation(name), 1, value);}
-void Shader::uniform3f(const std::string_view name, const float* value) {glUniform3fv(getUniformLocation(name), 1, value);}
-void Shader::uniform4f(const std::string_view name, const float* value) {glUniform4fv(getUniformLocation(name), 1, value);}
-void Shader::uniformMat4f(const std::string_view name, const float* value) {glUniformMatrix4fv(getUniformLocation(name),
-                                                                                               1, GL_FALSE, value);}
+void Shader::uniform2f(const std::string_view name, const float* const value) {glUniform2fv(getUniformLocation(name), 1, value);}
+void Shader::uniform3f(const std::string_view name, const float* const value) {glUniform3fv(getUniformLocation(name), 1, value);}
+void Shader::uniform4f(const std::string_view name, const float* const value) {glUniform4fv(getUniformLocation(name), 1, value);}
+void Shader::uniformMat4f(const std::string_view name, const float* const value) {glUniformMatrix4fv(getUniformLocation(name),
+                                                                                                     1, GL_FALSE, value);}
 
 void Shader::Program::clean() {if(id_) glDeleteProgram(id_);}
 
@@ -331,7 +334,6 @@ std::optional<std::string> getError(const GLuint id, const GLenum flag)
     if(!length)
         return "";
 
-    --length;
     std::string log(length, '\0');
 
     if constexpr (isProgram)
@@ -343,21 +345,23 @@ std::optional<std::string> getError(const GLuint id, const GLenum flag)
         glGetShaderInfoLog(id, length, nullptr, log.data());
     }
 
+    log.pop_back(); // pop the '\0'
     return log;
 }
 
-// shader must be deleted by caller with glDeleteShader()
-GLuint createAndCompileShader(const GLenum type, const std::string& source)
+// shader must be deleted with glDeleteShader()
+GLuint createAndCompileShader(const GLenum type, const std::string_view source)
 {
     const auto id = glCreateShader(type);
-    const auto* str = source.c_str();
-    glShaderSource(id, 1, &str, nullptr);
+    const auto* const str = source.data();
+    const GLint length = source.length();
+    glShaderSource(id, 1, &str, &length);
     glCompileShader(id);
     return id;
 }
 
 // returns 0 on error
-// if return value != 0 program must be deleted by caller with glDeleteProgram()
+// if return value != 0 program must be deleted with glDeleteProgram()
 GLuint createProgram(const std::initializer_list<std::string_view> sources, const std::string_view id)
 {
     struct ShaderType
@@ -413,7 +417,7 @@ GLuint createProgram(const std::initializer_list<std::string_view> sources, cons
             }
 
             const auto shaderSource = source.substr(it->start, count);
-            shaders.push_back(createAndCompileShader(it->type.value, std::string(shaderSource)));
+            shaders.push_back(createAndCompileShader(it->type.value, shaderSource));
 
             if(const auto error = getError<false>(shaders.back(), GL_COMPILE_STATUS))
             {
