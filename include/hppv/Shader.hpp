@@ -295,8 +295,8 @@ void Shader::uniform1f(const std::string_view name, const float value) {glUnifor
 void Shader::uniform2f(const std::string_view name, const float* value) {glUniform2fv(getUniformLocation(name), 1, value);}
 void Shader::uniform3f(const std::string_view name, const float* value) {glUniform3fv(getUniformLocation(name), 1, value);}
 void Shader::uniform4f(const std::string_view name, const float* value) {glUniform4fv(getUniformLocation(name), 1, value);}
-void Shader::uniformMat4f(const std::string_view name, const float* value){glUniformMatrix4fv(getUniformLocation(name),
-                                                                                              1, GL_FALSE, value);}
+void Shader::uniformMat4f(const std::string_view name, const float* value) {glUniformMatrix4fv(getUniformLocation(name),
+                                                                                               1, GL_FALSE, value);}
 
 void Shader::Program::clean() {if(id_) glDeleteProgram(id_);}
 
