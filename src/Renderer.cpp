@@ -90,26 +90,27 @@ Renderer::Renderer():
     setTexUnitsDefault();
 
     batches_.emplace_back();
+
     {
-        auto& first = batches_.front();
-        first.primitive = GL_TRIANGLES;
-        first.vao = &vaoInstances_;
-        first.shader = &shaderBasic_;
-        first.srcAlpha = GL_ONE;
-        first.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
-        first.premultiplyAlpha = true;
-        first.antialiasedSprites = false;
-        first.flipTexRectX = false;
-        first.flipTexRectY = false;
-        first.flipTextureY = false;
-        first.instances.start = 0;
-        first.instances.count = 0;
-        first.texUnits.start = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
-        first.texUnits.count = 0;
-        first.uniforms.start = 0;
-        first.uniforms.count = 0;
-        first.vertices.start = 0;
-        first.vertices.count = 0;
+        auto& batch = batches_.back();
+        batch.primitive = GL_TRIANGLES;
+        batch.vao = &vaoInstances_;
+        batch.shader = &shaderBasic_;
+        batch.srcAlpha = GL_ONE;
+        batch.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
+        batch.premultiplyAlpha = true;
+        batch.antialiasedSprites = false;
+        batch.flipTexRectX = false;
+        batch.flipTexRectY = false;
+        batch.flipTextureY = false;
+        batch.instances.start = 0;
+        batch.instances.count = 0;
+        batch.texUnits.start = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
+        batch.texUnits.count = 0;
+        batch.uniforms.start = 0;
+        batch.uniforms.count = 0;
+        batch.vertices.start = 0;
+        batch.vertices.count = 0;
     }
 
     float vertices[] =
@@ -522,14 +523,17 @@ void Renderer::flush()
     batches_.erase(batches_.begin(), batches_.end() - 1);
     uniforms_.clear();
 
-    batches_.front().instances.start = 0;
-    batches_.front().instances.count = 0;
-    batches_.front().texUnits.start = 1;
-    batches_.front().texUnits.count = 0;
-    batches_.front().uniforms.start = 0;
-    batches_.front().uniforms.count = 0;
-    batches_.front().vertices.start = 0;
-    batches_.front().vertices.count = 0;
+    {
+        auto& batch = batches_.back();
+        batch.instances.start = 0;
+        batch.instances.count = 0;
+        batch.texUnits.start = 1;
+        batch.texUnits.count = 0;
+        batch.uniforms.start = 0;
+        batch.uniforms.count = 0;
+        batch.vertices.start = 0;
+        batch.vertices.count = 0;
+    }
 
     setTexUnitsDefault();
 }

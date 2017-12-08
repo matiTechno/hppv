@@ -16,7 +16,7 @@
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>
 
-static const char* const lightSource = R"(
+const char* const lightSource = R"(
 
 #fragment
 #version 330
@@ -44,8 +44,7 @@ void main()
 std::optional<glm::vec2> findRayEnd(const glm::vec2 rayStart, const glm::vec2 rayDir, const glm::vec2 segStart,
                                     const glm::vec2 segEnd)
 {
-    // we don't need to handle this case
-    // for each point we cast three rays with different coefficient
+    // todo: handle this case
     if(rayDir.x == 0.f)
         return {};
 
@@ -89,11 +88,11 @@ public:
         shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
         fb_(GL_RGBA8, 1)
     {
-        setLineLoops();
+        setShapes();
     }
 
 private:
-    std::vector<std::vector<glm::vec2>> lineLoops_;
+    std::vector<std::vector<glm::vec2>> shapes_;
     const hppv::Space border_{10.f, 10.f, 80.f, 80.f};
     std::vector<glm::vec2> points_;
     glm::vec2 lightPos_;
@@ -109,44 +108,44 @@ private:
     }
     options_;
 
-    void setLineLoops();
+    void setShapes();
 
     void setPoints()
     {
         points_.clear();
 
-        for(const auto& loop: lineLoops_)
+        for(const auto& shape: shapes_)
         {
-            for(const auto point: loop)
+            for(const auto point: shape)
             {
                 for(auto i = -1; i < 2; ++i)
                 {
                     const auto rayDir = glm::rotate(point - lightPos_, i * 0.00001f);
 
-                    glm::vec2 rayEnd(1000.f);
+                    auto closestRayEnd = lightPos_ + glm::vec2(1000000.f);
 
                     if(i == 0)
                     {
-                        rayEnd = point;
+                        closestRayEnd = point;
                     }
 
-                    for(const auto& loop: lineLoops_)
+                    for(const auto& shape: shapes_)
                     {
-                        for(auto it = loop.cbegin(); it < loop.cend(); ++it)
+                        for(auto it = shape.cbegin(); it < shape.cend(); ++it)
                         {
-                            const auto segEnd = (it == loop.end() - 1 ? *loop.begin() : *(it + 1));
+                            const auto segEnd = (it == shape.end() - 1 ? *shape.begin() : *(it + 1));
 
-                            if(const auto newRayEnd = findRayEnd(lightPos_, rayDir, *it, segEnd))
+                            if(const auto rayEnd = findRayEnd(lightPos_, rayDir, *it, segEnd))
                             {
-                                if(glm::length(*newRayEnd - lightPos_) < glm::length(rayEnd - lightPos_))
+                                if(glm::length(*rayEnd - lightPos_) < glm::length(closestRayEnd - lightPos_))
                                 {
-                                    rayEnd = *newRayEnd;
+                                    closestRayEnd = *rayEnd;
                                 }
                             }
                         }
                     }
 
-                    points_.push_back(rayEnd);
+                    points_.push_back(closestRayEnd);
                 }
             }
         }
@@ -243,9 +242,9 @@ private:
         renderer.shader(hppv::Render::VerticesColor);
         renderer.primitive(GL_LINE_LOOP);
 
-        for(const auto& loop: lineLoops_)
+        for(const auto& shape: shapes_)
         {
-            for(const auto point: loop)
+            for(const auto point: shape)
             {
                 hppv::Vertex v;
                 v.pos = point;
@@ -299,44 +298,44 @@ int main()
     return 0;
 }
 
-void GeometryLight::setLineLoops()
+void GeometryLight::setShapes()
 {
     {
-        lineLoops_.emplace_back();
-        auto& loop = lineLoops_.back();
-        loop.emplace_back(30.f, 30.f);
-        loop.emplace_back(60.f, 40.f);
-        loop.emplace_back(50.f, 20.f);
+        shapes_.emplace_back();
+        auto& shape = shapes_.back();
+        shape.emplace_back(30.f, 30.f);
+        shape.emplace_back(60.f, 40.f);
+        shape.emplace_back(50.f, 20.f);
     }
     {
-        lineLoops_.emplace_back();
-        auto& loop = lineLoops_.back();
-        loop.emplace_back(70.f, 15.f);
-        loop.emplace_back(60.f, 25.f);
-        loop.emplace_back(65.f, 30.f);
+        shapes_.emplace_back();
+        auto& shape = shapes_.back();
+        shape.emplace_back(70.f, 15.f);
+        shape.emplace_back(60.f, 25.f);
+        shape.emplace_back(65.f, 30.f);
     }
     {
-        lineLoops_.emplace_back();
-        auto& loop = lineLoops_.back();
-        loop.emplace_back(20.f, 60.f);
-        loop.emplace_back(40.f, 60.f);
-        loop.emplace_back(40.f, 75.f);
-        loop.emplace_back(30.f, 75.f);
+        shapes_.emplace_back();
+        auto& shape = shapes_.back();
+        shape.emplace_back(20.f, 60.f);
+        shape.emplace_back(40.f, 60.f);
+        shape.emplace_back(40.f, 75.f);
+        shape.emplace_back(30.f, 75.f);
     }
     {
-        lineLoops_.emplace_back();
-        auto& loop = lineLoops_.back();
-        loop.emplace_back(65.f, 40.f);
-        loop.emplace_back(78.f, 30.f);
-        loop.emplace_back(70.f, 50.f);
-        loop.emplace_back(65.f, 45.f);
+        shapes_.emplace_back();
+        auto& shape = shapes_.back();
+        shape.emplace_back(65.f, 40.f);
+        shape.emplace_back(78.f, 30.f);
+        shape.emplace_back(70.f, 50.f);
+        shape.emplace_back(65.f, 45.f);
     }
     {
-        lineLoops_.emplace_back();
-        auto& loop = lineLoops_.back();
-        loop.emplace_back(border_.pos);
-        loop.emplace_back(border_.pos + glm::vec2(border_.size.x, 0.f));
-        loop.emplace_back(border_.pos + border_.size);
-        loop.emplace_back(border_.pos + glm::vec2(0.f, border_.size.y));
+        shapes_.emplace_back();
+        auto& shape = shapes_.back();
+        shape.emplace_back(border_.pos);
+        shape.emplace_back(border_.pos + glm::vec2(border_.size.x, 0.f));
+        shape.emplace_back(border_.pos + border_.size);
+        shape.emplace_back(border_.pos + glm::vec2(0.f, border_.size.y));
     }
 }

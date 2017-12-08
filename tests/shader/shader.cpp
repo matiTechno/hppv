@@ -6,7 +6,7 @@
 
 #include "../catch.hpp"
 
-static const char* const vertex = R"(
+const char* const vertex = R"(
 
 #vertex
 
@@ -20,7 +20,7 @@ void main()
 }
 )";
 
-static const char* const fragment = R"(
+const char* const fragment = R"(
 
 #fragment
 

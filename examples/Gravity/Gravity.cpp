@@ -14,7 +14,7 @@
 #include <hppv/imgui.h>
 #include <hppv/glad.h>
 
-static const char* const renderSource = R"(
+const char* const renderSource = R"(
 
 #vertex
 #version 330
@@ -47,7 +47,7 @@ void main()
 }
 )";
 
-static const char* const computeSource = R"(
+const char* const computeSource = R"(
 
 #compute
 #version 430

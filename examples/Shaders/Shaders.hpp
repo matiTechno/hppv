@@ -1,4 +1,4 @@
-static const char* const lines  = R"(
+const char* const lines  = R"(
 
 #fragment
 
@@ -46,7 +46,7 @@ void main( void ) {
 }
 )";
 
-static const char* const tunnel = R"(
+const char* const tunnel = R"(
 
 #fragment
 
@@ -680,7 +680,7 @@ mainImage(gl_FragColor,gl_FragCoord.xy);
 }
 )";
 
-static const char* const explosion = R"(
+const char* const explosion = R"(
 
 #fragment
 
@@ -983,7 +983,7 @@ void main( void )
 }
 )";
 
-static const char* const rainbow = R"(
+const char* const rainbow = R"(
 
 #fragment
 
@@ -1023,7 +1023,7 @@ void main( void ) {
 }
 )";
 
-static const char* const hexagons = R"(
+const char* const hexagons = R"(
 
 #fragment
 
@@ -1280,7 +1280,7 @@ void main()
     }
 )";
 
-static const char* const fractal = R"(
+const char* const fractal = R"(
 
 #fragment
 
@@ -1477,7 +1477,7 @@ void main( void ) {
 }
 )";
 
-static const char* const cubes = R"(
+const char* const cubes = R"(
 
 #fragment
 
@@ -1863,7 +1863,7 @@ void main() {
 }
 )";
 
-static const char* const blue = R"(
+const char* const blue = R"(
 
 #fragment
 
@@ -1901,7 +1901,7 @@ gl_FragColor = mix(.4, 1., v) * vec4(0.8 * t * t * t, 1.4 * t * t, t, 1.0);
 }
 )";
 
-static const char* const lines2 = R"(
+const char* const lines2 = R"(
 
 #fragment
 
@@ -1926,7 +1926,7 @@ void main() {
 }
 )";
 
-static const char* const trinity = R"(
+const char* const trinity = R"(
 
 #fragment
 
@@ -2115,7 +2115,7 @@ void main( void ) {
 }
 )";
 
-static const char* const storm = R"(
+const char* const storm = R"(
 
 #fragment
 
@@ -2274,7 +2274,7 @@ void main()
 }
 )";
 
-static const char* const curves = R"(
+const char* const curves = R"(
 
 #fragment
 
@@ -2298,7 +2298,7 @@ void main()
 }
 )";
 
-static const char* const waves = R"(
+const char* const waves = R"(
 
 #fragment
 
@@ -2503,7 +2503,7 @@ void main( void ) {
 }
 )";
 
-static const char* const fire = R"(
+const char* const fire = R"(
 
 #fragment
 
@@ -2729,7 +2729,7 @@ void main(  ) {
 }
 )";
 
-static const char* const octopus = R"(
+const char* const octopus = R"(
 
 #fragment
 

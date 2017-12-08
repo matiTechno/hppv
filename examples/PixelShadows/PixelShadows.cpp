@@ -12,7 +12,7 @@
 #include <hppv/Shader.hpp>
 #include <hppv/glad.h>
 
-static const char* const shadowSource = R"(
+const char* const shadowSource = R"(
 
 #fragment
 #version 330
@@ -52,7 +52,7 @@ void main()
 }
 )";
 
-static const char* const lightSource = R"(
+const char* const lightSource = R"(
 
 #fragment
 #version 330

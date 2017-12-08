@@ -8,7 +8,7 @@
 #include <hppv/Texture.hpp>
 #include <hppv/Framebuffer.hpp>
 
-static const char* const lightSource = R"(
+const char* const lightSource = R"(
 
 #fragment
 #version 330
@@ -33,7 +33,7 @@ void main()
 }
 )";
 
-static const char* const gradientSource = R"(
+const char* const gradientSource = R"(
 
 #fragment
 #version 330

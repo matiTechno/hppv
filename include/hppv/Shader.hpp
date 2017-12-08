@@ -95,6 +95,8 @@ public:
 #endif
 
 private:
+    enum {MaxUniforms = 256, InactiveUniform = 666};
+
     class Program
     {
     public:
@@ -250,7 +252,7 @@ GLint Shader::getUniformLocation(const std::string_view name)
     {
         std::cout << "Shader, " << id_ << ": inactive uniform = " << name << std::endl;
         inactiveUniforms_.emplace(name);
-        return 666;
+        return InactiveUniform;
     }
 
     return it->second;
@@ -505,7 +507,7 @@ bool Shader::swapProgram(const std::initializer_list<std::string_view> sources)
     GLint numUniforms;
     glGetProgramiv(program_.getId(), GL_ACTIVE_UNIFORMS, &numUniforms);
 
-    std::vector<char> uniformName(256);
+    std::vector<char> uniformName(MaxUniforms);
 
     for(auto i = 0; i < numUniforms; ++i)
     {

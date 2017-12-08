@@ -1,4 +1,4 @@
-static const char* const fragStart = R"(
+const char* const fragStart = R"(
 
 #fragment
 #version 330
@@ -19,7 +19,7 @@ vec4 getToColor(in vec2 uv)
 }
 )";
 
-static const char* const fragEnd = R"(
+const char* const fragEnd = R"(
 
 in vec2 vTexCoord;
 
@@ -32,7 +32,7 @@ void main()
 }
 )";
 
-static const char* const burn = R"(
+const char* const burn = R"(
 
 // author: gre
 // License: MIT
@@ -46,7 +46,7 @@ vec4 transition (vec2 uv) {
 }
 )";
 
-static const char* const heart = R"(
+const char* const heart = R"(
 
 // Author: gre
 // License: MIT
@@ -66,7 +66,7 @@ vec4 transition (vec2 uv) {
 }
 )";
 
-static const char* const cube = R"(
+const char* const cube = R"(
 
 // Author: gre
 // License: MIT
@@ -136,7 +136,7 @@ vec4 transition(vec2 op) {
 }
 )";
 
-static const char* const pixelize = R"(
+const char* const pixelize = R"(
 
 // Author: gre
 // License: MIT
@@ -155,7 +155,7 @@ vec4 transition(vec2 uv) {
 }
 )";
 
-static const char* const ripple = R"(
+const char* const ripple = R"(
 
 // Author: gre
 // License: MIT
@@ -174,7 +174,7 @@ vec4 transition (vec2 uv) {
 }
 )";
 
-static const char* const hexagonalize = R"(
+const char* const hexagonalize = R"(
 
 // Author: Fernando Kuteken
 // License: MIT
