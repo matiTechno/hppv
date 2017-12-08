@@ -44,7 +44,7 @@ void main()
 std::optional<glm::vec2> findRayEnd(const glm::vec2 rayStart, const glm::vec2 rayDir, const glm::vec2 segStart,
                                     const glm::vec2 segEnd)
 {
-    // todo: handle this case
+    // todo: handle / eliminate this case
     if(rayDir.x == 0.f)
         return {};
 
@@ -92,7 +92,7 @@ public:
     }
 
 private:
-    std::vector<std::vector<glm::vec2>> shapes_;
+    std::vector<std::vector<glm::vec2>> shapes_; // todo: keep the points in one vector
     const hppv::Space border_{10.f, 10.f, 80.f, 80.f};
     std::vector<glm::vec2> points_;
     glm::vec2 lightPos_;
