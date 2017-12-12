@@ -1,7 +1,8 @@
-#include <hppv/App.hpp>
 #include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Font.hpp>
+
+#include "../run.hpp"
 
 class TrueType: public hppv::Scene
 {
@@ -91,11 +92,4 @@ private:
     hppv::Font font1_, font2_;
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<TrueType>();
-    app.run();
-    return 0;
-}
+RUN(TrueType)

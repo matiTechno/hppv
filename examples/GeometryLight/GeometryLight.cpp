@@ -8,13 +8,14 @@
 #include <glm/trigonometric.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
 #include <hppv/Shader.hpp>
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>
+
+#include "../run.hpp"
 
 const char* const lightSource = R"(
 
@@ -289,15 +290,6 @@ private:
     }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<GeometryLight>();
-    app.run();
-    return 0;
-}
-
 void GeometryLight::setShapes()
 {
     {
@@ -339,3 +331,5 @@ void GeometryLight::setShapes()
         shape.emplace_back(border_.pos + glm::vec2(0.f, border_.size.y));
     }
 }
+
+RUN(GeometryLight)

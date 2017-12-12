@@ -5,10 +5,11 @@
 #include <string>
 #include <string_view>
 
-#include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/glad.h>
+
+#include "../run.hpp"
 
 // todo: Renderer support for projection with y-axis growing upwards
 
@@ -139,11 +140,4 @@ private:
     }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<OSM>();
-    app.run();
-    return 0;
-}
+RUN(OSM)

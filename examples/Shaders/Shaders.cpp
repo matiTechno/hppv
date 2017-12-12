@@ -1,6 +1,5 @@
 #include <vector>
 
-#include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/glad.h>
 #include <hppv/imgui.h>
@@ -8,6 +7,7 @@
 #include <hppv/Shader.hpp>
 
 #include "Shaders.hpp"
+#include "../run.hpp"
 
 class Shaders: public hppv::PrototypeScene
 {
@@ -71,11 +71,4 @@ private:
     }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<Shaders>();
-    app.run();
-    return 0;
-}
+RUN(Shaders)

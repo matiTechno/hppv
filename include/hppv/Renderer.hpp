@@ -228,7 +228,7 @@ public:
 
     // out vec4 vColor;
     // out vec2 vTexCoord;
-    // out vec2 vPos; // [0, 1], used for circle shading and fwidth()
+    // out vec2 vPos; // vertically flipped vTexCoord; [0, 1]; used for circle shading, fwidth(), gradient, ...
 
     static const char* const vInstancesSource;
 

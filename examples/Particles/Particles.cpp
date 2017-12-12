@@ -1,8 +1,8 @@
-#include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/imgui.h>
 
 #include "Emitter.hpp"
+#include "../run.hpp"
 
 class Particles: public hppv::PrototypeScene
 {
@@ -36,32 +36,23 @@ private:
         ImGui::End();
     }
 
-    void configureEmitter();
+    void configureEmitter()
+    {
+        {
+            const auto pos = space_.initial.pos;
+            const auto size = space_.initial.size;
+            emitter_.spawn.size = {size.x, 10.f};
+            emitter_.spawn.pos = {pos.x, pos.y + size.y - emitter_.spawn.size.y - 20.f};
+        }
+
+        emitter_.spawn.hz = 10000;
+        emitter_.life = {1.2f, 3.f};
+        emitter_.vel = {{-2.f, -150.f}, {2.f, -200.f}};
+        emitter_.acc = {{-50.f, -2.f}, {5.f, -50.f}};
+        emitter_.radius = {1.f, 6.f};
+        emitter_.colorStart = {{1.f, 0.f, 0.f, 0.f}, {1.f, 0.5f, 0.1f, 0.3f}};
+        emitter_.colorEnd = {{0.25f, 0.25f, 0.25f, 0.4f}, {0.1f, 0.1f, 0.1f, 1.f}};
+    }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<Particles>();
-    app.run();
-    return 0;
-}
-
-void Particles::configureEmitter()
-{
-    {
-        const auto pos = space_.initial.pos;
-        const auto size = space_.initial.size;
-        emitter_.spawn.size = {size.x, 10.f};
-        emitter_.spawn.pos = {pos.x, pos.y + size.y - emitter_.spawn.size.y - 20.f};
-    }
-
-    emitter_.spawn.hz = 10000;
-    emitter_.life = {1.2f, 3.f};
-    emitter_.vel = {{-2.f, -150.f}, {2.f, -200.f}};
-    emitter_.acc = {{-50.f, -2.f}, {5.f, -50.f}};
-    emitter_.radius = {1.f, 6.f};
-    emitter_.colorStart = {{1.f, 0.f, 0.f, 0.f}, {1.f, 0.5f, 0.1f, 0.3f}};
-    emitter_.colorEnd = {{0.25f, 0.25f, 0.25f, 0.4f}, {0.1f, 0.1f, 0.1f, 1.f}};
-}
+RUN(Particles)

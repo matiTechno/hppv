@@ -5,12 +5,13 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/trigonometric.hpp>
 
-#include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Framebuffer.hpp>
 #include <hppv/Shader.hpp>
 #include <hppv/glad.h>
+
+#include "../run.hpp"
 
 const char* const shadowSource = R"(
 
@@ -242,11 +243,4 @@ private:
     }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<PixelShadows>();
-    app.run();
-    return 0;
-}
+RUN(PixelShadows)

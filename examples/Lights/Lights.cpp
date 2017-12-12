@@ -1,12 +1,13 @@
 #include <glm/trigonometric.hpp>
 
-#include <hppv/App.hpp>
 #include <hppv/PrototypeScene.hpp>
 #include <hppv/glad.h>
 #include <hppv/Renderer.hpp>
 #include <hppv/Shader.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/Framebuffer.hpp>
+
+#include "../run.hpp"
 
 const char* const lightSource = R"(
 
@@ -147,11 +148,4 @@ private:
     }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<Lights>();
-    app.run();
-    return 0;
-}
+RUN(Lights)

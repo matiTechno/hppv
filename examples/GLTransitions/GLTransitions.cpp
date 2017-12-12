@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 
-#include <hppv/App.hpp>
 #include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Texture.hpp>
@@ -10,6 +9,7 @@
 #include <hppv/imgui.h>
 
 #include "Glsl.hpp"
+#include "../run.hpp"
 
 class GLTransitions: public hppv::Scene
 {
@@ -103,11 +103,4 @@ private:
     }
 };
 
-int main()
-{
-    hppv::App app;
-    if(!app.initialize(false)) return 1;
-    app.pushScene<GLTransitions>();
-    app.run();
-    return 0;
-}
+RUN(GLTransitions)
