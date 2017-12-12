@@ -21,8 +21,7 @@ struct Texture
     hppv::Texture normal;
 };
 
-// todo:
-// * gamma correction?
+// todo: gamma correction?
 
 class NormalMap: public hppv::PrototypeScene
 {
@@ -91,7 +90,7 @@ private:
 
         renderer.shader(shTexture_);
 
-        // cache all the game objects (textured sprites)
+        // cache the game objects (textured sprites)
         {
             {
                 renderer.texture(texRock_.diffuse, Diffuse);
