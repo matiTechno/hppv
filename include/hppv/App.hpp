@@ -80,7 +80,7 @@ public:
             std::string title = "hppv";
             Window::State state = Window::Restored;
 
-            // matters only when == Window::Maximized and state == Window::Fullscreen
+            // meaningful only when == Window::Maximized and state == Window::Fullscreen
             Window::State previousState = Window::Restored;
         }
         window;
