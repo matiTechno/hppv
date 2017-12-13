@@ -258,9 +258,9 @@ private:
 int main()
 {
     hppv::App app;
-    if(!app.initialize(false)) return 1;
-    // todo: require correct version
-    std::cout << "OpenGL version 4.3 is required to run this example" << std::endl;
+    hppv::App::InitParams initParams;
+    initParams.glVersion = {4, 3};
+    if(!app.initialize(initParams)) return 1;
     app.pushScene<Gravity>();
     app.run();
     return 0;

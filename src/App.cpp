@@ -20,12 +20,12 @@ App::~App() = default;
 
 GLFWwindow* App::window_;
 Frame App::frame_;
-bool App::handleQuitEvent_ = true;
+bool App::handleQuitEvent_;
 std::vector<Request> App::requests_;
 
-bool App::initialize(bool printDebugInfo)
+bool App::initialize(const InitParams& initParams)
 {
-    if(printDebugInfo)
+    if(initParams.printDebugInfo)
     {
         std::cout << "GLFW compile time version " << GLFW_VERSION_MAJOR
                   << '.' << GLFW_VERSION_MINOR << '.' << GLFW_VERSION_REVISION << '\n'
@@ -41,12 +41,18 @@ bool App::initialize(bool printDebugInfo)
 
     deleterGlfw_.set([]{glfwTerminate();});
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, initParams.glVersion.major);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, initParams.glVersion.minor);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window_ = glfwCreateWindow(640, 480, "test", nullptr, nullptr);
+    if(initParams.window.state == Window::Maximized)
+    {
+        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    }
+
+    window_ = glfwCreateWindow(initParams.window.size.x, initParams.window.size.y, initParams.window.title.c_str(),
+                               nullptr, nullptr);
 
     if(!window_)
         return false;
@@ -59,11 +65,23 @@ bool App::initialize(bool printDebugInfo)
         return false;
     }
 
-    if(printDebugInfo)
+    if(initParams.printDebugInfo)
     {
         std::cout << "vendor                    " << glGetString(GL_VENDOR) << '\n';
         std::cout << "renderer                  " << glGetString(GL_RENDERER) << '\n';
         std::cout << "OpenGL version            " << glGetString(GL_VERSION) << std::endl;
+    }
+
+    if(GLAD_GL_ARB_texture_storage == false)
+    {
+        std::cout << "ARB_texture_storage extension is not supported" << std::endl;
+        return false;
+    }
+
+    if(GLAD_GL_ARB_base_instance == false)
+    {
+        std::cout << "ARB_base_instance extension is not supported" << std::endl;
+        return false;
     }
 
     glfwSwapInterval(1);
@@ -87,8 +105,21 @@ bool App::initialize(bool printDebugInfo)
     frame_.events.reserve(ReservedEvents);
     requests_.reserve(ReservedRequests);
 
+    handleQuitEvent_ = initParams.handleQuitEvent;
+
+    frame_.window.restored.pos = {0, 0};
+    frame_.window.restored.size = initParams.window.size;
+
+    // todo: setting the fullscreen mode in glfwCreateWindow()?
+    // (note: glfwRestoreWindow() will not set the correct window size in one case)
+
+    if(initParams.window.state == Window::Fullscreen)
+    {
+        setFullscreen();
+    }
+
     refreshFrame();
-    frame_.window.previousState = frame_.window.state;
+    frame_.window.previousState = initParams.window.previousState;
 
     return true;
 }
@@ -196,9 +227,7 @@ void App::run()
 
                if(state == Window::Fullscreen)
                {
-                   auto* const monitor = glfwGetPrimaryMonitor();
-                   const auto* const mode = glfwGetVideoMode(monitor);
-                   glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+                   setFullscreen();
                }
                else if(state == Window::Maximized)
                {
@@ -262,6 +291,13 @@ void App::refreshFrame()
     {
         frame_.window.previousState = previousState;
     }
+}
+
+void App::setFullscreen()
+{
+    auto* const monitor = glfwGetPrimaryMonitor();
+    const auto* const mode = glfwGetVideoMode(monitor);
+    glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 }
 
 void App::errorCallback(int, const char* const description)

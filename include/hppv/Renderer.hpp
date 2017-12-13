@@ -48,7 +48,7 @@ struct Circle
     float radius;
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 
-    // OpenGL texCoords are calculated in the cache() function based on this
+    // OpenGL texCoords are calculated based on this
     // and the last registered texture
     glm::vec4 texRect;
 };
@@ -228,7 +228,7 @@ public:
 
     // out vec4 vColor;
     // out vec2 vTexCoord;
-    // out vec2 vPos; // vertically flipped vTexCoord, [0, 1] (todo: remove it?)
+    // out vec2 vPos; // [0, 1], y grows down
 
     static const char* const vInstancesSource;
 
@@ -314,6 +314,7 @@ private:
         bool flipTexRectX;
         bool flipTexRectY;
         bool flipTextureY;
+
         struct
         {
             std::size_t start;

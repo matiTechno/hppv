@@ -83,10 +83,9 @@ void PrototypeScene::render(Renderer& renderer)
             accumulator_ = 0.f;
         }
 
-        ImGui::Begin("PrototypeScene", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("PrototypeScene");
 
         ImGui::Text("h p p v");
-        ImGui::Text("made by            m a t i T e c h n o");
         ImGui::Text("frameTime          %f ms", averageFrameTimeMs_);
         ImGui::Text("fps                %d",    averageFps_);
         ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x, frame_.framebufferSize.y);

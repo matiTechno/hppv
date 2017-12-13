@@ -3,12 +3,12 @@ h p p v
 todo:
 
 * curves, lines
+* examples (spring & fluid simulation)
 * Space rotation, Camera class?
-* UTF-8 - input, dynamic glyph caching?
-* App init parameters
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * license
+* UTF-8 - input, dynamic glyph caching?
 
 included:
 
@@ -24,4 +24,6 @@ dependencies:
 * glm
 
 compiles with gcc 7.2.0 on linux
-runs with OpenGL 4.5 (3.3 if some extensions are available)
+
+runs with OpenGL 3.3,
+ARB_texture_storage and ARB_base_instance extensions must be supported

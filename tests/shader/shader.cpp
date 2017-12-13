@@ -37,7 +37,7 @@ void main()
 TEST_CASE("shader")
 {
     hppv::App app;
-    REQUIRE(app.initialize(false));
+    REQUIRE(app.initialize({}));
 
     hppv::Shader shader(hppv::Shader::File(), "shaders/fragment.sh");
     REQUIRE(shader.isValid());

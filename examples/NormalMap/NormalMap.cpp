@@ -95,6 +95,7 @@ private:
             {
                 renderer.texture(texRock_.diffuse, Diffuse);
                 renderer.texture(texRock_.normal, Normal);
+                renderer.uniform1i("invertNormalY", false);
 
                 hppv::Sprite sprite;
                 sprite.pos = space_.initial.pos;

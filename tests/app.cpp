@@ -5,5 +5,7 @@
 TEST_CASE("App initialization")
 {
     hppv::App app;
-    REQUIRE(app.initialize(true));
+    hppv::App::InitParams initParams;
+    initParams.printDebugInfo = true;
+    REQUIRE(app.initialize(initParams));
 }

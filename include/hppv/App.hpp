@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "Frame.hpp"
 #include "Deleter.hpp"
@@ -61,10 +62,34 @@ struct Request
 class App
 {
 public:
+    struct InitParams
+    {
+        bool printDebugInfo = false;
+        bool handleQuitEvent = true;
+
+        struct
+        {
+            int major = 3;
+            int minor = 3;
+        }
+        glVersion;
+
+        struct
+        {
+            glm::ivec2 size = {640, 480};
+            std::string title = "hppv";
+            Window::State state = Window::Restored;
+
+            // matters only when == Window::Maximized and state == Window::Fullscreen
+            Window::State previousState = Window::Restored;
+        }
+        window;
+    };
+
     App();
     ~App();
 
-    bool initialize(bool printDebugInfo);
+    bool initialize(const InitParams& initParams);
 
     template<typename T, typename ... Args>
     void pushScene(Args&& ... args)
@@ -77,7 +102,6 @@ public:
     // executed at the end of a frame
     static void request(Request request) {requests_.push_back(request);}
 
-    // internal use
     static const Frame& getFrame() {return frame_;}
 
 private:
@@ -99,6 +123,8 @@ private:
     static std::vector<Request> requests_;
 
     static void refreshFrame();
+
+    static void setFullscreen();
 
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);
