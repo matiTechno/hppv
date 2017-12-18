@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include <glm/trigonometric.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/vector_angle.hpp>
 
 #include <hppv/PrototypeScene.hpp>
