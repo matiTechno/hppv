@@ -167,9 +167,9 @@ private:
             lightPos_.y = std::max(lightPos_.y, border_.pos.y + 1);
             lightPos_.x = std::min(lightPos_.x, border_.pos.x + border_.size.x - 1);
             lightPos_.y = std::min(lightPos_.y, border_.pos.y + border_.size.y - 1);
-        }
 
-        setPoints();
+            setPoints();
+        }
     }
 
     void prototypeRender(hppv::Renderer& renderer) override

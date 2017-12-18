@@ -3,8 +3,10 @@ h p p v
 todo:
 
 * curves, lines
-* examples (spring & fluid simulation)
+* examples (fluid, soft body, flock, fractals (ARB_gpu_shader_fp64),
+            text editor, game of life, SAT)
 * Space rotation, Camera class?
+* gamma correction?
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * license

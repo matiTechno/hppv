@@ -23,7 +23,7 @@ struct Glyph
 // github.com/libgdx/libgdx/wiki/Distance-field-fonts
 // github.com/libgdx/libgdx/wiki/Hiero
 
-// bug?: hiero does not produce correct offset values?
+// bug?: hiero does not produce correct offset / texRect values?
 
 class Font
 {
