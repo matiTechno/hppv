@@ -47,8 +47,7 @@ void::Menu::processInput(const bool hasInput)
             case GLFW_KEY_DOWN:
 
                 ++selectedOption_;
-                animation_.accumulator = 0.f;
-                animation_.visible = true;
+                animation_.reset();
 
                 if(selectedOption_ == options_.end())
                 {
@@ -60,8 +59,7 @@ void::Menu::processInput(const bool hasInput)
             case GLFW_KEY_UP:
 
                 --selectedOption_;
-                animation_.accumulator = 0.f;
-                animation_.visible = true;
+                animation_.reset();
 
                 if(selectedOption_ == options_.begin() - 1)
                 {
@@ -70,7 +68,7 @@ void::Menu::processInput(const bool hasInput)
                 break;
 
             case GLFW_KEY_SPACE:
-            case GLFW_KEY_ENTER: selectedOption_->action();
+            case GLFW_KEY_ENTER: selectedOption_->action(); return;
             }
         }
     }
@@ -80,9 +78,9 @@ void Menu::render(hppv::Renderer& renderer)
 {
     animation_.accumulator += frame_.time;
 
-    if(animation_.accumulator > animation_.timeStep)
+    while(animation_.accumulator >= animation_.timestep)
     {
-        animation_.accumulator -= animation_.timeStep;
+        animation_.accumulator -= animation_.timestep;
         animation_.visible = !animation_.visible;
     }
 

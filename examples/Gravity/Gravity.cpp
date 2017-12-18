@@ -217,7 +217,7 @@ private:
         }
 
         accumulator_ += frame_.time;
-        while(accumulator_ > dt_)
+        while(accumulator_ >= dt_)
         {
             accumulator_ -= dt_;
             glDispatchCompute(NumParticles / ComputeLocalSize, 1, 1);

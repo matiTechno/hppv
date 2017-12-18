@@ -6,11 +6,6 @@
 
 #include <hppv/Scene.hpp>
 
-namespace hppv
-{
-class Font;
-}
-
 enum class Game
 {
     Lost,
@@ -31,9 +26,15 @@ private:
 
     struct Animation
     {
+        void reset()
+        {
+            accumulator = 0.f;
+            visible = true;
+        }
+
         bool visible = true;
         float accumulator = 0.f;
-        static inline float timeStep = 0.5f;
+        static inline float timestep = 0.5f;
     }
     animation_;
 

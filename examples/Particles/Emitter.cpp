@@ -33,7 +33,7 @@ void Emitter::update(float frameTime)
 
     const auto spawnDelay = 1.f / spawn.hz;
 
-    while(accumulator_ > spawnDelay)
+    while(accumulator_ >= spawnDelay)
     {
         spawnParticle();
         accumulator_ -= spawnDelay;

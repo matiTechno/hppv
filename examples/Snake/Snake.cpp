@@ -25,19 +25,14 @@ void Snake::processInput(const bool hasInput)
             switch(event.key.key)
             {
             case GLFW_KEY_ESCAPE:
-
                 properties_.sceneToPush = std::make_unique<Menu>(nodes_.size() - 1, Game::Paused);
-                return;
             }
         }
     }
 }
 
 void Snake::update()
-{
-    if(properties_.sceneToPush)
-        return;
-}
+{}
 
 void Snake::render(hppv::Renderer& renderer)
 {

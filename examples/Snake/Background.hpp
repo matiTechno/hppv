@@ -36,7 +36,7 @@ private:
     {
         int count = 0;
         float accumulator = 0.f;
-        static inline float timeStep = 0.5f;
+        static inline float timestep = 0.5f;
     }
     animation_;
 };

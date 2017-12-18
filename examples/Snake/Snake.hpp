@@ -5,12 +5,6 @@
 #include <hppv/Scene.hpp>
 #include <hppv/Space.hpp>
 
-namespace hppv
-{
-class Font;
-class Texture;
-}
-
 class Snake: public hppv::Scene
 {
 public:
@@ -29,7 +23,7 @@ private:
     std::vector<glm::ivec2> nodes_;
     std::vector<glm::vec2> freeTiles_;
     static inline hppv::Space space_ = {0.f, 0.f, 100.f, 100.f};
-    static inline float timeStep_ = 0.3f;
+    static inline float timestep_ = 0.3f;
 
     struct Food
     {

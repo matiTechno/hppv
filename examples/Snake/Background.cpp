@@ -74,9 +74,9 @@ void Background::update()
 
     animation_.accumulator += frame_.time;
 
-    if(animation_.accumulator > animation_.timeStep)
+    while(animation_.accumulator >= animation_.timestep)
     {
-        animation_.accumulator -= animation_.timeStep;
+        animation_.accumulator -= animation_.timestep;
         ++animation_.count;
 
         if(animation_.count > 3)
@@ -129,7 +129,7 @@ void Background::render(hppv::Renderer& renderer)
     {
         auto text2 = text;
         text2.color = {0.f, 1.f, 0.f, 1.f};
-        text2.pos += 3;
+        text2.pos += 3.f;
 
         renderer.cache(text2);
     }
