@@ -63,7 +63,7 @@ private:
         {
             glm::vec4 color = {1.f, 0.f, 0.f, 1.f};
             float smoothing = 0.2f;
-            glm::vec2 offset = {-0.003, -0.006};
+            glm::vec2 offset = {-0.003, 0.006};
             bool animate = true;
             float time = 0.f;
         }
@@ -99,8 +99,7 @@ private:
             hppv::Text text(sdfFont_);
             text.text = sdf_.text;
             text.scale = 0.4f;
-            text.pos = space_.initial.pos + space_.initial.size / 2.f;
-            text.pos -= text.getSize() / 2.f;
+            text.pos = space_.initial.pos + (space_.initial.size - text.getSize()) / 2.f;
             text.color = sdf_.color;
             text.rotation = sdf_.rotation;
 
@@ -150,8 +149,8 @@ private:
                     if(sdf_.shadow.animate)
                     {
                         sdf_.shadow.time += frame_.time;
-                        sdf_.shadow.offset.x = glm::sin(sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
-                        sdf_.shadow.offset.y = glm::cos(sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f) / 200.f;
+                        const auto t = sdf_.shadow.time * 2.f * glm::pi<float>() / 8.f;
+                        sdf_.shadow.offset = glm::vec2(glm::sin(t), glm::cos(t)) / 200.f;
                     }
 
                     ImGui::ColorEdit4("shadow color", &sdf_.shadow.color.x);

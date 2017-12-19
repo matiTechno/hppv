@@ -129,16 +129,14 @@ private:
         renderer.shader(shaderLight_);
         {
             hppv::Circle circle;
-            circle.center.x = 50.f + glm::sin(time_ / 2.f) * 20.f;
-            circle.center.y = 50.f + glm::cos(time_ / 2.f) * 20.f;
+            circle.center = 50.f + 20.f * glm::vec2(glm::sin(time_ / 2.f), glm::cos(time_ / 2.f));
             circle.radius = 25.f;
             circle.color = {1.f, 1.f, 1.f, 1.f};
             circle.texRect = hppv::mapToFramebuffer(circle.toVec4(), space_.projected, framebuffer_);
 
             renderer.cache(circle);
 
-            circle.center.x = 30.f + glm::sin(time_ / 4.f) * 20.f;
-            circle.center.y = 30.f + glm::cos(time_ / 4.f) * 20.f;
+            circle.center = 30.f + 20.f * glm::vec2(glm::sin(time_ / 4.f), glm::cos(time_ / 4.f));
             circle.radius = 5.f;
             circle.color = {1.f, 1.f, 0.5f, 1.f};
             circle.texRect = hppv::mapToFramebuffer(circle.toVec4(), space_.projected, framebuffer_);

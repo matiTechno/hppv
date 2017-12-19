@@ -167,8 +167,7 @@ private:
     {
         time_ += frame_.time;
 
-        lights_[2].center.x = 90.f + 40 * glm::sin(time_);
-        lights_[2].center.y = 80.f + 40 * glm::cos(time_);
+        lights_[2].center = glm::vec2(90.f, 80.f) + 40.f * glm::vec2(glm::sin(time_), glm::cos(time_));
     }
 
     void prototypeRender(hppv::Renderer& renderer) override

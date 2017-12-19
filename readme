@@ -3,7 +3,7 @@ h p p v
 todo:
 
 * curves, lines
-* examples (fluid, soft body, flock, fractals (ARB_gpu_shader_fp64),
+* examples (fluid, soft body, flock, fractals (ARB_gpu_shader_fp64?),
             text editor, game of life, SAT)
 * Space rotation, Camera class?
 * gamma correction?

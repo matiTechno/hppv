@@ -151,7 +151,7 @@ uniform vec4 glowColor = vec4(1, 0, 0, 1);
 uniform float glowWidth = 0.5; // [0, 0.5]
 uniform vec4 shadowColor = vec4(1, 0, 0, 1);
 uniform float shadowSmoothing = 0.2; // [0, 0.5]
-uniform vec2 shadowOffset = vec2(-0.003, -0.006);
+uniform vec2 shadowOffset = vec2(-0.003, 0.006);
 
 const vec2 center = vec2(0.5, 0.5);
 
@@ -186,7 +186,7 @@ void main()
         float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
         vec4 textColor = vColor * alpha;
 
-        float shadowDistance = texture(sampler, vTexCoord - shadowOffset).a;
+        float shadowDistance = texture(sampler, vTexCoord - vec2(shadowOffset.x, -shadowOffset.y)).a;
         float oShadowSmoothing = max(smoothing, shadowSmoothing);
         float shadowAlpha = smoothstep(0.5 - oShadowSmoothing, 0.5 + oShadowSmoothing, shadowDistance);
         vec4 shadow = shadowColor * shadowAlpha;
