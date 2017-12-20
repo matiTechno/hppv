@@ -3,7 +3,6 @@
 #include <vector>
 
 #include <hppv/Scene.hpp>
-#include <hppv/Space.hpp>
 
 class Snake: public hppv::Scene
 {

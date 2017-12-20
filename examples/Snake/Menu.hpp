@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <vector>
 #include <functional>
 
@@ -40,7 +39,7 @@ private:
 
     struct Option
     {
-        std::string name;
+        const char* const name;
         std::function<void(void)> action;
     };
 
