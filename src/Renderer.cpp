@@ -542,7 +542,7 @@ void Renderer::setTexUnitsDefault()
 {
     texUnits_.clear();
     texUnits_.emplace_back();
-    auto& first = texUnits_.front();
+    auto& first = texUnits_.back();
     first.unit = 0;
     first.texture = &texDummy_;
     first.sampler = &samplerLinear_;

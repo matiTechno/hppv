@@ -92,7 +92,7 @@ void Menu::render(hppv::Renderer& renderer)
         hppv::Sprite sprite;
         sprite.pos = {0.f, 0.f};
         sprite.size = properties_.size;
-        sprite.color = {0.f, 0.f, 0.f, 0.9f};
+        sprite.color = {0.f, 0.f, 0.f, 0.7f};
 
         renderer.cache(sprite);
     }

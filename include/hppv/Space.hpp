@@ -9,6 +9,8 @@ namespace hppv
 class Scene;
 class Framebuffer;
 
+// todo: constexpr
+
 struct Space
 {
     Space() = default;

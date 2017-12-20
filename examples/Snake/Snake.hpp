@@ -17,26 +17,32 @@ public:
     void render(hppv::Renderer& renderer) override;
 
 private:
-    enum {MapSize = 15};
+    enum {MapSize = 20};
 
-    float accumulator = 0.f;
+    static inline float timestep_ = 0.0888f;
+    float accumulator_ = 0.f;
     std::vector<glm::ivec2> nodes_;
-    std::vector<glm::vec2> freeTiles_;
-    static inline hppv::Space space_ = {0.f, 0.f, 100.f, 100.f};
-    static inline float timestep_ = 0.3f;
 
     struct Food
     {
-        static inline float spawnTime = 6.f;
-        float timeLeft;
+        static inline float spawnTime = 5.f;
+        float timeLeft = spawnTime;
         glm::ivec2 pos;
     }
     food_;
 
     struct
     {
-        glm::ivec2 current;
-        glm::ivec2 next;
+        glm::ivec2 current = {0, -1};
+        glm::ivec2 next = current;
     }
     vel_;
+
+    struct NewNode
+    {
+        glm::ivec2 pos;
+        int turnsToSpawn;
+    };
+
+    std::vector<NewNode> newNodes_;
 };

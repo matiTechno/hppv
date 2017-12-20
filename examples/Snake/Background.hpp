@@ -31,6 +31,7 @@ private:
     hppv::Shader shWave_;
     float time_ = 0.f;
     Resources resources_;
+    bool renderText_ = true;
 
     struct Animation
     {

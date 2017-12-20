@@ -64,6 +64,7 @@ void Background::processInput(const bool hasInput)
                                           && event.key.action == GLFW_PRESS)
         {
             properties_.sceneToPush = std::make_unique<Snake>();
+            renderText_ = false;
         }
     }
 }
@@ -103,6 +104,9 @@ void Background::render(hppv::Renderer& renderer)
 
         renderer.cache(sprite);
     }
+
+    if(renderText_ == false)
+        return;
 
     hppv::Text text(resources_.font);
     text.color = {0.f, 0.f, 0.f, 1.f};
