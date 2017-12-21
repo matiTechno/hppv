@@ -71,13 +71,13 @@ void Snake::update()
         accumulator_ -= timestep_;
         food_.timeLeft -= timestep_;
 
-        // move body
+        // move the body
         for(auto it = nodes_.rbegin(); it != nodes_.rend() - 1; ++it)
         {
             *it = *(it + 1);
         }
 
-        // move head
+        // move the head
         {
             vel_.current = vel_.next;
 
@@ -104,14 +104,14 @@ void Snake::update()
             }
         }
 
-        // attach new node
+        // attach a new node
         {
             for(auto& node: newNodes_)
             {
                 --node.turnsToSpawn;
             }
 
-            // a little hack for smoother animation
+            // a little hack for a smoother animation
             if(newNodes_.size() && newNodes_.front().turnsToSpawn == -1)
             {
                 newNodes_.erase(newNodes_.begin());
@@ -123,7 +123,7 @@ void Snake::update()
             }
         }
 
-        // check collisions
+        // check for collisions
         {
             const auto head = nodes_.front();
 
@@ -142,7 +142,7 @@ void Snake::update()
             }
         }
 
-        // spawn food
+        // spawn the food
         if(food_.timeLeft <= 0.f)
         {
             food_.timeLeft = food_.spawnTime;
