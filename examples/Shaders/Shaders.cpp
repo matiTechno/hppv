@@ -1,6 +1,6 @@
 #include <vector>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/glad.h>
 #include <hppv/imgui.h>
 #include <hppv/Renderer.hpp>
@@ -9,11 +9,11 @@
 #include "Shaders.hpp"
 #include "../run.hpp"
 
-class Shaders: public hppv::PrototypeScene
+class Shaders: public hppv::Prototype
 {
 public:
     Shaders():
-        PrototypeScene({0.f, 0.f, 1.f, 1.f}, 1.f, false)
+        Prototype({0.f, 0.f, 1.f, 1.f}, 1.f, false)
     {
         addShader(tunnel);
         addShader(lines);
@@ -48,7 +48,7 @@ private:
     {
         time_ += frame_.time;
 
-        ImGui::Begin("next", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin(prototype_.imguiWindowName);
         {
             ImGui::Text("all the shaders come from glslsandbox.com");
 

@@ -6,7 +6,7 @@ add_library(hppv
     Font.cpp
     Framebuffer.cpp
     GLobjects.cpp
-    PrototypeScene.cpp
+    Prototype.cpp
     Renderer.cpp
     Scene.cpp
     Shaders.hpp

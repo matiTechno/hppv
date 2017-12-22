@@ -4,7 +4,7 @@
 
 #include <glm/vec3.hpp>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/Shader.hpp>
@@ -23,11 +23,11 @@ struct Texture
 
 // todo: gamma correction?
 
-class NormalMap: public hppv::PrototypeScene
+class NormalMap: public hppv::Prototype
 {
 public:
     NormalMap():
-        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.05f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.05f, false),
         fb_(GL_RGBA8, 2),
         shDeferred_({hppv::Renderer::vInstancesSource, deferredSource}, "shDeferred_"),
         shTexture_({hppv::Renderer::vInstancesSource, textureSource}, "shTexture_"),
@@ -66,7 +66,7 @@ private:
     {
         if(hasInput)
         {
-            const auto pos = hppv::mapCursor(prototypeCursorPos(), space_.projected, this);
+            const auto pos = hppv::mapCursor(prototype_.cursorPos, space_.projected, this);
             light_.pos.x = pos.x;
             light_.pos.y = pos.y;
         }
@@ -74,7 +74,7 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer)
     {
-        ImGui::Begin("light");
+        ImGui::Begin(prototype_.imguiWindowName);
         {
             ImGui::SliderFloat("pos.z", &light_.pos.z, -10.f, 50.f);
             ImGui::ColorEdit3("color", &light_.color.x);

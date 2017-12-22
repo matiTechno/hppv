@@ -9,7 +9,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/vector_angle.hpp>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
 #include <hppv/Shader.hpp>
@@ -82,11 +82,11 @@ std::optional<glm::vec2> findRayEnd(const glm::vec2 rayStart, const glm::vec2 ra
     return rayEnd;
 }
 
-class GeometryLight: public hppv::PrototypeScene
+class GeometryLight: public hppv::Prototype
 {
 public:
     GeometryLight():
-        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
         fb_(GL_RGBA8, 1)
     {
@@ -175,7 +175,7 @@ private:
 
     void prototypeRender(hppv::Renderer& renderer) override
     {
-        ImGui::Begin("light draw options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin(prototype_.imguiWindowName);
         {
             ImGui::Checkbox("points", &options_.drawPoints);
             ImGui::Checkbox("lines", &options_.drawLines);

@@ -1,7 +1,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/trigonometric.hpp>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/glad.h>
 #include <hppv/imgui.h>
 #include <hppv/Renderer.hpp>
@@ -10,11 +10,11 @@
 
 #include "../run.hpp"
 
-class TestScene: public hppv::PrototypeScene
+class TestScene: public hppv::Prototype
 {
 public:
     TestScene():
-        PrototypeScene({0.f, 0.f, 180.f, 100.f}, 1.1f, false),
+        Prototype({0.f, 0.f, 180.f, 100.f}, 1.1f, false),
         sdfFont_("res/sdf.fnt"),
         proggy_("res/proggy.fnt")
     {
@@ -88,7 +88,7 @@ private:
         }
         // sdf font
         {
-            ImGui::Begin("sdf");
+            ImGui::Begin(prototype_.imguiWindowName);
             ImGui::InputTextMultiline("", sdf_.text, sizeof(sdf_.text) / sizeof(char));
             ImGui::ColorEdit4("font color", &sdf_.color.x);
             ImGui::SliderFloat("rotation", &sdf_.rotation, 0.f, 2 * glm::pi<float>());

@@ -1,14 +1,14 @@
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/imgui.h>
 
 #include "Emitter.hpp"
 #include "../run.hpp"
 
-class Particles: public hppv::PrototypeScene
+class Particles: public hppv::Prototype
 {
 public:
     Particles():
-        hppv::PrototypeScene({0.f, 0.f, 1000.f, 1000.f}, 1.05f, false),
+        hppv::Prototype({0.f, 0.f, 1000.f, 1000.f}, 1.05f, false),
         emitter_(generator_)
     {
         std::random_device rd;
@@ -26,7 +26,7 @@ private:
         emitter_.update(frame_.time);
         emitter_.render(renderer);
 
-        ImGui::Begin("Particles", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin(prototype_.imguiWindowName);
         {
             ImGui::Text("count: %lu", emitter_.getCount());
             int hz = emitter_.spawn.hz;

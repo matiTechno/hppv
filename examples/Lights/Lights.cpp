@@ -1,6 +1,6 @@
 #include <glm/trigonometric.hpp>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/glad.h>
 #include <hppv/Renderer.hpp>
 #include <hppv/Shader.hpp>
@@ -50,11 +50,11 @@ void main()
 }
 )";
 
-class Lights: public hppv::PrototypeScene
+class Lights: public hppv::Prototype
 {
 public:
     Lights():
-        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
         shaderGradient_({hppv::Renderer::vInstancesSource, gradientSource}, "gradient"),
         texture_("res/mandrill.png"),

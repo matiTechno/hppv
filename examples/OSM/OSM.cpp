@@ -4,8 +4,9 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <algorithm>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/glad.h>
 
@@ -18,6 +19,8 @@ struct Node
     std::size_t id;
     glm::vec2 pos;
 };
+
+// todo: implement with std::lower_bound
 
 template<typename It>
 Node findNode(const It start, const It end, const std::size_t id)
@@ -38,12 +41,12 @@ Node findNode(const It start, const It end, const std::size_t id)
     }
 }
 
-class OSM: public hppv::PrototypeScene
+class OSM: public hppv::Prototype
 {
 public:
     OSM():
         // hack
-        hppv::PrototypeScene({20.5f, /*51.8f*/ -52.7f, 1.12f, 1.f}, 1.05f, true)
+        hppv::Prototype({20.5f, /*51.8f*/ -52.7f, 1.12f, 1.f}, 1.05f, true)
     {
         std::ifstream file("map.osm");
 

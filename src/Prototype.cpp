@@ -2,7 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/App.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
@@ -10,8 +10,9 @@
 namespace hppv
 {
 
-PrototypeScene::PrototypeScene(const Space space, const float zoomFactor, const bool alwaysZoomToCursor):
+Prototype::Prototype(const Space space, const float zoomFactor, const bool alwaysZoomToCursor):
     space_(space),
+    prototype_{lmb_, cursorPos_},
     zoomFactor_(zoomFactor),
     alwaysZoomToCursor_(alwaysZoomToCursor)
 {
@@ -19,7 +20,7 @@ PrototypeScene::PrototypeScene(const Space space, const float zoomFactor, const 
     cursorPos_ = frame_.cursorPos;
 }
 
-void PrototypeScene::processInput(const bool hasInput)
+void Prototype::processInput(const bool hasInput)
 {
     space_.newFrame(properties_.size);
 
@@ -67,9 +68,9 @@ void PrototypeScene::processInput(const bool hasInput)
     prototypeProcessInput(hasInput);
 }
 
-void PrototypeScene::render(Renderer& renderer)
+void Prototype::render(Renderer& renderer)
 {
-    if(renderImGui_)
+    if(prototype_.renderImgui)
     {
         ++frameCount_;
         accumulator_ += frame_.time;
@@ -83,7 +84,7 @@ void PrototypeScene::render(Renderer& renderer)
             accumulator_ = 0.f;
         }
 
-        ImGui::Begin("PrototypeScene");
+        ImGui::Begin(prototype_.imguiWindowName);
 
         ImGui::Text("h p p v");
         ImGui::Text("frameTime          %f ms", averageFrameTimeMs_);
@@ -163,6 +164,10 @@ void PrototypeScene::render(Renderer& renderer)
         ImGui::Separator();
         const auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+
+        ImGui::PushStyleColor(ImGuiCol_Separator, {0.67f, 0.4f, 0.4f, 1.f});
+        ImGui::Separator();
+        ImGui::PopStyleColor();
 
         ImGui::End();
     }

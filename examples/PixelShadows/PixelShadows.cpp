@@ -5,7 +5,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/trigonometric.hpp>
 
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Framebuffer.hpp>
 #include <hppv/Shader.hpp>
@@ -96,12 +96,12 @@ void main()
 }
 )";
 
-class PixelShadows: public hppv::PrototypeScene
+class PixelShadows: public hppv::Prototype
 {
 public:
 
     PixelShadows():
-        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
         fbOcclusion_(GL_RGBA8, 1),
         fbShadow_(GL_RGBA8, 1),
         texTile_("tile.png"),

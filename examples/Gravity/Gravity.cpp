@@ -7,7 +7,7 @@
 #include <glm/trigonometric.hpp>
 
 #include <hppv/App.hpp>
-#include <hppv/PrototypeScene.hpp>
+#include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/GLobjects.hpp>
 #include <hppv/Shader.hpp>
@@ -122,11 +122,11 @@ void setBuffer(const GLuint boId, const int numParticles, const glm::vec2* const
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, id, boId);
 }
 
-class Gravity: public hppv::PrototypeScene
+class Gravity: public hppv::Prototype
 {
 public:
     Gravity():
-        hppv::PrototypeScene({0.f, 0.f, 100.f, 100.f}, 1.1f, true),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, true),
         shCompute_({computeSource}, "shCompute_"),
         shRender_({renderSource}, "shRender_")
     {
@@ -201,10 +201,10 @@ private:
 
         shCompute_.bind();
 
-        if((prototypeLmb() && hasInput) || pilot_.active)
+        if((prototype_.lmb && hasInput) || pilot_.active)
         {
             const glm::vec2 pos = pilot_.active ? pilot_.pos :
-                                                  hppv::mapCursor(prototypeCursorPos(), space_.projected, this);
+                                                  hppv::mapCursor(prototype_.cursorPos, space_.projected, this);
 
             shCompute_.uniform2f("gravityPos", pos);
 
@@ -246,7 +246,7 @@ private:
         glBindVertexArray(vao_.getId());
         glDrawArrays(GL_POINTS, 0, NumParticles);
 
-        ImGui::Begin("gravity");
+        ImGui::Begin(prototype_.imguiWindowName);
         {
             ImGui::Text("lmb - activate gravity");
             ImGui::Checkbox("pilot", &pilot_.active);

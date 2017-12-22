@@ -89,7 +89,7 @@ bool App::initialize(const InitParams& initParams)
     renderer_ = std::make_unique<Renderer>();
 
     ImGui_ImplGlfwGL3_Init(window_, false);
-    deleterImGui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
+    deleterImgui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
 
     glfwSetWindowCloseCallback(window_, windowCloseCallback);
     glfwSetWindowFocusCallback(window_, windowFocusCallback);
