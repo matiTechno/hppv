@@ -125,6 +125,9 @@ enum class Sample
 
 // todo: remove code duplication in cache() and sampler() / texture() functions
 
+// Vertices api is very limited. Where it doesn't fit or is inefficient, use your own
+// rendering functions.
+
 class Renderer
 {
 public:
