@@ -71,8 +71,9 @@ private:
     const bool alwaysZoomToCursor_;
     float accumulator_ = 0.f;
     int frameCount_ = 0;
-    float averageFrameTimeMs_ = 0.f;
-    int averageFps_ = 0;
+    float avgFrameTimeMs_ = 0.f;
+    int avgFps_ = 0;
+    float avgFrameTimesMs_[180];
 
     // we should get the value from App
     bool vsync_ = true;

@@ -1,4 +1,5 @@
 #include <string>
+#include <cstring>
 
 #include <GLFW/glfw3.h>
 
@@ -6,6 +7,13 @@
 #include <hppv/App.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
+
+// todo: move to some header file
+template<typename T, std::size_t N>
+constexpr std::size_t size(const T(&)[N])
+{
+    return N;
+}
 
 namespace hppv
 {
@@ -18,6 +26,8 @@ Prototype::Prototype(const Space space, const float zoomFactor, const bool alway
 {
     properties_.maximize = true;
     cursorPos_ = frame_.cursorPos;
+
+    std::memset(avgFrameTimesMs_, 0, sizeof(avgFrameTimesMs_));
 }
 
 void Prototype::processInput(const bool hasInput)
@@ -70,25 +80,28 @@ void Prototype::processInput(const bool hasInput)
 
 void Prototype::render(Renderer& renderer)
 {
+    ++frameCount_;
+    accumulator_ += frame_.time;
+
+    if(accumulator_ >= 0.0333f)
+    {
+        const auto avgFrameTime = accumulator_ / frameCount_;
+        avgFrameTimeMs_ = avgFrameTime * 1000.f;
+        avgFps_ = 1.f / avgFrameTime + 0.5f;
+        frameCount_ = 0;
+        accumulator_ = 0.f;
+
+        std::memmove(avgFrameTimesMs_, avgFrameTimesMs_ + 1, sizeof(avgFrameTimesMs_) - sizeof(float));
+        avgFrameTimesMs_[size(avgFrameTimesMs_) - 1] = avgFrameTimeMs_;
+    }
+
     if(prototype_.renderImgui)
     {
-        ++frameCount_;
-        accumulator_ += frame_.time;
-
-        if(accumulator_ >= 1.f)
-        {
-            const auto averageFrameTime = accumulator_ / frameCount_;
-            averageFrameTimeMs_ = averageFrameTime * 1000.f;
-            averageFps_ = 1.f / averageFrameTime + 0.5f;
-            frameCount_ = 0;
-            accumulator_ = 0.f;
-        }
-
         ImGui::Begin(prototype_.imguiWindowName);
 
         ImGui::Text("h p p v");
-        ImGui::Text("frameTime          %f ms", averageFrameTimeMs_);
-        ImGui::Text("fps                %d",    averageFps_);
+        ImGui::Text("frameTime          %f ms", avgFrameTimeMs_);
+        ImGui::Text("fps                %d",    avgFps_);
         ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x, frame_.framebufferSize.y);
 
         if(ImGui::Checkbox("vsync", &vsync_))
@@ -164,6 +177,13 @@ void Prototype::render(Renderer& renderer)
         ImGui::Separator();
         const auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
         ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+
+        ImGui::Separator();
+        ImGui::PushStyleColor(ImGuiCol_PlotLines, {1.f, 1.f, 0.f, 1.f});
+        ImGui::PlotLines("frameTime(ms)", avgFrameTimesMs_, size(avgFrameTimesMs_),
+                         0, nullptr, 0, 33, {0, 80});
+
+        ImGui::PopStyleColor();
 
         ImGui::PushStyleColor(ImGuiCol_Separator, {0.67f, 0.4f, 0.4f, 1.f});
         ImGui::Separator();
