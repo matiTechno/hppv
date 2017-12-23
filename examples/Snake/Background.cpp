@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include <hppv/Renderer.hpp>
+#include <hppv/App.hpp>
 
 #include "Background.hpp"
 #include "Snake.hpp"
@@ -51,6 +52,10 @@ Background::Background():
 
     properties_.maximize = true;
     properties_.updateWhenNotTop = true;
+
+    hppv::Request request(hppv::Request::Cursor);
+    request.cursor.visible = false;
+    hppv::App::request(request);
 }
 
 void Background::processInput(const bool hasInput)

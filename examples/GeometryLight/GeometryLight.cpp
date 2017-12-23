@@ -200,7 +200,7 @@ private:
 
             for(auto it = points_.cbegin(); it < points_.cend(); ++it)
             {
-                const auto last = (it == points_.end() - 1 ? *points_.begin() : *(it + 1));
+                const auto last = (it == points_.end() - 1) ? *points_.begin() : *(it + 1);
 
                 hppv::Vertex v;
 

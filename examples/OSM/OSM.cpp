@@ -134,6 +134,7 @@ public:
 private:
     std::vector<hppv::Vertex> vertices_;
 
+    // todo: don't render the map data with the Renderer
     void prototypeRender(hppv::Renderer& renderer)
     {
         renderer.mode(hppv::RenderMode::Vertices);
