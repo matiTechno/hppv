@@ -64,7 +64,7 @@ private:
     }
     light_;
 
-    void prototypeProcessInput(const bool hasInput)
+    void prototypeProcessInput(const bool hasInput) override
     {
         if(hasInput)
         {
@@ -74,7 +74,7 @@ private:
         }
     }
 
-    void prototypeRender(hppv::Renderer& renderer)
+    void prototypeRender(hppv::Renderer& renderer) override
     {
         ImGui::Begin(prototype_.imguiWindowName);
         {

@@ -8,6 +8,29 @@
 
 #include "../run.hpp"
 
+struct Data
+{
+    Data()
+    {
+        std::ifstream file(filename);
+        if(file.is_open())
+        {
+            file >> k >> mass >> b;
+        }
+    }
+
+    const char* const filename = "data.txt";
+    const glm::vec2 attachmentPoint = {50.f, 50.f};
+    const glm::vec2 gravityAcc = {0, 10.f};
+    const float timestep = 0.00888f;
+    float accumulator = 0.f;
+    glm::vec2 point = {60.f, 60.f};
+    glm::vec2 vel = {0.f, 0.f};
+    float k = 6.8f;
+    float mass = 14.4f;
+    float b = 2.9f; // coefficient of damping
+};
+
 class SoftBody: public hppv::Prototype
 {
 public:
@@ -16,74 +39,48 @@ public:
     {}
 
 private:
-    void prototypeRender(hppv::Renderer& renderer)
+    Data d_;
+
+    void prototypeProcessInput(const bool hasInput) override
     {
-        // todo: move outside this function
-        struct Data
+        if(!hasInput)
+            return;
+
+        if(prototype_.lmb)
         {
-            Data()
-            {
-                std::ifstream file(filename);
-                if(file.is_open())
-                {
-                    file >> k;
-                    file >> mass;
-                    file >> b;
-                }
-            }
-
-            ~Data()
-            {
-                std::ofstream file(filename, std::ios::trunc);
-                if(file.is_open())
-                {
-                    file << k;
-                    file << ' ';
-                    file << mass;
-                    file << ' ';
-                    file << b;
-                }
-            }
-
-            const char* const filename = "data.txt";
-            const glm::vec2 attachmentPoint = {50.f, 50.f};
-            float k = 6.8f;
-            float mass = 14.4f;
-            const glm::vec2 gravityAcc = {0, 10.f};
-            glm::vec2 point = {60.f, 60.f};
-            glm::vec2 vel = {0.f, 0.f};
-            const float timestep = 0.00888f;
-            float accumulator = 0.f;
-            float b = 2.9f; // coefficient of damping
+            d_.point = hppv::mapCursor(prototype_.cursorPos, space_.projected, this);
+            d_.vel = {0.f, 0.f};
         }
-        static data;
+    }
 
-        const auto prevPos = data.point;
+    void prototypeRender(hppv::Renderer& renderer) override
+    {
+        const auto prevPos = d_.point;
 
-        data.accumulator += frame_.time;
+        d_.accumulator += frame_.time;
 
         // compute
 
-        while(data.accumulator >= data.timestep)
+        while(d_.accumulator >= d_.timestep)
         {
-            data.accumulator -= data.timestep;
+            d_.accumulator -= d_.timestep;
 
-            const auto diff = data.attachmentPoint - data.point;
+            const auto diff = d_.attachmentPoint - d_.point;
             const auto x = glm::length(diff);
 
-            const auto acc = (x * data.k / data.mass) * glm::normalize(diff)
-                             - (data.b * data.vel / data.mass)
-                             + data.gravityAcc;
+            const auto acc = (x * d_.k / d_.mass) * glm::normalize(diff)
+                             - (d_.b * d_.vel / d_.mass)
+                             + d_.gravityAcc;
 
-            data.vel += acc * data.timestep;
-            data.point += data.vel * data.timestep;
+            d_.vel += acc * d_.timestep;
+            d_.point += d_.vel * d_.timestep;
         }
 
         // render
 
         // lerp
-        const auto alpha = data.accumulator / data.timestep;
-        const auto pos = alpha * data.point + (1.f - alpha) * prevPos;
+        const auto alpha = d_.accumulator / d_.timestep;
+        const auto pos = alpha * d_.point + (1.f - alpha) * prevPos;
 
         {
             renderer.mode(hppv::RenderMode::Vertices);
@@ -96,7 +93,7 @@ private:
 
             renderer.cache(vertex);
 
-            vertex.pos = data.attachmentPoint;
+            vertex.pos = d_.attachmentPoint;
 
             renderer.cache(vertex);
         }
@@ -111,7 +108,7 @@ private:
 
             renderer.cache(circle);
 
-            circle.center = data.attachmentPoint;
+            circle.center = d_.attachmentPoint;
             circle.radius = 2.f;
             circle.color = {0.5f, 0.5f, 0.5f, 0.f};
 
@@ -122,19 +119,28 @@ private:
 
         ImGui::Begin(prototype_.imguiWindowName);
         {
-            //ImGui::Text("lmb to move object");
+            ImGui::Text("lmb to move object");
 
-            ImGui::InputFloat("k", &data.k, 0.1f);
-            data.k = std::max(0.01f, data.k);
+            ImGui::InputFloat("k", &d_.k, 0.1f);
+            d_.k = std::max(0.01f, d_.k);
 
-            ImGui::InputFloat("mass", &data.mass, 0.1f);
-            data.mass = std::max(0.01f, data.mass);
+            ImGui::InputFloat("mass", &d_.mass, 0.1f);
+            d_.mass = std::max(0.01f, d_.mass);
 
-            ImGui::InputFloat("b", &data.b, 0.1f);
-            data.b = std::max(0.01f, data.b);
+            ImGui::InputFloat("b", &d_.b, 0.1f);
+            d_.b = std::max(0.01f, d_.b);
 
-            ImGui::Text("x = %f", glm::length(data.point - data.attachmentPoint));
-            ImGui::Text("v = %f", glm::length(data.vel));
+            ImGui::Text("x = %f", glm::length(d_.point - d_.attachmentPoint));
+            ImGui::Text("v = %f", glm::length(d_.vel));
+
+            if(ImGui::Button("save"))
+            {
+                std::ofstream file(d_.filename, std::ios::trunc);
+                if(file.is_open())
+                {
+                    file << d_.k << ' ' << d_.mass << ' ' << d_.b;
+                }
+            }
         }
         ImGui::End();
     }
