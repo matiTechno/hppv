@@ -78,8 +78,21 @@ Renderer::Renderer():
 {
     glEnable(GL_BLEND);
 
+    glSamplerParameteri(samplerLinear_.getId(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glSamplerParameteri(samplerLinear_.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glSamplerParameteri(samplerNearest_.getId(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glSamplerParameteri(samplerNearest_.getId(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    {
+        const GLuint ids[] = {samplerNearest_.getId(), samplerLinear_.getId()};
+
+        for(const auto id: ids)
+        {
+            glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+    }
 
     batches_.reserve(ReservedBatches);
     instances_.resize(ReservedInstances);

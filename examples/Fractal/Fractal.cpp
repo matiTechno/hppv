@@ -43,9 +43,11 @@ class Fractal: public hppv::Prototype
 {
 public:
     Fractal():
-        hppv::Prototype({-2.5f, -1.f, 3.5f, 2.f}, 1.1f, true),
+        hppv::Prototype({-2.5f, -1.f, 3.5f, 2.f}),
         sh_({hppv::Renderer::vInstancesSource, fractalSource}, "sh_")
-    {}
+    {
+        prototype_.alwaysZoomToCursor = true;
+    }
 
 private:
     hppv::Shader sh_;

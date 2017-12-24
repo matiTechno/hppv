@@ -8,7 +8,7 @@ class Particles: public hppv::Prototype
 {
 public:
     Particles():
-        hppv::Prototype({0.f, 0.f, 1000.f, 1000.f}, 1.05f, false),
+        hppv::Prototype({0.f, 0.f, 1000.f, 1000.f}),
         emitter_(generator_)
     {
         std::random_device rd;

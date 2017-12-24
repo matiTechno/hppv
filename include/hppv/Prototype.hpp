@@ -44,7 +44,7 @@ private:
 class Prototype: public Scene
 {
 public:
-    Prototype(Space space, float zoomFactor, bool alwaysZoomToCursor);
+    Prototype(Space space);
 
     void processInput(bool hasInput) final override;
     void render(Renderer& renderer)  final override;
@@ -58,6 +58,8 @@ protected:
         const glm::vec2& cursorPos;
         const char* const imguiWindowName = "Prototype";
         bool renderImgui = true;
+        float zoomFactor = 1.1f;
+        bool alwaysZoomToCursor = false;
     }
     prototype_;
 
@@ -67,8 +69,6 @@ private:
     // projection is already set
     virtual void prototypeRender(Renderer& renderer) {(void)renderer;}
 
-    const float zoomFactor_;
-    const bool alwaysZoomToCursor_;
     float accumulator_ = 0.f;
     int frameCount_ = 0;
     float avgFrameTimeMs_ = 0.f;

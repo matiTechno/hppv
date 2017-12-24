@@ -14,7 +14,7 @@ class TestScene: public hppv::Prototype
 {
 public:
     TestScene():
-        Prototype({0.f, 0.f, 180.f, 100.f}, 1.1f, false),
+        Prototype({0.f, 0.f, 180.f, 100.f}),
         sdfFont_("res/sdf.fnt"),
         proggy_("res/proggy.fnt")
     {

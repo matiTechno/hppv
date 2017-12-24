@@ -13,7 +13,7 @@ class Shaders: public hppv::Prototype
 {
 public:
     Shaders():
-        Prototype({0.f, 0.f, 1.f, 1.f}, 1.f, false)
+        Prototype({0.f, 0.f, 1.f, 1.f})
     {
         addShader(tunnel);
         addShader(lines);

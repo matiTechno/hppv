@@ -126,11 +126,13 @@ class Gravity: public hppv::Prototype
 {
 public:
     Gravity():
-        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, true),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
         shCompute_({computeSource}, "shCompute_"),
         shRender_({renderSource}, "shRender_")
     {
-        assert(NumParticles % ComputeLocalSize == 0);
+        static_assert(NumParticles % ComputeLocalSize == 0);
+
+        prototype_.alwaysZoomToCursor = true;
 
         shCompute_.bind();
         shCompute_.uniform1f("dt", dt_);

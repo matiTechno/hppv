@@ -101,7 +101,7 @@ class PixelShadows: public hppv::Prototype
 public:
 
     PixelShadows():
-        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
         fbOcclusion_(GL_RGBA8, 1),
         fbShadow_(GL_RGBA8, 1),
         texTile_("tile.png"),

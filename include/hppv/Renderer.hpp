@@ -113,6 +113,7 @@ enum class Render
     VerticesTex = 10
 };
 
+// GL_TEXTURE_WRAP_S/T == GL_CLAMP_TO_EDGE
 enum class Sample
 {
     Linear,

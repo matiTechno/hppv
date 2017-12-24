@@ -46,8 +46,11 @@ class OSM: public hppv::Prototype
 public:
     OSM():
         // hack
-        hppv::Prototype({20.5f, /*51.8f*/ -52.7f, 1.12f, 1.f}, 1.05f, true)
+        hppv::Prototype({20.5f, /*51.8f*/ -52.7f, 1.12f, 1.f})
     {
+        prototype_.zoomFactor = 1.05f;
+        prototype_.alwaysZoomToCursor = true;
+
         std::ifstream file("map.osm");
 
         std::vector<Node> nodes;
@@ -134,7 +137,7 @@ public:
 private:
     std::vector<hppv::Vertex> vertices_;
 
-    // todo: don't render the map data with the Renderer
+    // todo: don't render the map data with Renderer
     void prototypeRender(hppv::Renderer& renderer)
     {
         renderer.mode(hppv::RenderMode::Vertices);

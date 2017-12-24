@@ -27,13 +27,15 @@ class NormalMap: public hppv::Prototype
 {
 public:
     NormalMap():
-        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.05f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
         fb_(GL_RGBA8, 2),
         shDeferred_({hppv::Renderer::vInstancesSource, deferredSource}, "shDeferred_"),
         shTexture_({hppv::Renderer::vInstancesSource, textureSource}, "shTexture_"),
         texRock_{hppv::Texture("res/rock_diffuse.png"), hppv::Texture("res/rock_normal.png")},
         texTeapot_{hppv::Texture("res/teapot_diffuse.png"), hppv::Texture("res/teapot_normal.png")}
     {
+        prototype_.zoomFactor = 1.05f;
+
         light_.pos.z = 2.f;
 
         hppv::Shader* shaders[] = {&shDeferred_, &shTexture_};

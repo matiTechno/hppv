@@ -18,11 +18,9 @@ constexpr std::size_t size(const T(&)[N])
 namespace hppv
 {
 
-Prototype::Prototype(const Space space, const float zoomFactor, const bool alwaysZoomToCursor):
+Prototype::Prototype(const Space space):
     space_(space),
-    prototype_{lmb_, cursorPos_},
-    zoomFactor_(zoomFactor),
-    alwaysZoomToCursor_(alwaysZoomToCursor)
+    prototype_{lmb_, cursorPos_}
 {
     properties_.maximize = true;
     cursorPos_ = frame_.cursorPos;
@@ -57,9 +55,9 @@ void Prototype::processInput(const bool hasInput)
         }
         else if(event.type == Event::Scroll && hasInput)
         {
-            const auto zoom = glm::pow(zoomFactor_, event.scroll.offset.y);
+            const auto zoom = glm::pow(prototype_.zoomFactor, event.scroll.offset.y);
 
-            if(rmb_ || lmb_ || alwaysZoomToCursor_)
+            if(rmb_ || lmb_ || prototype_.alwaysZoomToCursor)
             {
                 const auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
                 space_.set(zoomToPoint(space_.current, zoom, spaceCoords));
@@ -162,7 +160,7 @@ void Prototype::render(Renderer& renderer)
 
         std::string zoomInfo("scroll   zoom to ");
 
-        if(alwaysZoomToCursor_)
+        if(prototype_.alwaysZoomToCursor)
         {
             zoomInfo += "cursor";
         }

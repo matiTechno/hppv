@@ -54,7 +54,7 @@ class Lights: public hppv::Prototype
 {
 public:
     Lights():
-        hppv::Prototype({0.f, 0.f, 100.f, 100.f}, 1.1f, false),
+        hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
         shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
         shaderGradient_({hppv::Renderer::vInstancesSource, gradientSource}, "gradient"),
         texture_("res/mandrill.png"),
