@@ -159,9 +159,9 @@ private:
         });
     }
 
-    void prototypeProcessInput(const bool isInput) override
+    void prototypeProcessInput(const bool hasInput) override
     {
-        if(isInput)
+        if(hasInput)
         {
             lightPos_ = hppv::mapCursor(frame_.cursorPos, space_.projected, this);
             lightPos_.x = std::max(lightPos_.x, border_.pos.x + 1);

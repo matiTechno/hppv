@@ -30,11 +30,14 @@ Space expandToMatchAspectRatio(Space space, glm::ivec2 size);
 
 // -----
 
-Space zoomToCenter(Space space, float zoom);
+Space zoomToPoint(Space space, float zoom, glm::vec2 point);
 
 // -----
 
-Space zoomToPoint(Space space, float zoom, glm::vec2 point);
+inline Space zoomToCenter(Space space, float zoom)
+{
+    return zoomToPoint(space, zoom, space.pos + space.size / 2.f);
+}
 
 // -----
 

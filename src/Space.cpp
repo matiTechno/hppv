@@ -26,14 +26,6 @@ Space expandToMatchAspectRatio(const Space space, const glm::ivec2 size)
     return {newPos, newSize};
 }
 
-Space zoomToCenter(Space space, const float zoom)
-{
-    const auto prevSize = space.size;
-    space.size *= 1.f / zoom;
-    space.pos += (prevSize - space.size) / 2.f;
-    return space;
-}
-
 Space zoomToPoint(Space space, const float zoom, const glm::vec2 point)
 {
     const auto ratio = (point - space.pos) / space.size;
