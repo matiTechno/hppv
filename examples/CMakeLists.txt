@@ -1,3 +1,5 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+
 function(copyRes)
     file(COPY res DESTINATION .)
 endfunction()
@@ -18,3 +20,4 @@ add_subdirectory(Imgui)
 add_subdirectory(Fractal)
 add_subdirectory(SoftBody)
 add_subdirectory(Parallax)
+add_subdirectory(DayNight)

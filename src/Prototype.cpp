@@ -8,13 +8,6 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
 
-// todo: move to some header file
-template<typename T, std::size_t N>
-constexpr std::size_t size(const T(&)[N])
-{
-    return N;
-}
-
 namespace hppv
 {
 

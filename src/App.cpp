@@ -128,8 +128,13 @@ void App::run()
 {
    auto time = glfwGetTime();
 
-   while(!glfwWindowShouldClose(window_) && scenes_.size())
+   while(scenes_.size())
    {
+       handleRequests();
+
+       if(glfwWindowShouldClose(window_))
+           break;
+
        frame_.events.clear();
 
        glfwPollEvents();
@@ -189,73 +194,19 @@ void App::run()
 
        glfwSwapBuffers(window_);
 
+       auto& topScene = *scenes_.back();
+       auto sceneToPush = std::move(topScene.properties_.sceneToPush);
+
        {
-           auto& topScene = *scenes_.back();
-           auto sceneToPush = std::move(topScene.properties_.sceneToPush);
-
-           {
-               const auto numToPop = topScene.properties_.numScenesToPop;
-               assert(numToPop <= scenes_.size());
-               scenes_.erase(scenes_.end() - numToPop, scenes_.end());
-           }
-
-           if(sceneToPush)
-           {
-               scenes_.push_back(std::move(sceneToPush));
-           }
+           const auto numToPop = topScene.properties_.numScenesToPop;
+           assert(numToPop <= scenes_.size());
+           scenes_.erase(scenes_.end() - numToPop, scenes_.end());
        }
 
-       for(const auto& request: requests_)
+       if(sceneToPush)
        {
-           switch(request.type)
-           {
-           case Request::Quit: glfwSetWindowShouldClose(window_, GLFW_TRUE); break;
-
-           case Request::Vsync: glfwSwapInterval(request.vsync.on); break;
-
-           case Request::Cursor:
-           {
-               const auto mode = request.cursor.visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
-               glfwSetInputMode(window_, GLFW_CURSOR, mode);
-               break;
-           }
-
-           case Request::Window:
-           {
-               const auto state = request.window.state;
-               assert(frame_.window.state != state);
-
-               if(state == Window::Fullscreen)
-               {
-                   setFullscreen();
-               }
-               else if(state == Window::Maximized)
-               {
-                   assert(frame_.window.state != Window::Fullscreen);
-                   glfwMaximizeWindow(window_);
-               }
-               else
-               {
-                   if(frame_.window.state == Window::Fullscreen)
-                   {
-                       glfwSetWindowMonitor(window_, nullptr, frame_.window.restored.pos.x, frame_.window.restored.pos.y,
-                                            frame_.window.restored.size.x, frame_.window.restored.size.y, 0);
-
-                       if(frame_.window.previousState == Window::Maximized)
-                       {
-                           glfwMaximizeWindow(window_);
-                       }
-                   }
-                   else
-                   {
-                       glfwRestoreWindow(window_);
-                   }
-               }
-           }
-           }
+           scenes_.push_back(std::move(sceneToPush));
        }
-
-       requests_.clear();
    }
 }
 
@@ -298,6 +249,61 @@ void App::setFullscreen()
     auto* const monitor = glfwGetPrimaryMonitor();
     const auto* const mode = glfwGetVideoMode(monitor);
     glfwSetWindowMonitor(window_, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+}
+
+void App::handleRequests()
+{
+    for(const auto& request: requests_)
+    {
+        switch(request.type)
+        {
+        case Request::Quit: glfwSetWindowShouldClose(window_, GLFW_TRUE); break;
+
+        case Request::Vsync: glfwSwapInterval(request.vsync.on); break;
+
+        case Request::Cursor:
+        {
+            const auto mode = request.cursor.visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
+            glfwSetInputMode(window_, GLFW_CURSOR, mode);
+            break;
+        }
+
+        case Request::Window:
+        {
+            const auto state = request.window.state;
+            assert(frame_.window.state != state);
+
+            if(state == Window::Fullscreen)
+            {
+                setFullscreen();
+            }
+            else if(state == Window::Maximized)
+            {
+                assert(frame_.window.state != Window::Fullscreen);
+                glfwMaximizeWindow(window_);
+            }
+            else
+            {
+                if(frame_.window.state == Window::Fullscreen)
+                {
+                    glfwSetWindowMonitor(window_, nullptr, frame_.window.restored.pos.x, frame_.window.restored.pos.y,
+                                         frame_.window.restored.size.x, frame_.window.restored.size.y, 0);
+
+                    if(frame_.window.previousState == Window::Maximized)
+                    {
+                        glfwMaximizeWindow(window_);
+                    }
+                }
+                else
+                {
+                    glfwRestoreWindow(window_);
+                }
+            }
+        }
+        }
+    }
+
+    requests_.clear();
 }
 
 void App::errorCallback(int, const char* const description)

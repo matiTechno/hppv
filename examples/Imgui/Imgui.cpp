@@ -26,7 +26,7 @@ public:
         }
         ImGui::End();
 
-        ImGui::ShowTestWindow();
+        ImGui::ShowDemoWindow();
     }
 
 private:

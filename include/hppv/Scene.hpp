@@ -40,4 +40,12 @@ public:
     const Frame& frame_;
 };
 
+// todo?: find better place for this?
+
+template<typename T, int N>
+constexpr int size(T(&)[N])
+{
+    return N;
+}
+
 } // namespace hppv

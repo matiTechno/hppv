@@ -99,7 +99,7 @@ public:
 
     void run();
 
-    // executed at the end of a frame
+    // executed at the beginning of a frame
     static void request(Request request) {requests_.push_back(request);}
 
     static const Frame& getFrame() {return frame_;}
@@ -125,6 +125,8 @@ private:
     static void refreshFrame();
 
     static void setFullscreen();
+
+    static void handleRequests();
 
     static void errorCallback(int, const char* description);
     static void windowCloseCallback(GLFWwindow*);
