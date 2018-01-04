@@ -21,3 +21,9 @@ add_subdirectory(Fractal)
 add_subdirectory(SoftBody)
 add_subdirectory(Parallax)
 add_subdirectory(DayNight)
+
+option(LUA_TEST "build LuaTest example" ON)
+
+if(LUA_TEST)
+    add_subdirectory(LuaTest)
+endif()

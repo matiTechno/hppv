@@ -2,6 +2,7 @@ h p p v
 
 todo:
 
+* lua bindings (see LuaTest example)
 * port default imgui font
 * curves, lines
 * examples (fluid, soft body, flock, text editor, game of life, SAT)
@@ -19,13 +20,15 @@ included:
 * dear imgui
 * glad.c glad.h
 * stb_image.h
+* sol2 - sol.h (LuaTest)
 
 dependencies:
 
 * glfw
 * glm
+* lua (LuaTest, optional - see cmake options)
 
-compiles with gcc 7.2.0 on linux
+compiles with gcc 7.2.1 on linux
 
 runs with OpenGL 3.3,
 ARB_texture_storage and ARB_base_instance extensions must be supported

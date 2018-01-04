@@ -7,7 +7,7 @@
 
 #include "../run.hpp"
 
-// todo: colors
+// todo: colors, double precision
 const char* const fractalSource = R"(
 
 #fragment
