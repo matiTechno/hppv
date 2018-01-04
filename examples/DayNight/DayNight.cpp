@@ -89,7 +89,7 @@ void imguiGradientEdit(std::vector<Gradient>::iterator it, float* const time, bo
     ImGui::Text(title);
     ImGui::SameLine();
     ImGui::PushStyleColor(ImGuiCol_Text, {1.f, 1.f, 0.f, 1.f});
-    ImGui::Text(it->id.c_str());
+    ImGui::Text("%s", it->id.c_str());
     ImGui::PopStyleColor();
 
     if(current)
@@ -184,7 +184,7 @@ public:
         }
     }
 
-    void processInput(const bool hasInput)
+    void processInput(const bool hasInput) override
     {
         if(!hasInput)
             return;

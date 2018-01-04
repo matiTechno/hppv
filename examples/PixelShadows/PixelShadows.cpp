@@ -105,8 +105,8 @@ public:
         fbOcclusion_(GL_RGBA8, 1),
         fbShadow_(GL_RGBA8, 1),
         texTile_("tile.png"),
-        shaderShadow_({hppv::Renderer::vInstancesSource, shadowSource}, "shadow"),
-        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light")
+        shShadow_({hppv::Renderer::vInstancesSource, shadowSource}, "shShadow_"),
+        shLight_({hppv::Renderer::vInstancesSource, lightSource}, "shLight_")
     {
         {
             hppv::Circle circle;
@@ -158,7 +158,7 @@ private:
 
     hppv::Framebuffer fbOcclusion_, fbShadow_;
     hppv::Texture texTile_;
-    hppv::Shader shaderShadow_, shaderLight_;
+    hppv::Shader shShadow_, shLight_;
     std::vector<hppv::Circle> lights_;
     std::vector<hppv::Sprite> objects_;
     float time_ = 0.f;
@@ -205,7 +205,7 @@ private:
                     auto& occlusionTex = fbOcclusion_.getTexture();
                     sprite.texRect = {0, 0, occlusionTex.getSize()};
 
-                    renderer.shader(shaderShadow_);
+                    renderer.shader(shShadow_);
                     renderer.texture(occlusionTex);
                     renderer.cache(sprite);
                 }
@@ -221,7 +221,7 @@ private:
                 sprite.texRect = {0, 0, shadowTex.getSize()};
 
                 renderer.flipTextureY(true); // why?
-                renderer.shader(shaderLight_);
+                renderer.shader(shLight_);
                 renderer.texture(shadowTex);
                 renderer.cache(sprite);
                 renderer.flipTextureY(false);

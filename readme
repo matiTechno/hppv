@@ -7,6 +7,7 @@ todo:
 * examples (fluid, soft body, flock, text editor, game of life, SAT)
 * Space rotation, Camera class?
 * gamma correction?
+* Particles example - frame time oscillation (only with the vsync on)
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * license
@@ -18,7 +19,6 @@ included:
 * dear imgui
 * glad.c glad.h
 * stb_image.h
-* UTF8-CPP (utfcpp) (do we need it? maybe imgui has some nice api for UTF-8?)
 
 dependencies:
 

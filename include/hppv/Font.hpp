@@ -52,6 +52,7 @@ private:
     enum {TexSizeX = 256, Offset = 1};
 
     Texture texture_;
+    // todo?: replace int with unsigned int?
     std::map<int, Glyph> glyphs_;
     int lineHeight_;
 

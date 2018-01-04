@@ -40,7 +40,6 @@ private:
     hppv::Texture* texFrom_ = &tex1_;
     hppv::Texture* texTo_ = &tex2_;
     std::vector<hppv::Shader> shaders_;
-    std::vector<const char*> shNames_;
 
     struct
     {
@@ -53,10 +52,7 @@ private:
     void addShader(const std::string& transition, const char* const name)
     {
         shaders_.push_back(hppv::Shader({hppv::Renderer::vInstancesSource,
-                                         fragStart + transition + fragEnd},
-                                        name));
-
-        shNames_.push_back(name);
+                                         fragStart + transition + fragEnd}, name));
     }
 
     void startTransition()
@@ -74,7 +70,12 @@ private:
             ImGui::Text("github.com/gl-transitions/gl-transitions");
             ImGui::Separator();
 
-            if(ImGui::Combo("transition", &transition_.id, shNames_.data(), shNames_.size()))
+            if(ImGui::Combo("transition", &transition_.id,
+                            [](void* data, int idx, const char** outText)
+                            {
+                                *outText = reinterpret_cast<hppv::Shader*>(data)[idx].getId().c_str(); return true;
+                            },
+                            reinterpret_cast<void*>(shaders_.data()), shaders_.size()))
             {
                 startTransition();
             }

@@ -29,9 +29,7 @@ private:
         ImGui::Begin(prototype_.imguiWindowName);
         {
             ImGui::Text("count: %lu", emitter_.getCount());
-            int hz = emitter_.spawn.hz;
-            ImGui::SliderInt("spawn.hz", &hz, 60, 100000);
-            emitter_.spawn.hz = hz;
+            ImGui::SliderInt("spawn.hz", &emitter_.spawn.hz, 60, 100000);
         }
         ImGui::End();
     }

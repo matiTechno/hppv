@@ -12,9 +12,11 @@
 #include <hppv/Scene.hpp>
 #include <hppv/Font.hpp>
 #include <hppv/Framebuffer.hpp>
-#include <hppv/utf8.h>
 
 #include "Shaders.hpp"
+
+// see imgui.cpp
+int ImTextCharFromUtf8(unsigned int* out_char, const char* in_text, const char* in_text_end);
 
 namespace hppv
 {
@@ -72,9 +74,9 @@ Renderer::Instance createInstance(const glm::vec2 pos, const glm::vec2 size, con
 }
 
 Renderer::Renderer():
-    shaderBasic_({vInstancesSource, fBasicSource}, "Renderer::shaderBasic_"),
-    shaderSdf_({vInstancesSource, fSdfSource}, "Renderer::shaderSdf_"),
-    shaderVertices_({vVerticesSource, fVerticesSource}, "Renderer::shaderVertices_")
+    shaderBasic_({vInstancesSource, fBasicSource}, "hppv::Renderer::shaderBasic_"),
+    shaderSdf_({vInstancesSource, fSdfSource}, "hppv::Renderer::shaderSdf_"),
+    shaderVertices_({vVerticesSource, fVerticesSource}, "hppv::Renderer::shaderVertices_")
 {
     glEnable(GL_BLEND);
 
@@ -386,10 +388,13 @@ void Renderer::cache(const Text& text)
     auto i = batch.instances.start + batch.instances.count;
     const auto halfTextSize = text.getSize() / 2.f;
 
-    auto it = text.text.cbegin();
-    while(it != text.text.cend())
+    for(const auto* s = text.text.data(); *s;)
     {
-        const auto c = utf8::unchecked::next(it);
+        unsigned int c;
+        s += ImTextCharFromUtf8(&c, s, nullptr);
+
+        if(c == 0)
+            break;
 
         if(c == '\n')
         {

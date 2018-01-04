@@ -63,6 +63,8 @@ public:
     Shader(File, const std::string& filename, bool hotReload = false);
     Shader(std::initializer_list<std::string_view> sources, std::string_view id);
 
+    const std::string& getId() const {return id_;}
+
     bool isValid() const {return program_.getId();}
 
     GLint getUniformLocation(std::string_view name);

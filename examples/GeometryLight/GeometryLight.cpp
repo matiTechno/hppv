@@ -87,7 +87,7 @@ class GeometryLight: public hppv::Prototype
 public:
     GeometryLight():
         hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
-        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
+        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "shaderLight_"),
         fb_(GL_RGBA8, 1)
     {
         setShapes();

@@ -7,7 +7,6 @@
 
 #include <hppv/Font.hpp>
 #include <hppv/glad.h>
-#include <hppv/utf8.h>
 
 // imgui needs it
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -15,6 +14,9 @@
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "imgui/stb_truetype.h"
+
+// see imgui.cpp
+int ImTextCharFromUtf8(unsigned int* out_char, const char* in_text, const char* in_text_end);
 
 namespace hppv
 {
@@ -175,12 +177,15 @@ void Font::loadTrueType(const std::string& filename, const int sizePx, const std
         codePoints.insert(i);
     }
 
+    for(const auto* s = additionalChars.data(); *s;)
     {
-        auto it = additionalChars.cbegin();
-        while(it != additionalChars.cend())
-        {
-            codePoints.insert(utf8::unchecked::next(it));
-        }
+        unsigned int c;
+        s += ImTextCharFromUtf8(&c, s, nullptr);
+
+        if(c == 0)
+            break;
+
+        codePoints.insert(c);
     }
 
     std::map<int, unsigned char*> bitmaps;

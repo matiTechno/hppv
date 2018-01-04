@@ -34,7 +34,7 @@ public:
     {
         glm::vec2 pos;
         glm::vec2 size;
-        std::size_t hz;
+        int hz;
     }
     spawn;
 

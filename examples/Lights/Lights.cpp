@@ -55,8 +55,8 @@ class Lights: public hppv::Prototype
 public:
     Lights():
         hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
-        shaderLight_({hppv::Renderer::vInstancesSource, lightSource}, "light"),
-        shaderGradient_({hppv::Renderer::vInstancesSource, gradientSource}, "gradient"),
+        shLight_({hppv::Renderer::vInstancesSource, lightSource}, "shLight_"),
+        shGradient_({hppv::Renderer::vInstancesSource, gradientSource}, "shGradient_"),
         texture_("res/mandrill.png"),
         framebuffer_(GL_RGBA8, 1)
     {
@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    hppv::Shader shaderLight_, shaderGradient_;
+    hppv::Shader shLight_, shGradient_;
     hppv::Texture texture_;
     hppv::Framebuffer framebuffer_;
     float time_ = 0.f;
@@ -79,7 +79,7 @@ private:
         {
             hppv::Sprite sprite(space_.projected);
 
-            renderer.shader(shaderGradient_);
+            renderer.shader(shGradient_);
             renderer.cache(sprite);
             renderer.flush();
         }
@@ -126,7 +126,7 @@ private:
         }
 
         // spot lights
-        renderer.shader(shaderLight_);
+        renderer.shader(shLight_);
         {
             hppv::Circle circle;
             circle.center = 50.f + 20.f * glm::vec2(glm::sin(time_ / 2.f), glm::cos(time_ / 2.f));

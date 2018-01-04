@@ -41,12 +41,14 @@ TEST_CASE("shader")
 
     hppv::Shader shader(hppv::Shader::File(), "shaders/fragment.sh");
     REQUIRE(shader.isValid());
+    REQUIRE(shader.getId() == "shaders/fragment.sh");
 
     shader = hppv::Shader(hppv::Shader::File(), "shaders/vertex.sh");
     REQUIRE(shader.isValid());
 
     shader = hppv::Shader({vertex, fragment}, "1");
     REQUIRE(shader.isValid());
+    REQUIRE(shader.getId() == "1");
 
     shader = hppv::Shader(hppv::Shader::File(), "fragment.sh", true);
     REQUIRE(shader.isValid() == false);
@@ -74,6 +76,7 @@ TEST_CASE("shader")
 
     hppv::Shader shader2(std::move(shader));
     REQUIRE(shader2.isValid());
+    REQUIRE(shader2.getId() == "8");
     REQUIRE(shader.isValid() == false);
 
     shader2 = hppv::Shader({}, "9");
