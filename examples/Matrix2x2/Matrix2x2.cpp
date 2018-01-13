@@ -60,15 +60,17 @@ public:
 
         {
             hppv::Sprite s;
-            s.color /= 2.f;
-            constexpr auto width = 0.01f;
+            s.color = {0.2f, 0.2f, 0.2f, 1.f};
+            constexpr auto width = 0.1f;
 
+            // x
             s.size = {space_.size.x, width};
-            s.pos = {space_.pos.x, 0.f};
+            s.pos = {space_.pos.x, 0.f - s.size.y / 2.f};
             renderer.cache(s);
 
+            // y
             s.size = {width, space_.size.y};
-            s.pos = {0.f, space_.pos.y};
+            s.pos = {0.f - s.size.x / 2.f, space_.pos.y};
             renderer.cache(s);
         }
 
