@@ -35,8 +35,8 @@ public:
 
         for(auto i = 0; i < hppv::size(points_); ++i)
         {
-            points_[i] = space_.pos + space_.size * glm::vec2(i % rowSize, i / rowSize) /
-                                                    static_cast<float>(rowSize - 1);
+            points_[i] = space_.pos + space_.size / static_cast<float>(rowSize - 1) *
+                                      glm::vec2(i % rowSize, i / rowSize);
         }
     }
 
@@ -76,15 +76,17 @@ public:
 
         renderer.shader(hppv::Render::CircleColor);
 
+        constexpr M2x2 shear{{1.f, 0.f}, {1.f, -1.f}};
+
         for(const auto point: points_)
         {
             hppv::Circle c;
 
             {
                 constexpr M2x2 identity;
-                M2x2 shear; shear.j.x = 1.f;
-                shear = mix(identity, shear, transition_.time / transition_.duration);
-                c.center = shear * point;
+                // is this the correct way to animate transformations?
+                const auto matrix = mix(identity, shear, transition_.time / transition_.duration);
+                c.center = matrix * point;
             }
 
             c.radius = 0.05f;
@@ -93,12 +95,16 @@ public:
         }
 
         ImGui::Begin("Matrix2x2");
+        ImGui::Text("(y grows down)");
         ImGui::Text("shear transformation");
+        ImGui::NewLine();
+        ImGui::Text("%.1f   %.1f\n\n"
+                    "%.1f   %.1f", shear.i.x, shear.j.x, shear.i.y, shear.j.y);
         ImGui::End();
     }
 
 private:
-    static constexpr auto rowSize = 10;
+    static constexpr auto rowSize = 11;
     const hppv::Space space_{-5.f, -5.f, 10.f, 10.f};
     glm::vec2 points_[rowSize * rowSize];
 
