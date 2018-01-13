@@ -1,3 +1,8 @@
+#include <cassert>
+
+#include <glm/common.hpp>
+#include <glm/mat2x2.hpp>
+
 #include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
@@ -8,20 +13,12 @@
 
 struct M2x2
 {
-    // j is inverted because y grows down in the Renderer coordinate system
-    glm::vec2 i{1.f, 0.f}, j{0.f, -1.f};
+    glm::vec2 i{1.f, 0.f}, j{0.f, 1.f};
 };
 
 glm::vec2 operator*(M2x2 m, glm::vec2 v)
 {
     return m.i * v.x + m.j * v.y;
-}
-
-M2x2 mix(M2x2 x, M2x2 y, float a)
-{
-    x.i = (1.f - a) * x.i + a * y.i;
-    x.j = (1.f - a) * x.j + a * y.j;
-    return x;
 }
 
 // todo: transformations editor
@@ -76,26 +73,23 @@ public:
 
         renderer.shader(hppv::Render::CircleColor);
 
-        constexpr M2x2 shear{{1.f, 0.f}, {1.f, -1.f}};
+        constexpr M2x2 shear{{1.f, 0.f}, {1.f, 1.f}};
 
         for(const auto point: points_)
         {
             hppv::Circle c;
 
-            {
-                constexpr M2x2 identity;
-                // is this the correct way to animate transformations?
-                const auto matrix = mix(identity, shear, transition_.time / transition_.duration);
-                c.center = matrix * point;
-            }
+            const auto tPoint = shear * point;
+            assert(tPoint == glm::mat2(shear.i, shear.j) * point);
 
-            c.radius = 0.05f;
+            c.center = glm::mix(point, tPoint, transition_.time / transition_.duration);
+            c.center.y *= -1.f; // hack: in the Renderer coordinate system y grows down; we want the opposite
+            c.radius = 0.065f;
             c.color = {1.f, 0.5f, 0.f, 1.f};
             renderer.cache(c);
         }
 
         ImGui::Begin("Matrix2x2");
-        ImGui::Text("(y grows down)");
         ImGui::Text("shear transformation");
         ImGui::NewLine();
         ImGui::Text("%.1f   %.1f\n\n"
