@@ -16,7 +16,7 @@ struct M2x2
     glm::vec2 i{1.f, 0.f}, j{0.f, 1.f};
 };
 
-glm::vec2 operator*(M2x2 m, glm::vec2 v)
+glm::vec2 operator*(const M2x2 m, const glm::vec2 v)
 {
     return m.i * v.x + m.j * v.y;
 }
