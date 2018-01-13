@@ -2,6 +2,7 @@ h p p v
 
 todo:
 
+* profiling
 * lua bindings (see LuaTest example)
 * port default imgui font
 * curves, lines
