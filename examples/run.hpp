@@ -3,7 +3,9 @@
 #define RUN(SceneType) \
     int main() { \
     hppv::App app; \
-    if(!app.initialize({})) return 1; \
+    hppv::App::InitParams p; \
+    p.window.title = #SceneType; \
+    if(!app.initialize(p)) return 1; \
     app.pushScene<SceneType>(); \
     app.run(); \
     return 0;}
