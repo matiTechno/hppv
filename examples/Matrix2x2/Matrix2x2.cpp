@@ -10,18 +10,33 @@
 #include "../run.hpp"
 
 // inspired by 3Blue1Brown Essence of linear algebra
+// todo: editor
 
-struct M2x2
+struct M2
 {
     glm::vec2 i{1.f, 0.f}, j{0.f, 1.f};
 };
 
-glm::vec2 operator*(const M2x2 m, const glm::vec2 v)
+glm::vec2 operator*(const M2 m, const glm::vec2 v)
 {
     return m.i * v.x + m.j * v.y;
 }
 
-// todo: transformations editor
+M2 operator*(const M2 x, const M2 y)
+{
+    return {{x * y.i}, {x * y.j}};
+}
+
+void imguiPrintM2(const char* const name, const M2 m)
+{
+    if(name)
+    {
+        ImGui::Text("%s", name);
+    }
+
+    ImGui::Text("%.1f   %.1f\n\n"
+                "%.1f   %.1f", m.i.x, m.j.x, m.i.y, m.j.y);
+}
 
 class Matrix2x2: public hppv::Scene
 {
@@ -73,16 +88,44 @@ public:
 
         renderer.shader(hppv::Render::CircleColor);
 
-        constexpr M2x2 shear{{1.f, 0.f}, {1.f, 1.f}};
+        constexpr M2 shear{{1.f, 0.f}, {1.f, 1.f}};
+        constexpr M2 rotation90{{0.f, 1.f}, {-1.f, 0.f}};
+        const auto outputMatrix = rotation90 * shear;
+
+        assert(glm::mat2(rotation90.i, rotation90.j) * glm::mat2(shear.i, shear.j) * glm::vec2(1.f) ==
+               outputMatrix * glm::vec2(1.f));
 
         for(const auto point: points_)
         {
             hppv::Circle c;
+            glm::vec2 start, end;
+            float a;
 
-            const auto tPoint = shear * point;
-            assert(tPoint == glm::mat2(shear.i, shear.j) * point);
+            if(sequentially_)
+            {
+                constexpr auto halfDuration = transition_.duration / 2.f;
 
-            c.center = glm::mix(point, tPoint, transition_.time / transition_.duration);
+                if(transition_.time < halfDuration)
+                {
+                    start = point;
+                    end = shear * start;
+                    a = transition_.time / halfDuration;
+                }
+                else
+                {
+                    start = shear * point;
+                    end = rotation90 * start;
+                    a = (transition_.time - halfDuration) / halfDuration;
+                }
+            }
+            else
+            {
+                start = point;
+                end = outputMatrix * start;
+                a = transition_.time / transition_.duration;
+            }
+
+            c.center = glm::mix(start, end, a);
             c.center.y *= -1.f; // hack: in the Renderer coordinate system y grows down; we want the opposite
             c.radius = 0.065f;
             c.color = {1.f, 0.5f, 0.f, 1.f};
@@ -90,10 +133,23 @@ public:
         }
 
         ImGui::Begin("Matrix2x2");
-        ImGui::Text("shear transformation");
+
+        imguiPrintM2("rotation90", rotation90);
         ImGui::NewLine();
-        ImGui::Text("%.1f   %.1f\n\n"
-                    "%.1f   %.1f", shear.i.x, shear.j.x, shear.i.y, shear.j.y);
+        ImGui::Text("X");
+        ImGui::NewLine();
+        imguiPrintM2("shear", shear);
+        ImGui::NewLine();
+        ImGui::Text("=");
+        ImGui::NewLine();
+        imguiPrintM2(nullptr, outputMatrix);
+        ImGui::NewLine();
+
+        if(ImGui::Checkbox("animate sequentially", &sequentially_))
+        {
+            transition_.time = 0.f;
+        }
+
         ImGui::End();
     }
 
@@ -105,9 +161,11 @@ private:
     struct Transition
     {
         float time = 0.f;
-        static inline auto duration = 10.f;
+        static constexpr auto duration = 10.f;
     }
     transition_;
+
+    bool sequentially_ = true;
 };
 
 RUN(Matrix2x2)
