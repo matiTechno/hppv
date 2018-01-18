@@ -47,8 +47,8 @@ public:
 
         for(auto i = 0; i < hppv::size(points_); ++i)
         {
-            points_[i] = space_.pos + space_.size / static_cast<float>(rowSize - 1) *
-                                      glm::vec2(i % rowSize, i / rowSize);
+            points_[i] = space_.pos + space_.size / static_cast<float>(rowSize_ - 1) *
+                                      glm::vec2(i % rowSize_, i / rowSize_);
         }
     }
 
@@ -154,9 +154,9 @@ public:
     }
 
 private:
-    static constexpr auto rowSize = 11;
+    static constexpr auto rowSize_ = 11;
     const hppv::Space space_{-5.f, -5.f, 10.f, 10.f};
-    glm::vec2 points_[rowSize * rowSize];
+    glm::vec2 points_[rowSize_ * rowSize_];
 
     struct Transition
     {

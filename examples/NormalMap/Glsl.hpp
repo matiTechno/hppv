@@ -1,4 +1,4 @@
-static const char* const deferredSource = R"(
+const char* const deferredSource = R"(
 
 #fragment
 #version 330

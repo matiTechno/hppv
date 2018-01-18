@@ -140,7 +140,7 @@ public:
         properties_.maximize = true;
 
         {
-            std::ifstream file(filename);
+            std::ifstream file(filename_);
             if(file.is_open())
             {
                 std::string dum;
@@ -176,8 +176,6 @@ public:
         std::uniform_real_distribution<float> distX(pos.x - offset, pos.x + size.x + offset);
         std::uniform_real_distribution<float> distY(pos.y - offset, pos.y + size.y + offset);
 
-        stars_.resize(500);
-
         for(auto& star: stars_)
         {
             star.pos = {distX(rng), distY(rng)};
@@ -194,10 +192,10 @@ public:
             if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS
                                               && event.key.key == GLFW_KEY_ENTER)
             {
-                hideEditor = !hideEditor;
+                hideEditor_ = !hideEditor_;
 
                 hppv::Request r(hppv::Request::Cursor);
-                r.cursor.visible = !hideEditor;
+                r.cursor.visible = !hideEditor_;
                 hppv::App::request(r);
             }
         }
@@ -207,18 +205,18 @@ public:
     void editor();
 
 private:
-    const char* const filename = "data.txt";
+    const char* const filename_ = "data.txt";
     const hppv::Space space_ = {0.f, 0.f, 100.f, 100.f};
     hppv::Shader sh_;
     hppv::Font font_;
     std::vector<Gradient> gradients_;
     std::vector<Gradient>::iterator current_;
-    std::vector<hppv::Vertex> stars_;
+    hppv::Vertex stars_[500];
     float time_ = 0.f;
     int speed_ = 1;
-    char textInputBuf[256] = {'\0'};
+    char textInputBuf_[256] = {'\0'};
     bool goToNext_ = true;
-    bool hideEditor = false;
+    bool hideEditor_ = false;
 };
 
 void DayNight::render(hppv::Renderer &renderer)
@@ -254,7 +252,7 @@ void DayNight::render(hppv::Renderer &renderer)
     renderer.mode(hppv::RenderMode::Vertices);
     renderer.shader(hppv::Render::VerticesColor);
     renderer.primitive(GL_POINTS);
-    renderer.cache(stars_.data(), stars_.size());
+    renderer.cache(stars_, size(stars_));
 
     renderer.mode(hppv::RenderMode::Instances);
     renderer.shader(sh_);
@@ -270,7 +268,7 @@ void DayNight::render(hppv::Renderer &renderer)
         renderer.cache(hppv::Sprite(projection));
     }
 
-    if(!hideEditor)
+    if(!hideEditor_)
     {
         editor();
     }
@@ -303,9 +301,9 @@ void DayNight::editor()
         imguiPushDisabled(0.5f);
     }
 
-    if(ImGui::InputText("change name", textInputBuf, hppv::size(textInputBuf), ImGuiInputTextFlags_EnterReturnsTrue))
+    if(ImGui::InputText("change name", textInputBuf_, hppv::size(textInputBuf_), ImGuiInputTextFlags_EnterReturnsTrue))
     {
-        current_->id = textInputBuf;
+        current_->id = textInputBuf_;
     }
 
     ImGui::NewLine();
@@ -387,7 +385,7 @@ void DayNight::editor()
 
     if(ImGui::Button("save"))
     {
-        std::ofstream file(filename, std::ios::trunc);
+        std::ofstream file(filename_, std::ios::trunc);
         if(file.is_open())
         {
             for(const auto& g: gradients_)
