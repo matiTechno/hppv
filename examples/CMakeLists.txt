@@ -28,3 +28,5 @@ option(LUA_TEST "build LuaTest example" ON)
 if(LUA_TEST)
     add_subdirectory(LuaTest)
 endif()
+
+add_subdirectory(RayTracer)
