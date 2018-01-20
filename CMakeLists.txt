@@ -4,8 +4,8 @@ project(hppv)
 option(EXAMPLES "build examples" ON)
 option(TESTS "build tests" ON)
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -pedantic -O2 -g")
-set(CMAKE_C_FLAGS   "-Wall -Wextra -O2")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -pedantic -O3 -g")
+set(CMAKE_C_FLAGS   "-Wall -Wextra -O3")
 
 add_definitions(-DGLM_FORCE_NO_CTOR_INIT -DSHADER_GLM)
 
