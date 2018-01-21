@@ -2,6 +2,7 @@ h p p v
 
 todo:
 
+* floating point literal suffix convention
 * test (Renderer): replace 4x4 matrices with 3x3 (or don't use matrices at all)
 * profiling
 * lua bindings (see LuaTest example)
