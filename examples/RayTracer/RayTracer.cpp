@@ -19,6 +19,9 @@
 #include "renderImage.hpp"
 #include "../run.hpp"
 
+// update (21-01-2018): the plan is to render the same scene with a ray-tracer, a software rasterizer
+// and OpenGL (scene editor)
+
 class RayTracer: public hppv::Scene
 {
 public:
@@ -90,7 +93,7 @@ public:
             renderer.cache(sprite);
         }
 
-        // test opengl 3d window
+        // opengl 3d test window
         {
             renderer.flush();
 
@@ -123,7 +126,6 @@ private:
     }
     image_;
 
-    // it will be a ray-tracer preview
     // todo: move somewhere else
     struct D3
     {
