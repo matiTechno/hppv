@@ -7,6 +7,15 @@
 #include <hppv/Texture.hpp>
 #include <hppv/glad.h>
 
+// ### for d3_
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <hppv/Shader.hpp>
+#include <hppv/GLobjects.hpp>
+#include <hppv/Framebuffer.hpp>
+// ###
+
 #include "renderImage.hpp"
 #include "../run.hpp"
 
@@ -61,7 +70,7 @@ public:
             renderer.cache(sprite);
             renderer.flipTextureY(false);
         }
-        else
+        else // progress bar
         {
             const hppv::Space space(0, 0, 100, 100);
 
@@ -80,6 +89,25 @@ public:
 
             renderer.cache(sprite);
         }
+
+        // test opengl 3d window
+        {
+            renderer.flush();
+
+            constexpr glm::vec2 size{200, 200};
+            d3_.render(size, frame_.time);
+
+            renderer.projection({0, 0, properties_.size});
+            renderer.shader(hppv::Render::Tex);
+            renderer.texture(d3_.fb.getTexture());
+
+            hppv::Sprite s;
+            s.pos = {0.f, 0.f};
+            s.size = size;
+            s.texRect = {0, 0, d3_.fb.getTexture().getSize()};
+
+            renderer.cache(s);
+        }
     }
 
 private:
@@ -94,6 +122,121 @@ private:
         bool ready = false;
     }
     image_;
+
+    // it will be a ray-tracer preview
+    // todo: move somewhere else
+    struct D3
+    {
+        D3(): fb(GL_RGBA8, 1)
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, bo.getId());
+
+            const glm::vec3 vertices[] =
+            {
+                {-1.f, -1.f, 0.f},
+                {1.f, -1.f, 0.f},
+                {0.f, 1.f, 0.f}
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+            glBindVertexArray(vao.getId());
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+            glEnableVertexAttribArray(0);
+
+            const char* const source = R"(
+
+            #vertex
+            #version 330
+
+            layout(location = 0) in vec3 vertex;
+
+            uniform mat4 projection;
+            uniform mat4 view;
+            uniform mat4 model;
+
+            void main()
+            {
+                gl_Position = projection * view * model * vec4(vertex, 1);
+            }
+
+            #fragment
+            #version 330
+
+            out vec4 color;
+
+            void main()
+            {
+                color = vec4(1, 1, 0, 1);
+            }
+            )";
+
+            sh = hppv::Shader({source}, "d3");
+        }
+
+        void render(const glm::ivec2 size, float frameTime)
+        {
+            time += frameTime;
+
+            // todo: depth testing
+
+            glDisable(GL_BLEND);
+
+            fb.bind();
+            fb.setSize(size);
+            fb.clear();
+
+            glViewport(0, 0, size.x, size.y);
+
+            sh.bind();
+            {
+                const auto projection = glm::perspective(camera.fovy, static_cast<float>(size.x) / size.y,
+                                                         camera.zNear, camera.zFar);
+
+                sh.uniformMat4f("projection", projection);
+
+                const auto view = glm::lookAt(camera.eye, camera.eye + camera.dir, camera.up);
+                sh.uniformMat4f("view", view);
+
+                glm::mat4 model(1.f);
+
+                constexpr auto angularVel = glm::radians(360.f / 10.f);
+                const auto x = glm::sin(angularVel * time);
+                const auto z = glm::cos(angularVel * time);
+                model = glm::translate(model, glm::vec3(x, 0.f, z));
+                model = glm::rotate(model, angularVel * time, {0.f, 1.f, 0.f});
+
+                sh.uniformMat4f("model", model);
+            }
+
+            glBindVertexArray(vao.getId());
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            fb.unbind();
+        }
+
+        struct
+        {
+            glm::vec3 eye = {0.f, 0.f, 3.f};
+
+            // I find it more convenient than 'center'
+            glm::vec3 dir = {0.f, 0.f, -1.f};
+
+            glm::vec3 up = {0.f, 1.f, 0.f};
+            float fovy = 90.f; // in degrees
+            float zNear = 0.1f, zFar = 100.f;
+        }
+        const camera;
+
+        hppv::Shader sh;
+        hppv::GLvao vao;
+        hppv::GLbo bo;
+        hppv::Framebuffer fb;
+
+        float time = 0.f;
+    }
+    d3_;
 };
 
 RUN(RayTracer)

@@ -13,7 +13,7 @@ struct Camera
     glm::dvec3 eye = {0.0, 0.0, 0.0};
     glm::dvec3 center = {0.0, 0.0, -1.0};
     glm::dvec3 up = {0.0, 1.0, 0.0};
-    double fov = 90.0; // in degrees
+    double fovy = 90.0; // in degrees
 };
 
 struct Ray
@@ -111,7 +111,7 @@ void renderImage(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progress
     }
 
     const auto aspectRatio = static_cast<double>(size.x) / size.y;
-    const auto scale = glm::tan(glm::radians(camera.fov / 2.0));
+    const auto scale = glm::tan(glm::radians(camera.fovy / 2.0));
 
     Ray ray;
     ray.origin = camera.eye;

@@ -78,8 +78,6 @@ Renderer::Renderer():
     shaderSdf_({vInstancesSource, fSdfSource}, "hppv::Renderer::shaderSdf_"),
     shaderVertices_({vVerticesSource, fVerticesSource}, "hppv::Renderer::shaderVertices_")
 {
-    glEnable(GL_BLEND);
-
     glSamplerParameteri(samplerLinear_.getId(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glSamplerParameteri(samplerLinear_.getId(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -439,6 +437,8 @@ void Renderer::cache(const Vertex* vertex, const std::size_t count)
 
 void Renderer::flush()
 {
+    glEnable(GL_BLEND);
+
     {
         const auto numInstances = batches_.back().instances.start + batches_.back().instances.count;
         glBindBuffer(GL_ARRAY_BUFFER, boInstances_.getId());
