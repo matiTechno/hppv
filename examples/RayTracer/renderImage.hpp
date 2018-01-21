@@ -2,10 +2,12 @@
 
 #include <atomic>
 
+#include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
 struct Pixel
 {
+    Pixel() = default;
     unsigned char r = 0, g = 0, b = 0;
 };
 
