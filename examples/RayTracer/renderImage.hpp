@@ -13,4 +13,8 @@ struct Pixel
 
 // progress - incremented for each pixel rendered
 
-void renderImage(Pixel* buffer, glm::ivec2 size, std::atomic_int& progress);
+// ray-tracer
+void renderImage1(Pixel* buffer, glm::ivec2 size, std::atomic_int& progress);
+
+// rasterizer
+void renderImage2(Pixel* buffer, glm::ivec2 size, std::atomic_int& progress);

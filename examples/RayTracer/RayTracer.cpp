@@ -6,6 +6,7 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/glad.h>
+#include <hppv/imgui.h>
 
 // ### for d3_
 #include <glm/mat4x4.hpp>
@@ -22,6 +23,10 @@
 // update (21-01-2018): the plan is to render the same scene with a ray-tracer, a software rasterizer
 // and OpenGL (scene editor)
 
+// todo:
+// * better class and function names
+// * move some parts into separate files
+
 class RayTracer: public hppv::Scene
 {
 public:
@@ -29,46 +34,49 @@ public:
     {
         properties_.maximize = true;
 
-        std::thread t(renderImage, image_.buffer.data(), image_.size, std::ref(image_.renderProgress));
-        t.detach();
+        std::thread t1(renderImage1, image1_.buffer.data(), image1_.size, std::ref(image1_.renderProgress));
+        t1.detach();
+
+        std::thread t2(renderImage2, image2_.buffer.data(), image2_.size, std::ref(image2_.renderProgress));
+        t2.detach();
     }
 
     void render(hppv::Renderer& renderer) override
     {
         // todo?: partial updates?
-        if(!image_.ready && (image_.renderProgress == image_.size.x * image_.size.y))
+        if(!activeImage_->ready && (activeImage_->renderProgress == activeImage_->size.x * activeImage_->size.y))
         {
-            image_.ready = true;
+            activeImage_->ready = true;
 
             GLint unpackAlignment;
             glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlignment);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // 3 is not supported
 
-            image_.tex.bind();
+            activeImage_->tex.bind();
 
-            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_.size.x, image_.size.y, GL_RGB, GL_UNSIGNED_BYTE,
-                            image_.buffer.data());
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, activeImage_->size.x, activeImage_->size.y, GL_RGB, GL_UNSIGNED_BYTE,
+                            activeImage_->buffer.data());
 
             glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
         }
 
-        if(image_.ready)
+        if(activeImage_->ready)
         {
-            const auto doesFit = image_.size.x <= properties_.size.x &&
-                                 image_.size.y <= properties_.size.y;
+            const auto doesFit = activeImage_->size.x <= properties_.size.x &&
+                                 activeImage_->size.y <= properties_.size.y;
 
             const auto proj = doesFit ? hppv::Space(0, 0, properties_.size) :
-                                        hppv::expandToMatchAspectRatio(hppv::Space(0, 0, image_.size), properties_.size);
+                                        hppv::expandToMatchAspectRatio(hppv::Space(0, 0, activeImage_->size), properties_.size);
 
             renderer.projection(proj);
             renderer.shader(hppv::Render::Tex);
-            renderer.texture(image_.tex);
+            renderer.texture(activeImage_->tex);
             renderer.flipTextureY(true);
 
             hppv::Sprite sprite;
-            sprite.size = image_.size;
+            sprite.size = activeImage_->size;
             sprite.pos = proj.pos + (proj.size - sprite.size) / 2.f;
-            sprite.texRect = {0, 0, image_.tex.getSize()};
+            sprite.texRect = {0, 0, activeImage_->tex.getSize()};
 
             renderer.cache(sprite);
             renderer.flipTextureY(false);
@@ -87,7 +95,7 @@ public:
 
             renderer.cache(sprite);
 
-            sprite.size.x *= static_cast<float>(image_.renderProgress) / (image_.size.x * image_.size.y);
+            sprite.size.x *= static_cast<float>(activeImage_->renderProgress) / (activeImage_->size.x * activeImage_->size.y);
             sprite.color = {0.f, 1.f, 0.f, 1.f};
 
             renderer.cache(sprite);
@@ -111,6 +119,15 @@ public:
 
             renderer.cache(s);
         }
+
+        ImGui::Begin("image");
+        {
+            auto idx = (activeImage_ == &image1_) ? 0 : 1;
+            const char* const ids[] = {"ray-tracer", "rasterizer"};
+            ImGui::ListBox("technique", &idx, ids, hppv::size(ids));
+            activeImage_ = (idx == 0) ? &image1_ : &image2_;
+        }
+        ImGui::End();
     }
 
 private:
@@ -118,13 +135,15 @@ private:
     {
         Image(): buffer(size.x * size.y), tex(GL_RGB8, size) {}
 
-        static constexpr glm::ivec2 size{800, 600};
+        static constexpr glm::ivec2 size{1000, 1000};
         std::vector<Pixel> buffer;
         hppv::Texture tex;
         std::atomic_int renderProgress = 0;
         bool ready = false;
     }
-    image_;
+    image1_, image2_;
+
+    Image* activeImage_ = &image1_;
 
     // todo: move somewhere else
     struct D3
@@ -204,9 +223,9 @@ private:
                 glm::mat4 model(1.f);
 
                 constexpr auto angularVel = glm::radians(360.f / 10.f);
-                const auto x = glm::sin(angularVel * time);
-                const auto z = glm::cos(angularVel * time);
-                model = glm::translate(model, glm::vec3(x, 0.f, z));
+                //const auto x = glm::sin(angularVel * time);
+                //const auto z = glm::cos(angularVel * time);
+                //model = glm::translate(model, glm::vec3(x, 0.f, z));
                 model = glm::rotate(model, angularVel * time, {0.f, 1.f, 0.f});
 
                 sh.uniformMat4f("model", model);

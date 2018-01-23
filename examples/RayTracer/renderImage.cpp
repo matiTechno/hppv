@@ -81,7 +81,7 @@ bool intersect(const Ray ray, const Plane& plane, double* const distance)
     return true;
 }
 
-void renderImage(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progress)
+void renderImage1(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progress)
 {
     Camera camera;
     camera.eye = {-1.0, 1.5, 2.0};
@@ -195,4 +195,148 @@ void renderImage(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progress
             ++progress;
         }
     }
+}
+
+// ###
+// github.com/ssloy/tinyrenderer/wiki
+
+#include <cassert>
+#include <utility> // std::swap
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <sstream>
+
+void line(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
+          Pixel* const buffer, const glm::ivec2 imageSize)
+{
+    // investigate this part
+    if(start == end)
+    {
+        return;
+    }
+
+    assert(start.x < imageSize.x && start.x >= 0);
+    assert(start.y < imageSize.y && start.y >= 0);
+    assert(end.x < imageSize.x && end.x >= 0);
+    assert(end.y < imageSize.y && end.y >= 0);
+
+    if(start.x > end.x)
+    {
+        std::swap(start, end);
+    }
+
+    auto steep = false;
+
+    if(glm::abs(end.x - start.x) < glm::abs(end.y - start.y))
+    {
+        std::swap(start.x, start.y);
+        std::swap(end.x, end.y);
+        steep = true;
+    }
+
+    for(auto x = start.x; x <= end.x; ++x)
+    {
+        const auto t = static_cast<double>(x - start.x) / (end.x - start.x);
+        glm::ivec2 pixelPos = glm::dvec2(start) * (1.0 - t) + glm::dvec2(end) * t;
+
+        if(steep)
+        {
+            std::swap(pixelPos.x, pixelPos.y);
+        }
+
+        *(buffer + pixelPos.y * imageSize.x + pixelPos.x) = toPixel(color);
+    }
+}
+
+struct Model
+{
+    Model(const char* const filename)
+    {
+        std::fstream file(filename);
+
+        if(!file.is_open())
+        {
+            std::cout << "Model: could not open file " << filename << std::endl;
+            return;
+        }
+
+        std::string line;
+
+        while(std::getline(file, line))
+        {
+            std::stringstream s(line);
+            std::string t;
+            s >> t;
+
+            if(t == "v")
+            {
+                glm::dvec3 vertex;
+
+                for(auto i = 0; i < 3; ++i)
+                {
+                    s >> vertex[i];
+                }
+
+                vertices.push_back(vertex);
+            }
+            else if(t == "f")
+            {
+                glm::ivec3 face;
+                int idx; // we need it because glm assertion fails on face[3] (while loop) or maybe we are doing something wrong?
+                int i = 0;
+                int dummyInt;
+                char dummyChar;
+
+                while(s >> idx >> dummyChar >> dummyInt >> dummyChar >> dummyInt)
+                {
+                    assert(i < 3);
+                    face[i] = --idx; // in wavefront obj all indices start at 1, not 0
+                    ++i;
+                }
+
+                assert(i == 3); // we want only triangles
+                faces.push_back(face);
+            }
+        }
+    }
+
+    std::vector<glm::dvec3> vertices;
+    std::vector<glm::ivec3> faces;
+};
+
+// some lines are missing
+void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& progress)
+{
+    Model model("res/african_head.obj");
+
+    for(const auto& face: model.faces)
+    {
+        for(auto i = 0; i < 3; ++i)
+        {
+            const auto v0 = model.vertices[face[i]];
+            const auto v1 = model.vertices[face[(i + 1) % 3]];
+
+            auto start = (glm::dvec2(v0) + 1.0) / 2.0;
+            auto end = (glm::dvec2(v1) + 1.0) / 2.0;
+
+            // flip y
+            start.y = 1 - start.y;
+            end.y = 1 - end.y;
+
+            start *= glm::dvec2(size - 1);
+            end *= glm::dvec2(size - 1);
+
+            // scale
+            const auto aspectRatio = static_cast<double>(size.x) / size.y;
+            start.x /= aspectRatio;
+            end.x /= aspectRatio;
+
+
+            line(start, end, {1.0, 0.5, 0.0}, buffer, size);
+        }
+    }
+
+    progress = size.x * size.y;
 }
