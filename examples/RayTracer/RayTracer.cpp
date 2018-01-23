@@ -26,6 +26,7 @@
 // todo:
 // * better class and function names
 // * move some parts into separate files
+// * change the project name
 
 class RayTracer: public hppv::Scene
 {
@@ -135,7 +136,7 @@ private:
     {
         Image(): buffer(size.x * size.y), tex(GL_RGB8, size) {}
 
-        static constexpr glm::ivec2 size{1000, 1000};
+        static constexpr glm::ivec2 size{800, 600};
         std::vector<Pixel> buffer;
         hppv::Texture tex;
         std::atomic_int renderProgress = 0;
@@ -143,9 +144,8 @@ private:
     }
     image1_, image2_;
 
-    Image* activeImage_ = &image1_;
+    Image* activeImage_ = &image2_;
 
-    // todo: move somewhere else
     struct D3
     {
         D3(): fb(GL_RGBA8, 1)

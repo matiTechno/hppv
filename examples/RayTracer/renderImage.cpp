@@ -211,21 +211,14 @@ void renderImage1(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progres
 void line(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
           Pixel* const buffer, const glm::ivec2 imageSize)
 {
-    // investigate this part
-    if(start == end)
-    {
-        return;
-    }
-
     assert(start.x < imageSize.x && start.x >= 0);
     assert(start.y < imageSize.y && start.y >= 0);
     assert(end.x < imageSize.x && end.x >= 0);
     assert(end.y < imageSize.y && end.y >= 0);
 
-    if(start.x > end.x)
-    {
-        std::swap(start, end);
-    }
+    // tinyrenderer doesn't have this check, strange
+    if(start == end)
+        return;
 
     auto steep = false;
 
@@ -236,10 +229,17 @@ void line(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
         steep = true;
     }
 
+    if(start.x > end.x)
+    {
+        std::swap(start, end);
+    }
+
+
     for(auto x = start.x; x <= end.x; ++x)
     {
         const auto t = static_cast<double>(x - start.x) / (end.x - start.x);
-        glm::ivec2 pixelPos = glm::dvec2(start) * (1.0 - t) + glm::dvec2(end) * t;
+        const auto y = start.y * (1.0 - t) + end.y * t;
+        glm::ivec2 pixelPos(x, y);
 
         if(steep)
         {
@@ -284,7 +284,7 @@ struct Model
             else if(t == "f")
             {
                 glm::ivec3 face;
-                int idx; // we need it because glm assertion fails on face[3] (while loop) or maybe we are doing something wrong?
+                int idx; // we need it because glm assertion fails on face[3] (while loop)
                 int i = 0;
                 int dummyInt;
                 char dummyChar;
@@ -296,7 +296,7 @@ struct Model
                     ++i;
                 }
 
-                assert(i == 3); // we want only triangles
+                assert(i == 3);
                 faces.push_back(face);
             }
         }
@@ -306,9 +306,15 @@ struct Model
     std::vector<glm::ivec3> faces;
 };
 
-// some lines are missing
 void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& progress)
 {
+    const auto bufferSize = size.x * size.y;
+
+    for(auto i = 0; i < bufferSize; ++i)
+    {
+        *(buffer + i) = {40, 0, 0};
+    }
+
     Model model("res/african_head.obj");
 
     for(const auto& face: model.faces)
@@ -328,15 +334,9 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
             start *= glm::dvec2(size - 1);
             end *= glm::dvec2(size - 1);
 
-            // scale
-            const auto aspectRatio = static_cast<double>(size.x) / size.y;
-            start.x /= aspectRatio;
-            end.x /= aspectRatio;
-
-
             line(start, end, {1.0, 0.5, 0.0}, buffer, size);
         }
     }
 
-    progress = size.x * size.y;
+    progress = bufferSize;
 }
