@@ -182,9 +182,9 @@ public:
         }
     }
 
-    void processInput(const bool hasInput) override
+    void processInput(bool) override
     {
-        if(!hasInput)
+        if(ImGui::GetIO().WantCaptureKeyboard)
             return;
 
         for(const auto& event: frame_.events)

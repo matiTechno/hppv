@@ -10,12 +10,11 @@ todo:
 * curves, lines
 * examples (fluid, soft body, flock, text editor, game of life, SAT)
 * Space rotation, Camera class?
-* gamma correction?
-* Particles example - frame time oscillation (only with the vsync on)
 * better cmake (finding libraries / cross-compilation)
 * flat_map
 * license
 * UTF-8 - input, dynamic glyph caching?
+* Scene::processInput() - better design
 
 included:
 

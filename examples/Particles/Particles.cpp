@@ -4,6 +4,8 @@
 #include "Emitter.hpp"
 #include "../run.hpp"
 
+// note: rendering lots of particles in one place slows down OpenGL (overdraw)
+
 class Particles: public hppv::Prototype
 {
 public:
