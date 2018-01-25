@@ -398,11 +398,10 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
             points[i] = v;
         }
 
-        const auto n = glm::normalize(glm::cross(worldCoords[2] - worldCoords[0], worldCoords[1] - worldCoords[0]));
+        const auto n = glm::normalize(glm::cross(worldCoords[1] - worldCoords[0], worldCoords[2] - worldCoords[0]));
         glm::dvec3 cameraDir(0.0, 0.0, -1.0);
 
-        // why cameraDir and not -cameraDir
-        if(const auto intensity = glm::dot(n, cameraDir); intensity > 0.0)
+        if(const auto intensity = glm::dot(n, -cameraDir); intensity > 0.0)
         {
             drawTriangle(points, glm::dvec3(1.0, 1.0, 1.0) * intensity, buffer, size);
         }
