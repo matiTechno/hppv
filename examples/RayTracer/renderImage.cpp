@@ -208,8 +208,8 @@ void renderImage1(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progres
 #include <string>
 #include <sstream>
 
-void line(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
-          Pixel* const buffer, const glm::ivec2 imageSize)
+void drawLine(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
+              Pixel* const buffer, const glm::ivec2 imageSize)
 {
     assert(start.x < imageSize.x && start.x >= 0);
     assert(start.y < imageSize.y && start.y >= 0);
@@ -247,6 +247,47 @@ void line(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
         }
 
         *(buffer + pixelPos.y * imageSize.x + pixelPos.x) = toPixel(color);
+    }
+}
+
+// understand this
+glm::dvec3 barycentric(const glm::ivec2* const points, glm::ivec2 P)
+{
+    const auto u = glm::cross(glm::dvec3(points[2][0] - points[0][0], points[1][0] - points[0][0], points[0][0] - P[0]),
+                              glm::dvec3(points[2][1] - points[0][1], points[1][1] - points[0][1], points[0][1] - P[1]));
+
+    if(glm::abs(u[2]) < 1.0)
+        return {-1.0, 1.0, 1.0}; // triangle is degenerate, in this case return smth with negative coordinates
+
+    return {1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x/ u.z};
+}
+
+void drawTriangle(const glm::ivec2* const points, const glm::dvec3 color,
+                  Pixel* const buffer, const glm::ivec2 imageSize)
+{
+    auto start = imageSize - 1;
+    glm::ivec2 end(0);
+
+    for(auto i = 0; i < 3; ++i)
+    {
+        for(int j = 0; j < 2; ++j)
+        {
+            start[j] = glm::max(0, glm::min(start[j], points[i][j]));
+            end[j] = glm::min(imageSize[j] - 1, glm::max(end[j], points[i][j]));
+        }
+    }
+
+    for(auto y = start.y; y <= end.y; ++y)
+    {
+        for(auto x = start.x; x <= end.x; ++x)
+        {
+            const auto b = barycentric(points, {x, y});
+
+            if(b.x < 0 || b.y < 0 || b.z < 0)
+                continue;
+
+            *(buffer + y * imageSize.x + x) = toPixel(color);
+        }
     }
 }
 
@@ -310,15 +351,17 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
 {
     const auto bufferSize = size.x * size.y;
 
+    /*
     for(auto i = 0; i < bufferSize; ++i)
     {
         *(buffer + i) = {40, 0, 0};
-    }
+    }*/
 
     Model model("res/african_head.obj");
 
     for(const auto& face: model.faces)
     {
+        /*
         for(auto i = 0; i < 3; ++i)
         {
             const auto v0 = model.vertices[face[i]];
@@ -334,7 +377,34 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
             start *= glm::dvec2(size - 1);
             end *= glm::dvec2(size - 1);
 
-            line(start, end, {1.0, 0.5, 0.0}, buffer, size);
+            drawLine(start, end, {1.0, 0.5, 0.0}, buffer, size);
+        }
+        */
+
+        glm::ivec2 points[3];
+        glm::dvec3 worldCoords[3];
+
+        for(auto i = 0; i < 3; ++i)
+        {
+            worldCoords[i] = model.vertices[face[i]];
+
+            auto v = (glm::dvec2(worldCoords[i]) + 1.0) / 2.0;
+
+            // flip y
+            v.y = 1 - v.y;
+
+            v *= size - 1;
+
+            points[i] = v;
+        }
+
+        const auto n = glm::normalize(glm::cross(worldCoords[2] - worldCoords[0], worldCoords[1] - worldCoords[0]));
+        glm::dvec3 cameraDir(0.0, 0.0, -1.0);
+
+        // why cameraDir and not -cameraDir
+        if(const auto intensity = glm::dot(n, cameraDir); intensity > 0.0)
+        {
+            drawTriangle(points, glm::dvec3(1.0, 1.0, 1.0) * intensity, buffer, size);
         }
     }
 
