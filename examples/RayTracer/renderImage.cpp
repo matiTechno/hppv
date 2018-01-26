@@ -250,8 +250,8 @@ void drawLine(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
     }
 }
 
-// understand this
-glm::dvec3 barycentric(const glm::ivec2* const points, glm::ivec2 P)
+// todo: understand this
+glm::dvec3 barycentric(const glm::dvec3* const points, glm::ivec2 P)
 {
     const auto u = glm::cross(glm::dvec3(points[2][0] - points[0][0], points[1][0] - points[0][0], points[0][0] - P[0]),
                               glm::dvec3(points[2][1] - points[0][1], points[1][1] - points[0][1], points[0][1] - P[1]));
@@ -262,31 +262,46 @@ glm::dvec3 barycentric(const glm::ivec2* const points, glm::ivec2 P)
     return {1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x/ u.z};
 }
 
-void drawTriangle(const glm::ivec2* const points, const glm::dvec3 color,
-                  Pixel* const buffer, const glm::ivec2 imageSize)
+void drawTriangle(const glm::dvec3* const points, const glm::dvec3 color,
+                  Pixel* const buffer, double* const depthBuffer, const glm::ivec2 imageSize)
 {
-    auto start = imageSize - 1;
-    glm::ivec2 end(0);
+    glm::dvec2 start = imageSize - 1;
+    glm::dvec2 end(0.0);
 
     for(auto i = 0; i < 3; ++i)
     {
         for(int j = 0; j < 2; ++j)
         {
-            start[j] = glm::max(0, glm::min(start[j], points[i][j]));
-            end[j] = glm::min(imageSize[j] - 1, glm::max(end[j], points[i][j]));
+            start[j] = glm::max(0.0, glm::min(start[j], points[i][j]));
+            end[j] = glm::min(static_cast<double>(imageSize[j] - 1), glm::max(end[j], points[i][j]));
         }
     }
 
-    for(auto y = start.y; y <= end.y; ++y)
+    for(int y = start.y; y <= end.y; ++y)
     {
-        for(auto x = start.x; x <= end.x; ++x)
+        for(int x = start.x; x <= end.x; ++x)
         {
             const auto b = barycentric(points, {x, y});
 
             if(b.x < 0 || b.y < 0 || b.z < 0)
                 continue;
 
-            *(buffer + y * imageSize.x + x) = toPixel(color);
+            const auto idx = y * imageSize.x + x;
+
+            double z = 0.0;
+
+            // todo: understand this
+            for(auto i = 0; i < 3; ++i)
+            {
+                z += points[i][2] * b[i];
+            }
+
+            // maybe z < depthBuffer[idx] would be better
+            if(depthBuffer[idx] < z)
+            {
+                depthBuffer[idx] = z;
+                buffer[idx] = toPixel(color);
+            }
         }
     }
 }
@@ -351,6 +366,8 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
 {
     const auto bufferSize = size.x * size.y;
 
+    std::vector<double> depthBuffer(bufferSize, -std::numeric_limits<double>::infinity());
+
     /*
     for(auto i = 0; i < bufferSize; ++i)
     {
@@ -381,21 +398,22 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
         }
         */
 
-        glm::ivec2 points[3];
+        glm::dvec3 points[3];
         glm::dvec3 worldCoords[3];
 
         for(auto i = 0; i < 3; ++i)
         {
             worldCoords[i] = model.vertices[face[i]];
 
-            auto v = (glm::dvec2(worldCoords[i]) + 1.0) / 2.0;
+            // [-1, 1] -> [0, 1]
+            points[i] = (worldCoords[i] + 1.0) / 2.0;
 
-            // flip y
-            v.y = 1 - v.y;
+            // flip vertically
+            points[i].y = 1 - points[i].y;
 
-            v *= size - 1;
-
-            points[i] = v;
+            // convert to pixel space
+            // todo?: move to draw function?
+            points[i] *= glm::dvec3(size - 1, 1);
         }
 
         const auto n = glm::normalize(glm::cross(worldCoords[1] - worldCoords[0], worldCoords[2] - worldCoords[0]));
@@ -403,7 +421,7 @@ void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& p
 
         if(const auto intensity = glm::dot(n, -cameraDir); intensity > 0.0)
         {
-            drawTriangle(points, glm::dvec3(1.0, 1.0, 1.0) * intensity, buffer, size);
+            drawTriangle(points, glm::dvec3(1.0, 1.0, 1.0) * intensity, buffer, depthBuffer.data(), size);
         }
     }
 
