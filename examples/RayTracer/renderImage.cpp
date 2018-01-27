@@ -261,7 +261,6 @@ struct Triangle
     glm::dvec3 normals[3];
 };
 
-// todo: understand this
 glm::dvec3 barycentric(const glm::dvec3* const points, glm::ivec2 P)
 {
     const auto u = glm::cross(glm::dvec3(points[2][0] - points[0][0], points[1][0] - points[0][0], points[0][0] - P[0]),
@@ -346,7 +345,6 @@ void drawTriangle(Triangle t, const glm::dvec3 color, Pixel* const buffer, doubl
         {
             const auto b = barycentric(t.points, {x, y});
 
-            // understand this
             if(b.x < 0.0 || b.y < 0.0 || b.z < 0.0)
                 continue;
 

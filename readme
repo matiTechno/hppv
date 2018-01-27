@@ -2,19 +2,19 @@ h p p v
 
 todo:
 
-* floating point literal suffix convention (C++ / glsl)
-* test (Renderer): replace 4x4 matrices with 3x3 (or don't use matrices at all)
-* profiling
+* test (Renderer): replace 4x4 matrices with 3x3
+* Space rotation, Camera class?
+* curves, lines
+* Scene::processInput() - better design
 * lua bindings (see LuaTest example)
 * port default imgui font
-* curves, lines
-* examples (fluid, soft body, flock, text editor, game of life, SAT)
-* Space rotation, Camera class?
-* better cmake (finding libraries / cross-compilation)
+* profiling
 * flat_map
-* license
 * UTF-8 - input, dynamic glyph caching?
-* Scene::processInput() - better design
+* floating point literal suffix convention (C++ / glsl)
+* better cmake (finding libraries / cross-compilation)
+* license
+* examples (fluid, soft body, flock, text editor, game of life, SAT)
 
 included:
 
