@@ -8,14 +8,14 @@
 #include <hppv/glad.h>
 #include <hppv/imgui.h>
 
-// ### for d3_
+// ----- for d3_
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <hppv/Shader.hpp>
 #include <hppv/GLobjects.hpp>
 #include <hppv/Framebuffer.hpp>
-// ###
+// -----
 
 #include "renderImage.hpp"
 #include "../run.hpp"

@@ -197,7 +197,7 @@ void renderImage1(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progres
     }
 }
 
-// ###
+// -----
 // github.com/ssloy/tinyrenderer/wiki
 
 #include <cassert>
@@ -207,6 +207,10 @@ void renderImage1(Pixel* buffer, const glm::ivec2 size, std::atomic_int& progres
 #include <iostream>
 #include <string>
 #include <sstream>
+
+#include <hppv/Deleter.hpp>
+
+#include "../src/stb_image.h"
 
 void drawLine(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
               Pixel* const buffer, const glm::ivec2 imageSize)
@@ -250,61 +254,140 @@ void drawLine(glm::ivec2 start, glm::ivec2 end, const glm::dvec3 color,
     }
 }
 
+struct Triangle
+{
+    glm::dvec3 points[3];
+    glm::dvec2 texCoords[3];
+    glm::dvec3 normals[3];
+};
+
 // todo: understand this
 glm::dvec3 barycentric(const glm::dvec3* const points, glm::ivec2 P)
 {
     const auto u = glm::cross(glm::dvec3(points[2][0] - points[0][0], points[1][0] - points[0][0], points[0][0] - P[0]),
                               glm::dvec3(points[2][1] - points[0][1], points[1][1] - points[0][1], points[0][1] - P[1]));
 
-    if(glm::abs(u[2]) < 1.0)
-        return {-1.0, 1.0, 1.0}; // triangle is degenerate, in this case return smth with negative coordinates
+    // do we need it? the code seems to work without it
+    //if(glm::abs(u[2]) < 1.0)
+        //return {-1.0, 1.0, 1.0}; // triangle is degenerate, in this case return smth with negative coordinates
 
     return {1.0 - (u.x + u.y) / u.z, u.y / u.z, u.x/ u.z};
 }
 
-void drawTriangle(const glm::dvec3* const points, const glm::dvec3 color,
-                  Pixel* const buffer, double* const depthBuffer, const glm::ivec2 imageSize)
+class Texture
 {
-    glm::dvec2 start = imageSize - 1;
-    glm::dvec2 end(0.0);
+public:
+    Texture(const std::string& filename)
+    {
+        data_ = stbi_load(filename.c_str(), &size_.x, &size_.y, nullptr, 3);
 
+        if(data_)
+        {
+            del_.set([data = data_]{stbi_image_free(data);});
+        }
+        else
+        {
+            std::cout << "stbi_load() failed: " << filename << std::endl;
+        }
+    }
+
+    glm::ivec2 getSize() const {return size_;}
+
+    const Pixel* getData() const {return reinterpret_cast<Pixel*>(data_);}
+
+private:
+    hppv::Deleter del_;
+    glm::ivec2 size_{0, 0};
+    unsigned char* data_;
+};
+
+Pixel operator*(Pixel p, glm::dvec3 v)
+{
+    return {static_cast<unsigned char>(p.r * v.r),
+            static_cast<unsigned char>(p.g * v.g),
+            static_cast<unsigned char>(p.b * v.b)};
+}
+
+void drawTriangle(Triangle t, const glm::dvec3 color, Pixel* const buffer, double* const depthBuffer,
+                  const glm::ivec2 imageSize, const Texture& texDiffuse)
+{
+    // back-face culling
+    {
+        const auto n = glm::normalize(glm::cross(t.points[1] - t.points[0], t.points[2] - t.points[0]));
+
+        if(glm::dot(n, {0.0, 0.0, 1.f}) <= 0.0)
+            return;
+    }
+
+    // convert to screen space
+    for(auto& point: t.points)
+    {
+        point.y *= -1.0;
+        point = (point + 1.0) / 2.0;
+        point *= glm::dvec3(imageSize, 1.0);
+    }
+
+    glm::ivec2 start = imageSize - 1;
+    glm::ivec2 end(0.0);
+
+    // find the bbox (clipping)
     for(auto i = 0; i < 3; ++i)
     {
         for(int j = 0; j < 2; ++j)
         {
-            start[j] = glm::max(0.0, glm::min(start[j], points[i][j]));
-            end[j] = glm::min(static_cast<double>(imageSize[j] - 1), glm::max(end[j], points[i][j]));
+            start[j] = glm::max(0, glm::min(start[j], static_cast<int>(t.points[i][j] + 0.5)));
+            end[j] = glm::min(imageSize[j] - 1, glm::max(end[j], static_cast<int>(t.points[i][j] + 0.5)));
         }
     }
 
-    for(int y = start.y; y <= end.y; ++y)
+    for(auto y = start.y; y <= end.y; ++y)
     {
-        for(int x = start.x; x <= end.x; ++x)
+        for(auto x = start.x; x <= end.x; ++x)
         {
-            const auto b = barycentric(points, {x, y});
+            const auto b = barycentric(t.points, {x, y});
 
-            if(b.x < 0 || b.y < 0 || b.z < 0)
+            // understand this
+            if(b.x < 0.0 || b.y < 0.0 || b.z < 0.0)
                 continue;
 
             const auto idx = y * imageSize.x + x;
 
-            double z = 0.0;
+            auto z = 0.0;
 
-            // todo: understand this
             for(auto i = 0; i < 3; ++i)
             {
-                z += points[i][2] * b[i];
+                z += t.points[i][2] * b[i];
             }
 
-            // maybe z < depthBuffer[idx] would be better
-            if(depthBuffer[idx] < z)
+            if(z < depthBuffer[idx])
             {
                 depthBuffer[idx] = z;
-                buffer[idx] = toPixel(color);
+
+                glm::dvec2 texCoord(0.0);
+
+                for(auto i = 0; i < 3; ++i)
+                {
+                    texCoord += t.texCoords[i] * b[i];
+                }
+
+                // (we have flipped points vertically when converting to screen space)
+                texCoord = (texCoord - 1.0) * -1.0;
+
+                const auto texSize = texDiffuse.getSize();
+                const glm::ivec2 texel = texCoord * glm::dvec2(texSize - 1);
+
+                buffer[idx] = texDiffuse.getData()[texel.y * texSize.x + texel.x] * color;
             }
         }
     }
 }
+
+struct Face
+{
+    glm::ivec3 points; // maybe positions would be better
+    glm::ivec3 texCoords;
+    glm::ivec3 normals;
+};
 
 struct Model
 {
@@ -318,6 +401,8 @@ struct Model
             return;
         }
 
+        // todo: reserving memory
+
         std::string line;
 
         while(std::getline(file, line))
@@ -326,103 +411,95 @@ struct Model
             std::string t;
             s >> t;
 
-            if(t == "v")
+            if(t == "v" || t == "vn")
             {
-                glm::dvec3 vertex;
+                glm::dvec3 v;
 
                 for(auto i = 0; i < 3; ++i)
                 {
-                    s >> vertex[i];
+                    s >> v[i];
                 }
 
-                vertices.push_back(vertex);
+                if(t == "v")
+                {
+                    points.push_back(v);
+                }
+                else
+                {
+                    normals.push_back(v);
+                }
+            }
+            else if(t == "vt")
+            {
+                glm::dvec2 texCoord;
+
+                for(auto i = 0; i < 2; ++i)
+                {
+                    s >> texCoord[i];
+                }
+
+                texCoords.push_back(texCoord);
             }
             else if(t == "f")
             {
-                glm::ivec3 face;
-                int idx; // we need it because glm assertion fails on face[3] (while loop)
-                int i = 0;
-                int dummyInt;
-                char dummyChar;
+                Face face;
+                char dummy;
 
-                while(s >> idx >> dummyChar >> dummyInt >> dummyChar >> dummyInt)
+                for(auto i = 0; i < 3; ++i)
                 {
-                    assert(i < 3);
-                    face[i] = --idx; // in wavefront obj all indices start at 1, not 0
-                    ++i;
+                    s >> face.points[i];
+                    s >> dummy;
+                    s >> face.texCoords[i];
+                    s >> dummy;
+                    s >> face.normals[i];
+
+                     // in wavefront obj all indices start at 1, not 0
+
+                    --face.points[i];
+                    --face.texCoords[i];
+                    --face.normals[i];
                 }
 
-                assert(i == 3);
                 faces.push_back(face);
             }
         }
     }
 
-    std::vector<glm::dvec3> vertices;
-    std::vector<glm::ivec3> faces;
+    std::vector<glm::dvec3> points;
+    std::vector<glm::dvec2> texCoords;
+    std::vector<glm::dvec3> normals;
+    std::vector<Face> faces;
 };
 
 void renderImage2(Pixel* const buffer, const glm::ivec2 size, std::atomic_int& progress)
 {
     const auto bufferSize = size.x * size.y;
 
-    std::vector<double> depthBuffer(bufferSize, -std::numeric_limits<double>::infinity());
+    std::vector<double> depthBuffer(bufferSize, std::numeric_limits<double>::infinity());
 
-    /*
-    for(auto i = 0; i < bufferSize; ++i)
-    {
-        *(buffer + i) = {40, 0, 0};
-    }*/
-
-    Model model("res/african_head.obj");
+    const Model model("res/african_head.obj");
+    const Texture texDiffuse("res/african_head_diffuse.tga");
 
     for(const auto& face: model.faces)
     {
-        /*
-        for(auto i = 0; i < 3; ++i)
-        {
-            const auto v0 = model.vertices[face[i]];
-            const auto v1 = model.vertices[face[(i + 1) % 3]];
-
-            auto start = (glm::dvec2(v0) + 1.0) / 2.0;
-            auto end = (glm::dvec2(v1) + 1.0) / 2.0;
-
-            // flip y
-            start.y = 1 - start.y;
-            end.y = 1 - end.y;
-
-            start *= glm::dvec2(size - 1);
-            end *= glm::dvec2(size - 1);
-
-            drawLine(start, end, {1.0, 0.5, 0.0}, buffer, size);
-        }
-        */
-
-        glm::dvec3 points[3];
-        glm::dvec3 worldCoords[3];
+        Triangle t;
 
         for(auto i = 0; i < 3; ++i)
         {
-            worldCoords[i] = model.vertices[face[i]];
+            t.points[i] = model.points[face.points[i]];
+            // remove this after we start using projection transformation
+            t.points[i].z *= -1.0;
 
-            // [-1, 1] -> [0, 1]
-            points[i] = (worldCoords[i] + 1.0) / 2.0;
-
-            // flip vertically
-            points[i].y = 1 - points[i].y;
-
-            // convert to pixel space
-            // todo?: move to draw function?
-            points[i] *= glm::dvec3(size - 1, 1);
+            t.texCoords[i] = model.texCoords[face.texCoords[i]];
+            t.normals[i] = model.normals[face.normals[i]];
         }
 
-        const auto n = glm::normalize(glm::cross(worldCoords[1] - worldCoords[0], worldCoords[2] - worldCoords[0]));
-        glm::dvec3 cameraDir(0.0, 0.0, -1.0);
+        const auto n = glm::normalize(glm::cross(t.points[1] - t.points[0], t.points[2] - t.points[0]));
+        const glm::dvec3 cameraDir(0.0, 0.0, -1.0);
+        const auto intensity = glm::dot(n, -cameraDir);
 
-        if(const auto intensity = glm::dot(n, -cameraDir); intensity > 0.0)
-        {
-            drawTriangle(points, glm::dvec3(1.0, 1.0, 1.0) * intensity, buffer, depthBuffer.data(), size);
-        }
+        drawTriangle(t, glm::clamp(glm::dvec3(1.0, 1.0, 1.0) * intensity, 0.0, 1.0), buffer, depthBuffer.data(),
+                     size, texDiffuse);
     }
 
     progress = bufferSize;
