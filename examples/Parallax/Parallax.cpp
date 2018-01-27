@@ -138,6 +138,7 @@ void Parallax::render(hppv::Renderer& renderer)
 
     renderer.sampler(hppv::Sample::Nearest); // pixel art
     renderer.shader(hppv::Render::Tex);
+    renderer.premultiplyAlpha(true);
 
     for(auto& layer: layers_)
     {

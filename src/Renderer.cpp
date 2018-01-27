@@ -111,7 +111,7 @@ Renderer::Renderer():
         batch.shader = &shaderBasic_;
         batch.srcAlpha = GL_ONE;
         batch.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
-        batch.premultiplyAlpha = true;
+        batch.premultiplyAlpha = false;
         batch.antialiasedSprites = false;
         batch.flipTexRectX = false;
         batch.flipTexRectY = false;

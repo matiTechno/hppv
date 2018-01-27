@@ -85,6 +85,10 @@ public:
         window;
     };
 
+    // without these tests fail to compile
+    App();
+    ~App();
+
     bool initialize(const InitParams& initParams);
 
     template<typename T, typename ... Args>

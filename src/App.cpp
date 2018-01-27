@@ -20,6 +20,9 @@ Frame App::frame_;
 bool App::handleQuitEvent_;
 std::vector<Request> App::requests_;
 
+App::App() = default;
+App::~App() = default;
+
 bool App::initialize(const InitParams& initParams)
 {
     if(initParams.printDebugInfo)

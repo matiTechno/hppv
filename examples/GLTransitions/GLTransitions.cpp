@@ -11,6 +11,8 @@
 #include "Glsl.hpp"
 #include "../run.hpp"
 
+// todo: aspect ratio interpolation
+
 class GLTransitions: public hppv::Scene
 {
 public:

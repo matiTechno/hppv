@@ -74,6 +74,7 @@ private:
     void prototypeRender(hppv::Renderer& renderer) override
     {
         renderer.antialiasedSprites(true);
+        renderer.premultiplyAlpha(true);
 
         // gnu
         {

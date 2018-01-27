@@ -193,14 +193,14 @@ public:
         batch.dstAlpha = dstAlpha;
     }
 
-    // ----- fragment shader options
+    // ----- fragment shader options, disabled by default
 
-    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;} // enabled by default
+    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;}
 
     // good for rendering rotated sprites,
     // not so good when one sprite must perfectly cover the other
 
-    void antialiasedSprites(bool on) {getBatchToUpdate().antialiasedSprites = on;} // disabled by default
+    void antialiasedSprites(bool on) {getBatchToUpdate().antialiasedSprites = on;}
 
     // ----- vertex shader options, disabled by default
 
