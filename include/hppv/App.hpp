@@ -13,7 +13,6 @@ namespace hppv
 {
 
 class Scene;
-class Renderer;
 
 // note: glfw does not detect if the window is fullscreen when set
 // externally by the window manager (i3, xfce4)
@@ -86,9 +85,6 @@ public:
         window;
     };
 
-    App();
-    ~App();
-
     bool initialize(const InitParams& initParams);
 
     template<typename T, typename ... Args>
@@ -114,9 +110,7 @@ private:
 
     Deleter deleterGlfw_;
     Deleter deleterImgui_;
-    std::unique_ptr<Renderer> renderer_;
     std::vector<std::unique_ptr<Scene>> scenes_;
-    std::vector<Scene*> scenesToRender_;
     static GLFWwindow* window_;
     static Frame frame_;
     static bool handleQuitEvent_;

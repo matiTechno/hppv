@@ -15,9 +15,6 @@
 namespace hppv
 {
 
-App::App() = default;
-App::~App() = default;
-
 GLFWwindow* App::window_;
 Frame App::frame_;
 bool App::handleQuitEvent_;
@@ -86,8 +83,6 @@ bool App::initialize(const InitParams& initParams)
 
     glfwSwapInterval(1);
 
-    renderer_ = std::make_unique<Renderer>();
-
     ImGui_ImplGlfwGL3_Init(window_, false);
     deleterImgui_.set([]{ImGui_ImplGlfwGL3_Shutdown();});
 
@@ -101,7 +96,6 @@ bool App::initialize(const InitParams& initParams)
     glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
 
     scenes_.reserve(ReservedScenes);
-    scenesToRender_.reserve(ReservedScenes);
     frame_.events.reserve(ReservedEvents);
     requests_.reserve(ReservedRequests);
 
@@ -126,88 +120,92 @@ bool App::initialize(const InitParams& initParams)
 
 void App::run()
 {
-   auto time = glfwGetTime();
+    Renderer renderer;
+    std::vector<Scene*> scenesToRender;
+    scenesToRender.reserve(ReservedScenes);
 
-   while(scenes_.size())
-   {
-       handleRequests();
+    auto time = glfwGetTime();
 
-       if(glfwWindowShouldClose(window_))
-           break;
+    while(scenes_.size())
+    {
+        handleRequests();
 
-       frame_.events.clear();
+        if(glfwWindowShouldClose(window_))
+            break;
 
-       glfwPollEvents();
-       ImGui_ImplGlfwGL3_NewFrame();
+        frame_.events.clear();
 
-       {
-           const auto newTime = glfwGetTime();
-           frame_.time = newTime - time;
-           time = newTime;
-       }
+        glfwPollEvents();
+        ImGui_ImplGlfwGL3_NewFrame();
 
-       refreshFrame();
+        {
+            const auto newTime = glfwGetTime();
+            frame_.time = newTime - time;
+            time = newTime;
+        }
 
-       const auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
-                                    ImGui::GetIO().WantCaptureMouse;
+        refreshFrame();
 
-       for(auto it = scenes_.begin(); it != scenes_.end(); ++it)
-       {
-           auto& scene = **it;
+        const auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
+                                     ImGui::GetIO().WantCaptureMouse;
 
-           if(scene.properties_.maximize)
-           {
-               scene.properties_.pos = {0, 0};
-               scene.properties_.size = frame_.framebufferSize;
-           }
+        for(auto it = scenes_.begin(); it != scenes_.end(); ++it)
+        {
+            auto& scene = **it;
 
-           const auto isTop = it == scenes_.end() - 1;
+            if(scene.properties_.maximize)
+            {
+                scene.properties_.pos = {0, 0};
+                scene.properties_.size = frame_.framebufferSize;
+            }
 
-           scene.processInput(isTop && !imguiWantsInput);
+            const auto isTop = it == scenes_.end() - 1;
 
-           if(scene.properties_.updateWhenNotTop || isTop)
-           {
-               scene.update();
-           }
-       }
+            scene.processInput(isTop && !imguiWantsInput);
 
-       scenesToRender_.clear();
+            if(scene.properties_.updateWhenNotTop || isTop)
+            {
+                scene.update();
+            }
+        }
 
-       for(auto it = scenes_.crbegin(); it != scenes_.crend(); ++it)
-       {
-           scenesToRender_.insert(scenesToRender_.begin(), &**it);
+        scenesToRender.clear();
 
-           if((*it)->properties_.opaque)
-               break;
-       }
+        for(auto it = scenes_.crbegin(); it != scenes_.crend(); ++it)
+        {
+            scenesToRender.insert(scenesToRender.begin(), &**it);
 
-       glClear(GL_COLOR_BUFFER_BIT);
+            if((*it)->properties_.opaque)
+                break;
+        }
 
-       for(auto scene: scenesToRender_)
-       {
-           renderer_->viewport(&*scene);
-           scene->render(*renderer_);
-           renderer_->flush();
-       }
+        glClear(GL_COLOR_BUFFER_BIT);
 
-       ImGui::Render();
+        for(auto scene: scenesToRender)
+        {
+            renderer.viewport(&*scene);
+            scene->render(renderer);
+            renderer.flush();
+        }
 
-       glfwSwapBuffers(window_);
+        ImGui::Render();
 
-       auto& topScene = *scenes_.back();
-       auto sceneToPush = std::move(topScene.properties_.sceneToPush);
+        glfwSwapBuffers(window_);
 
-       {
-           const auto numToPop = topScene.properties_.numScenesToPop;
-           assert(numToPop <= scenes_.size());
-           scenes_.erase(scenes_.end() - numToPop, scenes_.end());
-       }
+        auto& topScene = *scenes_.back();
+        auto sceneToPush = std::move(topScene.properties_.sceneToPush);
 
-       if(sceneToPush)
-       {
-           scenes_.push_back(std::move(sceneToPush));
-       }
-   }
+        {
+            const auto numToPop = topScene.properties_.numScenesToPop;
+            assert(numToPop <= scenes_.size());
+            scenes_.erase(scenes_.end() - numToPop, scenes_.end());
+        }
+
+        if(sceneToPush)
+        {
+            scenes_.push_back(std::move(sceneToPush));
+        }
+    }
 }
 
 void App::refreshFrame()
