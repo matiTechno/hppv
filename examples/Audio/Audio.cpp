@@ -146,7 +146,7 @@ private:
     char name_[256];
 };
 
-int main(int argc, const char* const * const argv)
+int main(const int argc, const char* const * const argv)
 {
     if(argc > 2)
     {
