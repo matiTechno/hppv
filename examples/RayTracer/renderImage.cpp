@@ -391,7 +391,7 @@ struct Model
 {
     Model(const char* const filename)
     {
-        std::fstream file(filename);
+        std::ifstream file(filename);
 
         if(!file.is_open())
         {

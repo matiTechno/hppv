@@ -23,6 +23,7 @@ included:
 * glad.c glad.h
 * stb_image.h
 * sol2 - sol.h (LuaTest)
+* FMOD Low Level Api for Linux (Audio)
 
 dependencies:
 
@@ -30,7 +31,7 @@ dependencies:
 * glm
 * lua (LuaTest, optional - see cmake options)
 
-compiles with gcc 7.2.1 on linux
+compiles with gcc 7.2.1 on Linux
 
 runs with OpenGL 3.3,
 ARB_texture_storage and ARB_base_instance extensions must be supported

@@ -133,7 +133,7 @@ void Font::loadFnt(const std::string& filename)
 
 void Font::loadTrueType(const std::string& filename, const int sizePx, const std::string_view additionalChars)
 {
-    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    std::ifstream file(filename, file.binary | file.ate);
 
     if(!file)
     {

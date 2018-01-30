@@ -385,7 +385,7 @@ void DayNight::editor()
 
     if(ImGui::Button("save"))
     {
-        std::ofstream file(filename_, std::ios::trunc);
+        std::ofstream file(filename_, file.trunc);
         if(file.is_open())
         {
             for(const auto& g: gradients_)

@@ -135,7 +135,7 @@ private:
 
             if(ImGui::Button("save"))
             {
-                std::ofstream file(d_.filename, std::ios::trunc);
+                std::ofstream file(d_.filename, file.trunc);
                 if(file.is_open())
                 {
                     file << d_.k << ' ' << d_.mass << ' ' << d_.b;

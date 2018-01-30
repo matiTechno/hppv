@@ -4,6 +4,9 @@ project(hppv)
 option(EXAMPLES "build examples" ON)
 option(TESTS "build tests" ON)
 
+# hack? I want to keep the asserts
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2")
+
 # -----
 # blog.kitware.com/cmake-and-the-default-build-type
 

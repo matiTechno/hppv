@@ -30,3 +30,4 @@ if(LUA_TEST)
 endif()
 
 add_subdirectory(RayTracer)
+add_subdirectory(Audio)

@@ -429,7 +429,7 @@ GLuint createProgram(const std::initializer_list<std::string_view> sources, cons
                           << *error << '\n';
 
                 {
-                    std::cout.setf(std::ios::left);
+                    std::cout.setf(std::cout.left);
                     std::size_t end = 0;
                     int line = 1;
 
