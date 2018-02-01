@@ -6,7 +6,7 @@ todo:
 * Space rotation, Camera class?
 * curves, lines
 * Scene::processInput() - better design
-* lua bindings (see LuaTest example)
+* lua bindings
 * port default imgui font
 * profiling
 * flat_map
@@ -14,7 +14,6 @@ todo:
 * floating point literal suffix convention (C++ / glsl)
 * better cmake (finding libraries / cross-compilation)
 * license
-* examples (fluid, soft body, flock, text editor, game of life, SAT)
 
 included:
 
