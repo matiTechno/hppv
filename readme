@@ -11,9 +11,9 @@ todo:
 * profiling
 * flat_map
 * UTF-8 - input, dynamic glyph caching?
-* floating point literal suffix convention (C++ / glsl)
 * better cmake (finding libraries / cross-compilation)
 * license
+* floating point literal suffix (C++ / glsl) & auto conventions
 
 included:
 

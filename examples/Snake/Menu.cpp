@@ -100,10 +100,21 @@ void Menu::render(hppv::Renderer& renderer)
     }
 
     {
+        renderer.shader(hppv::Render::Tex);
+        renderer.texture(Background::resources->texSnakeFood);
+
+        hppv::Sprite sprite;
+        sprite.size = glm::vec2(150.f);
+        sprite.pos = {properties_.size.x - sprite.size.x, 0.f};
+
+        renderer.cache(sprite);
+    }
+
+    {
         auto& font = Background::resources->font;
 
-        renderer.texture(font.getTexture());
         renderer.shader(hppv::Render::Font);
+        renderer.texture(font.getTexture());
 
         glm::vec2 pos(20.f);
 

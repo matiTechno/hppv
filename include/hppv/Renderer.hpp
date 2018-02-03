@@ -15,6 +15,8 @@
 
 using GLint = int;
 
+// * in all cases x-axis grows right, y-axis grows down
+
 namespace hppv
 {
 
@@ -49,8 +51,8 @@ struct Circle
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 
     // OpenGL texCoords are calculated based on this
-    // and the last registered texture
-    glm::vec4 texRect;
+    // and the last registered texture (if Renderer::normalizeTexRect == true)
+    glm::vec4 texRect = {0.f, 0.f, 1.f, 1.f};
 };
 
 struct Sprite
@@ -82,13 +84,13 @@ struct Sprite
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f;
     glm::vec2 rotationPoint = {0.f, 0.f};
-    glm::vec4 texRect;
+    glm::vec4 texRect = {0.f, 0.f, 1.f, 1.f};
 };
 
 struct Vertex
 {
     glm::vec2 pos;
-    glm::vec2 texCoord;
+    glm::vec2 texCoord; // Render::Vertices* - y grows down!
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
 };
 
@@ -120,7 +122,6 @@ enum class Sample
     Nearest
 };
 
-// * in all cases x-axis grows right, y-axis grows down
 // * state changes on non-empty batch break it
 // * texture / sampler / uniform states are lost after flush()
 
@@ -133,6 +134,10 @@ class Renderer
 {
 public:
     Renderer();
+
+    // ----- Render::Tex
+
+    bool normalizeTexRect = false;
 
     // -----
 

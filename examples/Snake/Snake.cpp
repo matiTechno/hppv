@@ -219,7 +219,6 @@ void Snake::render(hppv::Renderer& renderer)
 
     {
         hppv::Sprite sprite;
-        sprite.texRect = {0, 0, Background::resources->texSnakeFood.getSize()};
         sprite.size = tileSize - 2.f * tileSpacing;
 
         for(const auto node: newNodes_)

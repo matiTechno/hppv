@@ -81,7 +81,6 @@ private:
             hppv::Sprite sprite;
             sprite.pos = gnu_.pos;
             sprite.size = gnu_.size;
-            sprite.texRect = {0.f, 0.f, gnu_.tex.getSize()};
 
             renderer.shader(hppv::Render::Tex);
             renderer.texture(gnu_.tex);

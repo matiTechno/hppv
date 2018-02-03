@@ -42,7 +42,6 @@ public:
             renderer.shader(hppv::Render::Tex);
 
             hppv::Sprite sprite;
-            sprite.texRect = {0, 0, font1_.getTexture().getSize()};
             sprite.pos = {100.f, 400.f};
             sprite.size = font1_.getTexture().getSize();
 

@@ -94,7 +94,6 @@ private:
         hppv::Sprite sprite;
         sprite.pos = {0.f, 0.f};
         sprite.size = texTo_->getSize();
-        sprite.texRect = sprite.toVec4();
 
         renderer.projection(hppv::expandToMatchAspectRatio(sprite.toSpace(), properties_.size));
         renderer.texture(*texFrom_, 0);

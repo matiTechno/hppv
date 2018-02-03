@@ -36,13 +36,10 @@ public:
         layers_[3].texture = hppv::Texture("res/parallax-forest-front-trees.png");
         layers_[3].moveCoeff = 1.f;
 
-        const glm::vec4 texRect(0, 0, layers_[0].texture.getSize());
-
         for(auto& layer: layers_)
         {
-            layer.space = hppv::Space(texRect);
+            layer.space = hppv::Space(0, 0, layers_[0].texture.getSize());
             layer.sprite = hppv::Sprite(layer.space);
-            layer.sprite.texRect = texRect;
         }
     }
 

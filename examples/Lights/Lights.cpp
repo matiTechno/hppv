@@ -93,7 +93,6 @@ private:
 
             {
                 hppv::Sprite sprite(space_.initial);
-                sprite.texRect = {0.f, 0.f, texture_.getSize()};
 
                 renderer.shader(hppv::Render::Tex);
                 renderer.texture(texture_);
@@ -119,7 +118,6 @@ private:
             sprite.pos = space_.projected.pos;
             sprite.size = space_.projected.size;
             sprite.color = {0.1f, 0.1f, 0.1f, 1.f};
-            sprite.texRect = {0.f, 0.f, framebuffer_.getTexture().getSize()};
 
             renderer.shader(hppv::Render::Tex);
             renderer.cache(sprite);
@@ -127,6 +125,7 @@ private:
 
         // spot lights
         renderer.shader(shLight_);
+        renderer.normalizeTexRect = true;
         {
             hppv::Circle circle;
             circle.center = 50.f + 20.f * glm::vec2(glm::sin(time_ / 2.f), glm::cos(time_ / 2.f));
@@ -143,6 +142,7 @@ private:
 
             renderer.cache(circle);
         }
+        renderer.normalizeTexRect = false;
     }
 };
 

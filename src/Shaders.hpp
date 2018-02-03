@@ -29,17 +29,17 @@ void main()
 
     if(flipTexRectX)
     {
-        texCoord.x = (texCoord.x - 1) * -1;
+        texCoord.x = 1 - texCoord.x;
     }
 
     if(flipTexRectY)
     {
-        texCoord.y = (texCoord.y - 1) * -1;
+        texCoord.y = 1 - texCoord.y;
     }
 
     vTexCoord = texCoord * normTexRect.zw + normTexRect.xy;
 
-    if(flipTextureY)
+    if(flipTextureY == false)
     {
         vTexCoord.y = 1 - vTexCoord.y;
     }
@@ -217,7 +217,7 @@ void main()
     vTexCoord = texCoord;
     vColor = color;
 
-    if(flipTextureY)
+    if(flipTextureY == false)
     {
         vTexCoord.y = 1 - vTexCoord.y;
     }

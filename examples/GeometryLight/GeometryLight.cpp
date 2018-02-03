@@ -229,6 +229,7 @@ private:
             fb_.unbind();
 
             renderer.mode(hppv::RenderMode::Instances);
+            renderer.normalizeTexRect = true;
 
             hppv::Circle c;
             c.center = lightPos_;
@@ -238,6 +239,7 @@ private:
             renderer.shader(shaderLight_);
             renderer.texture(fb_.getTexture());
             renderer.cache(c);
+            renderer.normalizeTexRect = false;
         }
 
         renderer.mode(hppv::RenderMode::Vertices);

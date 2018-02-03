@@ -66,9 +66,9 @@ Renderer::Instance createInstance(const glm::vec2 pos, const glm::vec2 size, con
     i.color = color;
 
     i.normTexRect.x = texRect.x / texSize.x;
+    i.normTexRect.y  = texRect.y / texSize.y;
     i.normTexRect.z = texRect.z / texSize.x;
     i.normTexRect.w = texRect.w / texSize.y;
-    i.normTexRect.y = 1.f - texRect.y / texSize.y - i.normTexRect.w;
 
     return i;
 }
@@ -128,12 +128,12 @@ Renderer::Renderer():
 
     float vertices[] =
     {
-        0.f, 0.f, 0.f, 1.f,
-        1.f, 0.f, 1.f, 1.f,
-        1.f, 1.f, 1.f, 0.f,
-        1.f, 1.f, 1.f, 0.f,
-        0.f, 1.f, 0.f, 0.f,
-        0.f, 0.f, 0.f, 1.f
+        0.f, 0.f, 0.f, 0.f,
+        1.f, 0.f, 1.f, 0.f,
+        1.f, 1.f, 1.f, 1.f,
+        1.f, 1.f, 1.f, 1.f,
+        0.f, 1.f, 0.f, 1.f,
+        0.f, 0.f, 0.f, 0.f
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, boQuad_.getId());
@@ -341,10 +341,12 @@ void Renderer::cache(const Sprite* sprite, const std::size_t count)
         instances_.resize(end);
     }
 
+    const auto texSize = normalizeTexRect ? texUnits_.back().texture->getSize() : glm::ivec2(1, 1);
+
     for(auto i = start; i < end; ++i, ++sprite)
     {
         instances_[i] = createInstance(sprite->pos, sprite->size, sprite->rotation, sprite->rotationPoint,
-                                       sprite->color, sprite->texRect, texUnits_.back().texture->getSize());
+                                       sprite->color, sprite->texRect, texSize);
     }
 }
 
@@ -361,10 +363,12 @@ void Renderer::cache(const Circle* circle, const std::size_t count)
         instances_.resize(end);
     }
 
+    const auto texSize = normalizeTexRect ? texUnits_.back().texture->getSize() : glm::ivec2(1, 1);
+
     for(auto i = start; i < end; ++i, ++circle)
     {
         instances_[i] = createInstance(circle->center - circle->radius, glm::vec2(circle->radius * 2.f), 0.f, {},
-                                       circle->color, circle->texRect, texUnits_.back().texture->getSize());
+                                       circle->color, circle->texRect, texSize);
     }
 }
 
@@ -437,6 +441,9 @@ void Renderer::cache(const Vertex* vertex, const std::size_t count)
 
 void Renderer::flush()
 {
+    if(batches_.front().instances.count == 0 && batches_.front().vertices.count == 0)
+        return;
+
     glEnable(GL_BLEND);
 
     {

@@ -102,7 +102,6 @@ private:
                 hppv::Sprite sprite;
                 sprite.pos = space_.initial.pos;
                 sprite.size = space_.initial.size;
-                sprite.texRect = {0, 0, texRock_.diffuse.getSize()};
 
                 renderer.cache(sprite);
             }
@@ -114,7 +113,6 @@ private:
                 hppv::Sprite sprite;
                 sprite.pos = {0.f, 0.f};
                 sprite.size = {20.f, 20.f};
-                sprite.texRect = {0, 0, texTeapot_.diffuse.getSize()};
 
                 renderer.cache(sprite);
             }
@@ -140,7 +138,6 @@ private:
             hppv::Sprite sprite;
             sprite.pos = space_.projected.pos;
             sprite.size = space_.projected.size;
-            sprite.texRect = {0, 0, fb_.getTexture().getSize()};
 
             renderer.cache(sprite);
         }

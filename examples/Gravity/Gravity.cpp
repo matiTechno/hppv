@@ -232,6 +232,8 @@ private:
     // note: we are rendering outside the Renderer framework
     void prototypeRender(hppv::Renderer&) override
     {
+        glEnable(GL_BLEND);
+
         glViewport(0, 0, properties_.size.x, properties_.size.y);
 
         shRender_.bind();

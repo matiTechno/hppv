@@ -131,7 +131,6 @@ public:
 
         hppv::Sprite sprite;
         sprite.color = {0.6f, 0.3f, 0.3f, 1.f};
-        sprite.texRect = {0, 0, texTile_.getSize()};
 
         {
             sprite.pos = {10.f, 10.f};
@@ -202,11 +201,9 @@ private:
                 renderer.viewport(fbShadow_);
                 {
                     hppv::Sprite sprite(space_.projected);
-                    auto& occlusionTex = fbOcclusion_.getTexture();
-                    sprite.texRect = {0, 0, occlusionTex.getSize()};
 
                     renderer.shader(shShadow_);
-                    renderer.texture(occlusionTex);
+                    renderer.texture(fbOcclusion_.getTexture());
                     renderer.cache(sprite);
                 }
                 renderer.flush();
@@ -217,12 +214,10 @@ private:
             {
                 hppv::Sprite sprite(light);
                 sprite.color = light.color;
-                auto& shadowTex = fbShadow_.getTexture();
-                sprite.texRect = {0, 0, shadowTex.getSize()};
 
                 renderer.flipTextureY(true); // why?
                 renderer.shader(shLight_);
-                renderer.texture(shadowTex);
+                renderer.texture(fbShadow_.getTexture());
                 renderer.cache(sprite);
                 renderer.flipTextureY(false);
                 renderer.flush();

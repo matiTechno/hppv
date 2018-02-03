@@ -77,7 +77,6 @@ public:
             hppv::Sprite sprite;
             sprite.size = activeImage_->size;
             sprite.pos = proj.pos + (proj.size - sprite.size) / 2.f;
-            sprite.texRect = {0, 0, activeImage_->tex.getSize()};
 
             renderer.cache(sprite);
             renderer.flipTextureY(false);
@@ -116,7 +115,6 @@ public:
             hppv::Sprite s;
             s.pos = {0.f, 0.f};
             s.size = size;
-            s.texRect = {0, 0, d3_.fb.getTexture().getSize()};
 
             renderer.cache(s);
         }
