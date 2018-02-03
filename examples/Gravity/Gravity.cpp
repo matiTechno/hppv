@@ -29,8 +29,8 @@ out float vPosDelta;
 
 void main()
 {
-    vec2 pos = alpha * currentPos + (1 - alpha) * prevPos;
-    gl_Position = projection * vec4(pos, 0, 1);
+    vec2 pos = alpha * currentPos + (1.0 - alpha) * prevPos;
+    gl_Position = projection * vec4(pos, 0.0, 1.0);
     vPosDelta = length(currentPos - prevPos);
 }
 
@@ -43,7 +43,7 @@ out vec4 color;
 
 void main()
 {
-    color = vec4(0.3, 0.15, vPosDelta / 8, 0.2);
+    color = vec4(0.3, 0.15, vPosDelta / 8.0, 0.2);
 }
 )";
 
@@ -73,31 +73,31 @@ uniform vec2 gravityPos;
 uniform bool isActive;
 uniform float dt;
 
-const float mass = 1;
+const float mass = 1.0;
 const float threshold = 0.00001;
-const float gravityCoeff = 100000;
-const float maxGravity = 100;
+const float gravityCoeff = 100000.0;
+const float maxGravity = 100.0;
 const float dragCoeff = 0.01;
 
 void main()
 {
     uint id = gl_GlobalInvocationID.x;
 
-    vec2 gravity = vec2(0);
+    vec2 gravity = vec2(0.0);
     vec2 gravityDist = gravityPos - currentPos[id];
     float r = length(gravityDist);
 
     if(isActive && r > threshold)
     {
-        gravity = (gravityDist / r) * min(maxGravity, gravityCoeff / pow(r, 2));
+        gravity = (gravityDist / r) * min(maxGravity, gravityCoeff / pow(r, 2.0));
     }
 
     float velLen = length(vel[id]);
-    vec2 dragVelDelta = vec2(0);
+    vec2 dragVelDelta = vec2(0.0);
 
     if(velLen > threshold)
     {
-        dragVelDelta = -(vel[id] / velLen) * min(velLen, pow(velLen, 2) * dragCoeff / mass * dt);
+        dragVelDelta = -(vel[id] / velLen) * min(velLen, pow(velLen, 2.0) * dragCoeff / mass * dt);
     }
 
     prevPos[id] = currentPos[id];

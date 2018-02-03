@@ -177,7 +177,7 @@ private:
 
             void main()
             {
-                gl_Position = projection * view * model * vec4(vertex, 1);
+                gl_Position = projection * view * model * vec4(vertex, 1.0);
             }
 
             #fragment
@@ -187,7 +187,7 @@ private:
 
             void main()
             {
-                color = vec4(1, 1, 0, 1);
+                color = vec4(1.0, 1.0, 0.0, 1.0);
             }
             )";
 

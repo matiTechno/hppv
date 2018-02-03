@@ -21,7 +21,7 @@ out vec2 vPos;
 
 void main()
 {
-    gl_Position = projection * matrix * vec4(vertex.xy, 0, 1);
+    gl_Position = projection * matrix * vec4(vertex.xy, 0.0, 1.0);
     vColor = color;
     vPos = vertex.xy;
 
@@ -29,19 +29,19 @@ void main()
 
     if(flipTexRectX)
     {
-        texCoord.x = 1 - texCoord.x;
+        texCoord.x = 1.0 - texCoord.x;
     }
 
     if(flipTexRectY)
     {
-        texCoord.y = 1 - texCoord.y;
+        texCoord.y = 1.0 - texCoord.y;
     }
 
     vTexCoord = texCoord * normTexRect.zw + normTexRect.xy;
 
     if(flipTextureY == false)
     {
-        vTexCoord.y = 1 - vTexCoord.y;
+        vTexCoord.y = 1.0 - vTexCoord.y;
     }
 }
 )";
@@ -67,27 +67,27 @@ out vec4 color;
 
 float rectAlpha()
 {
-    float deltaX = fwidth(length(vPos.x - center.x)) * 2;
+    float deltaX = fwidth(length(vPos.x - center.x)) * 2.0;
     float distX = abs(vPos.x - center.x);
-    float alpha = 1 - smoothstep(0.5 - deltaX, 0.5, distX);
-    float deltaY = fwidth(length(vPos.y - center.y)) * 2;
+    float alpha = 1.0 - smoothstep(0.5 - deltaX, 0.5, distX);
+    float deltaY = fwidth(length(vPos.y - center.y)) * 2.0;
     float distY = abs(vPos.y - center.y);
-    alpha *= 1 - smoothstep(0.5 - deltaY, 0.5, distY);
+    alpha *= 1.0 - smoothstep(0.5 - deltaY, 0.5, distY);
     return alpha;
 }
 
 float circleAlpha()
 {
     float distanceFromCenter = length(vPos - center);
-    float delta = fwidth(distanceFromCenter) * 2;
-    return 1 - smoothstep(radius - delta, radius, distanceFromCenter);
+    float delta = fwidth(distanceFromCenter) * 2.0;
+    return 1.0 - smoothstep(radius - delta, radius, distanceFromCenter);
 }
 
 void main()
 {
     if(mode == 0) // Color
     {
-        float alpha = 1;
+        float alpha = 1.0;
 
         if(antialiasedSprites)
         {
@@ -117,7 +117,7 @@ void main()
 
         if(mode == 1) // Tex
         {
-            float alpha = 1;
+            float alpha = 1.0;
 
             if(antialiasedSprites)
             {
@@ -145,12 +145,12 @@ in vec2 vPos;
 
 uniform sampler2D sampler;
 uniform int mode;
-uniform vec4 outlineColor = vec4(1, 0, 0, 1);
-uniform float outlineWidth = 0.25; // [0, 0.5]
-uniform vec4 glowColor = vec4(1, 0, 0, 1);
-uniform float glowWidth = 0.5; // [0, 0.5]
-uniform vec4 shadowColor = vec4(1, 0, 0, 1);
-uniform float shadowSmoothing = 0.2; // [0, 0.5]
+uniform vec4 outlineColor = vec4(1.0, 0.0, 0.0, 1.0);
+uniform float outlineWidth = 0.25;                    // [0.0, 0.5]
+uniform vec4 glowColor = vec4(1.0, 0.0, 0.0, 1.0);
+uniform float glowWidth = 0.5;                        // [0.0, 0.5]
+uniform vec4 shadowColor = vec4(1.0, 0.0, 0.0, 1.0);
+uniform float shadowSmoothing = 0.2;                  // [0.0, 0.5]
 uniform vec2 shadowOffset = vec2(-0.003, 0.006);
 
 const vec2 center = vec2(0.5, 0.5);
@@ -159,7 +159,7 @@ out vec4 color;
 
 void main()
 {
-    float smoothing = fwidth(length(vPos - center)) * 2;
+    float smoothing = fwidth(length(vPos - center)) * 2.0;
     float distance = texture(sampler, vTexCoord).a;
 
     if(mode == 5) // Sdf
@@ -213,13 +213,13 @@ out vec2 vTexCoord;
 
 void main()
 {
-    gl_Position = projection * vec4(pos, 0, 1);
+    gl_Position = projection * vec4(pos, 0.0, 1.0);
     vTexCoord = texCoord;
     vColor = color;
 
     if(flipTextureY == false)
     {
-        vTexCoord.y = 1 - vTexCoord.y;
+        vTexCoord.y = 1.0 - vTexCoord.y;
     }
 }
 )";

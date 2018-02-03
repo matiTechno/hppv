@@ -28,7 +28,6 @@ out vec4 oColor;
 void main()
 {
     oColor = transition(vTexCoord);
-    //oColor = getFromColor(vTexCoord);
 }
 )";
 

@@ -24,13 +24,13 @@ out vec4 color;
 void main()
 {
     vec2 pos = projPos + vPos * projSize;
-    vec2 z = vec2(0);
+    vec2 z = vec2(0.0);
     int it = 0;
 
-    while(pow(z.x, 2) + pow(z.y, 2) < 4 && it < iterations)
+    while(pow(z.x, 2.0) + pow(z.y, 2.0) < 4.0 && it < iterations)
     {
-        float xtemp = pow(z.x, 2) - pow(z.y, 2) + pos.x;
-        z.y = 2 * z.x * z.y + pos.y;
+        float xtemp = pow(z.x, 2.0) - pow(z.y, 2.0) + pos.x;
+        z.y = 2.0 * z.x * z.y + pos.y;
         z.x = xtemp;
         ++it;
     }

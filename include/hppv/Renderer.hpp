@@ -108,9 +108,9 @@ enum class Render
     CircleTex = 3,
     Font = 4,
     Sdf = 5,
-    SdfOutline = 6, // vec4 outlineColor; float outlineWidth [0, 0.5]
-    SdfGlow = 7, // vec4 glowColor; float glowWidth [0, 0.5]
-    SdfShadow = 8, // vec4 shadowColor; float shadowSmoothing [0, 0.5]; vec2 shadowOffset ((1, 1) - offset by texture size)
+    SdfOutline = 6, // vec4 outlineColor; float outlineWidth [0.0, 0.5]
+    SdfGlow = 7, // vec4 glowColor; float glowWidth [0.0, 0.5]
+    SdfShadow = 8, // vec4 shadowColor; float shadowSmoothing [0.0, 0.5]; vec2 shadowOffset ((1.0, 1.0) - offset by texture size)
     VerticesColor = 9,
     VerticesTex = 10
 };
@@ -237,7 +237,7 @@ public:
 
     // out vec4 vColor;
     // out vec2 vTexCoord;
-    // out vec2 vPos; // [0, 1], y grows down
+    // out vec2 vPos; // [0.0, 1.0], y grows down
 
     static const char* const vInstancesSource;
 

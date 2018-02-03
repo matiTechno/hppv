@@ -137,7 +137,7 @@ public:
 private:
     std::vector<hppv::Vertex> vertices_;
 
-    // todo: don't render the map data with Renderer
+    // todo: don't render the map data (big static data) with Renderer
     void prototypeRender(hppv::Renderer& renderer) override
     {
         renderer.mode(hppv::RenderMode::Vertices);

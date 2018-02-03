@@ -18,8 +18,8 @@ in vec2 vPos;
 uniform float time;
 uniform vec2 projSize;
 
-const float vel = 15;
-const float len = 400;
+const float vel = 15.0;
+const float len = 400.0;
 const float Pi = 3.14;
 
 out vec4 color;
@@ -28,9 +28,9 @@ void main()
 {
     float f = vel / len;
     vec2 pos = vPos * projSize;
-    float r = length(pos - projSize / 2);
-    float h = sin(2 * Pi / len * r - 2 * Pi * f * time) / 2 + 0.5;
-    color = vec4(0, h, 0, 0);
+    float r = length(pos - projSize / 2.0);
+    float h = sin(2.0 * Pi / len * r - 2.0 * Pi * f * time) / 2.0 + 0.5;
+    color = vec4(0.0, h, 0.0, 0.0);
 }
 )";
 

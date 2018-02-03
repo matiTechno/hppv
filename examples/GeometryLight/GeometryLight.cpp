@@ -6,7 +6,7 @@
 #include <cmath>
 
 #include <glm/trigonometric.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL // todo: unused?
 #include <glm/gtx/vector_angle.hpp>
 
 #include <hppv/Prototype.hpp>
@@ -37,7 +37,7 @@ out vec4 color;
 void main()
 {
     float distanceFromCenter = length(vPos - center);
-    float alpha = 1 - smoothstep(0, radius, distanceFromCenter);
+    float alpha = 1.0 - smoothstep(0.0, radius, distanceFromCenter);
     vec4 sample = texture(sampler, vTexCoord);
     color = sample * vColor * alpha;
 }
@@ -116,6 +116,8 @@ private:
     {
         points_.clear();
 
+        // note: shadowing
+        // todo: better variable names
         for(const auto& shape: shapes_)
         {
             for(const auto point: shape)
@@ -135,6 +137,7 @@ private:
                     {
                         for(auto it = shape.cbegin(); it < shape.cend(); ++it)
                         {
+                            // todo?: modulo vs if?
                             const auto segEnd = (it == shape.end() - 1 ? *shape.begin() : *(it + 1));
 
                             if(const auto rayEnd = findRayEnd(lightPos_, rayDir, *it, segEnd))

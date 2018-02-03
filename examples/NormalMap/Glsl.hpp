@@ -23,18 +23,18 @@ void main()
     vec4 sampleDiffuse = texture(samplerDiffuse, vTexCoord);
     vec3 sampleNormal = texture(samplerNormal, vTexCoord).rgb;
 
-    vec3 fragPos = vec3(vPos * projSize + projPos, 0);
+    vec3 fragPos = vec3(vPos * projSize + projPos, 0.0);
 
     vec3 lightDir = lightPos - fragPos;
 
     float D = length(lightDir);
-    float attenuation = 1 / (attCoeffs.x + attCoeffs.y * D + attCoeffs.z * D * D);
+    float attenuation = 1.0 / (attCoeffs.x + attCoeffs.y * D + attCoeffs.z * D * D);
 
-    vec3 N = normalize(sampleNormal * 2 - 1);
+    vec3 N = normalize(sampleNormal * 2.0 - 1.0);
     vec3 L = normalize(lightDir);
     L.y = -L.y;
 
-    color = vec4(sampleDiffuse.rgb * (lightColor * max(dot(L, N), 0) * attenuation + ambientColor),
+    color = vec4(sampleDiffuse.rgb * (lightColor * max(dot(L, N), 0.0) * attenuation + ambientColor),
                  sampleDiffuse.a);
 }
 )";
@@ -68,7 +68,7 @@ void main()
 
     if(invertNormalY)
     {
-        colorNormal.g = 1 - colorNormal.g;
+        colorNormal.g = 1.0 - colorNormal.g;
     }
 }
 )";

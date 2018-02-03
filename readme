@@ -13,7 +13,6 @@ todo:
 * UTF-8 - input, dynamic glyph caching?
 * better cmake (finding libraries / cross-compilation)
 * license
-* floating point literal suffix (C++ / glsl) & auto conventions
 
 included:
 

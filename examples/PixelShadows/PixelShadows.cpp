@@ -29,16 +29,16 @@ out vec4 color;
 
 void main()
 {
-    float distance = 1;
+    float distance = 1.0;
 
-    int texSizeY = textureSize(sampler, 0).y;
+    float texSizeY = textureSize(sampler, 0).y;
 
-    for(float y = 0; y < texSizeY; y += 1)
+    for(float y = 0.0; y < texSizeY; y += 1.0)
     {
-        vec2 norm = vec2(vTexCoord.x, y / texSizeY) * 2 - 1;
+        vec2 norm = vec2(vTexCoord.x, y / texSizeY) * 2.0 - 1.0;
         float theta = Pi * 1.5 + norm.x * Pi;
-        float r = (1 + norm.y) * 0.5;
-        vec2 texCoord = vec2(-r * sin(theta), -r * cos(theta)) / 2 + 0.5;
+        float r = (1.0 + norm.y) * 0.5;
+        vec2 texCoord = vec2(-r * sin(theta), -r * cos(theta)) / 2.0 + 0.5;
         vec4 sample = texture(sampler, texCoord);
         float dst = y / texSizeY;
         float caster = sample.a;
@@ -49,7 +49,7 @@ void main()
         }
     }
 
-    color = vec4(vec3(distance), 1);
+    color = vec4(vec3(distance), 1.0);
 }
 )";
 
@@ -74,25 +74,25 @@ float sample(vec2 texCoord, float r)
 
 void main()
 {
-    vec2 norm = vTexCoord * 2 - 1;
+    vec2 norm = vTexCoord * 2.0 - 1.0;
     float theta = atan(norm.y, norm.x);
     float r = length(norm);
-    float coordX = (theta + Pi) / (2 * Pi);
-    vec2 tc = vec2(coordX, 0);
+    float coordX = (theta + Pi) / (2.0 * Pi);
+    vec2 tc = vec2(coordX, 0.0);
     float center = sample(tc, r);
-    float blur = (1.0 / textureSize(sampler, 0).x) * smoothstep(0, 1, r);
-    float sum = 0;
-    sum += sample(vec2(tc.x - 4 * blur, tc.y), r) * 0.05;
-    sum += sample(vec2(tc.x - 3 * blur, tc.y), r) * 0.09;
-    sum += sample(vec2(tc.x - 2 * blur, tc.y), r) * 0.12;
-    sum += sample(vec2(tc.x - 1 * blur, tc.y), r) * 0.15;
+    float blur = (1.0 / textureSize(sampler, 0).x) * smoothstep(0.0, 1.0, r);
+    float sum = 0.0;
+    sum += sample(vec2(tc.x - 4.0 * blur, tc.y), r) * 0.05;
+    sum += sample(vec2(tc.x - 3.0 * blur, tc.y), r) * 0.09;
+    sum += sample(vec2(tc.x - 2.0 * blur, tc.y), r) * 0.12;
+    sum += sample(vec2(tc.x - 1.0 * blur, tc.y), r) * 0.15;
     sum += center * 0.16;
-    sum += sample(vec2(tc.x + 1 * blur, tc.y), r) * 0.15;
-    sum += sample(vec2(tc.x + 2 * blur, tc.y), r) * 0.12;
-    sum += sample(vec2(tc.x + 3 * blur, tc.y), r) * 0.09;
-    sum += sample(vec2(tc.x + 4 * blur, tc.y), r) * 0.05;
+    sum += sample(vec2(tc.x + 1.0 * blur, tc.y), r) * 0.15;
+    sum += sample(vec2(tc.x + 2.0 * blur, tc.y), r) * 0.12;
+    sum += sample(vec2(tc.x + 3.0 * blur, tc.y), r) * 0.09;
+    sum += sample(vec2(tc.x + 4.0 * blur, tc.y), r) * 0.05;
 
-    color = vColor * vec4(sum * smoothstep(1, 0, r));
+    color = vColor * vec4(sum * smoothstep(1.0, 0.0, r));
 }
 )";
 

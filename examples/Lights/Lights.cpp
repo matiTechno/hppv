@@ -28,7 +28,7 @@ out vec4 color;
 void main()
 {
     float distanceFromCenter = length(vPos - center);
-    float alpha = 1 - smoothstep(0, radius, distanceFromCenter);
+    float alpha = 1.0 - smoothstep(0.0, radius, distanceFromCenter);
     vec4 sample = texture(sampler, vTexCoord);
     color = sample * vColor * alpha;
 }
@@ -46,7 +46,7 @@ out vec4 color;
 
 void main()
 {
-    color = vec4(0, 0, 1 - abs(vPos.y * 2 - 1), 1);
+    color = vec4(0.0, 0.0, 1.0 - abs(vPos.y * 2.0 - 1.0), 1.0);
 }
 )";
 

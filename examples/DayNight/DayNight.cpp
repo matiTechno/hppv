@@ -49,11 +49,11 @@ void main()
 
     if(vPos.y <= edge)
     {
-        y = map(vPos.y, 0, edge, 0, 0.5);
+        y = map(vPos.y, 0.0, edge, 0.0, 0.5);
     }
     else
     {
-        y = map(vPos.y, edge, 1, 0.5, 1);
+        y = map(vPos.y, edge, 1.0, 0.5, 1.0);
     }
 
     float lerpCoeff = time / duration;
