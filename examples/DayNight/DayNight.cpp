@@ -135,7 +135,7 @@ class DayNight: public hppv::Scene
 public:
     DayNight():
         sh_({hppv::Renderer::vInstancesSource, gradientSource}, "sh_"),
-        font_("ProggyClean.ttf", 52)
+        font_(hppv::Font::Default(), 52)
     {
         properties_.maximize = true;
 

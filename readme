@@ -7,7 +7,6 @@ todo:
 * curves, lines
 * Scene::processInput() - better design
 * lua bindings
-* port default imgui font
 * profiling
 * flat_map
 * UTF-8 - input, dynamic glyph caching?

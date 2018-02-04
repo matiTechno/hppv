@@ -28,6 +28,8 @@ struct Glyph
 class Font
 {
 public:
+    struct Default {};
+
     Font() = default;
 
     // Angle Code font format - *.fnt
@@ -40,7 +42,10 @@ public:
     // * move font loading to free functions / overload the constructor
     // * replace additionalChars with something like imgui GlyphRanges
 
-    explicit Font(const std::string& filename, int sizePx = 20, std::string_view additionalChars = "");
+    explicit Font(const std::string& filename, int sizePx = 52, std::string_view additionalChars = "");
+
+    // create a font from the embedded ProggyClean.ttf
+    explicit Font(Default, int sizePx, std::string_view additionalChars = "");
 
     Texture& getTexture() {return texture_;}
 
@@ -49,7 +54,8 @@ public:
     int getLineHeight() const {return lineHeight_;}
 
 private:
-    enum {TexSizeX = 256, Offset = 1};
+    // todo: proper packing
+    enum {TexSizeX = 512, Offset = 1};
 
     Texture texture_;
     // todo?: replace int with unsigned int?
@@ -57,7 +63,9 @@ private:
     int lineHeight_;
 
     void loadFnt(const std::string& filename);
-    void loadTrueType(const std::string& filename, int sizePx, std::string_view additionalChars);
+
+    void loadTrueType(const unsigned char* ttfData, int sizePx, std::string_view additionalChars,
+                      std::string_view id);
 };
 
 } // namespace hppv

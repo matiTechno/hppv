@@ -23,7 +23,8 @@ endif()
 
 # -----
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -pedantic -fno-rtti")
+
 set(CMAKE_C_FLAGS   "-Wall -Wextra -O3")
 
 add_definitions(-DGLM_FORCE_NO_CTOR_INIT -DSHADER_GLM)

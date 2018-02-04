@@ -18,10 +18,22 @@
 // see imgui.cpp
 int ImTextCharFromUtf8(unsigned int* out_char, const char* in_text, const char* in_text_end);
 
+// see imgui_draw.cpp
+unsigned int stb_decompress_length(unsigned char* input);
+unsigned int stb_decompress(unsigned char* output, unsigned char* i, unsigned int length);
+const char* GetDefaultCompressedFontDataTTFBase85();
+unsigned int Decode85Byte(char c);
+void Decode85(const unsigned char* src, unsigned char* dst);
+
 namespace hppv
 {
 
 namespace fs = std::experimental::filesystem;
+
+void printFileOpenError(const std::string& filename)
+{
+    std::cout << "Font: could not open file = " << filename << std::endl;
+}
 
 Font::Font(const std::string& filename, const int sizePx, const std::string_view additionalChars)
 {
@@ -34,12 +46,37 @@ Font::Font(const std::string& filename, const int sizePx, const std::string_view
     else if(filename.find(".ttf") != std::string::npos ||
             filename.find(".otf") != std::string::npos)
     {
-        loadTrueType(filename, sizePx, additionalChars);
+        std::ifstream file(filename, file.binary | file.ate);
+
+        if(!file)
+        {
+            printFileOpenError(filename);
+        }
+        else
+        {
+            std::vector<unsigned char> ttfData;
+            const auto size = file.tellg();
+            ttfData.resize(size);
+            file.seekg(0);
+            file.read(reinterpret_cast<char*>(ttfData.data()), size);
+            loadTrueType(ttfData.data(), sizePx, additionalChars, filename);
+        }
     }
     else
     {
         std::cout << "Font: unsupported file format - " << filename << std::endl;
     }
+}
+
+Font::Font(Default, const int sizePx, const std::string_view additionalChars)
+{
+    // see imgui_draw.cpp
+    const char* const compressedTtfDataBase85 = GetDefaultCompressedFontDataTTFBase85();
+    std::vector<unsigned char> compressedTtfData(((strlen(compressedTtfDataBase85) + 4) / 5) * 4);
+    Decode85(reinterpret_cast<const unsigned char*>(compressedTtfDataBase85), compressedTtfData.data());
+    std::vector<unsigned char> decompressedTtfData(stb_decompress_length(compressedTtfData.data()));
+    stb_decompress(decompressedTtfData.data(), compressedTtfData.data(), compressedTtfData.size());
+    loadTrueType(decompressedTtfData.data(), sizePx, additionalChars, "ProggyClean.ttf (embedded)");
 }
 
 Glyph Font::getGlyph(const int code) const
@@ -51,11 +88,6 @@ Glyph Font::getGlyph(const int code) const
         return it->second;
 
     return {};
-}
-
-void printFileOpenError(const std::string& filename)
-{
-    std::cout << "Font: could not open file = " << filename << std::endl;
 }
 
 struct Value
@@ -131,30 +163,14 @@ void Font::loadFnt(const std::string& filename)
     }
 }
 
-void Font::loadTrueType(const std::string& filename, const int sizePx, const std::string_view additionalChars)
+void Font::loadTrueType(const unsigned char* const ttfData, const int sizePx, const std::string_view additionalChars,
+                        const std::string_view id)
 {
-    std::ifstream file(filename, file.binary | file.ate);
-
-    if(!file)
-    {
-        printFileOpenError(filename);
-        return;
-    }
-
-    std::vector<unsigned char> ttfData;
-
-    {
-        const auto size = file.tellg();
-        ttfData.resize(size);
-        file.seekg(0);
-        file.read(reinterpret_cast<char*>(ttfData.data()), size);
-    }
-
     stbtt_fontinfo fontInfo;
 
-    if(stbtt_InitFont(&fontInfo, ttfData.data(), 0) == 0)
+    if(stbtt_InitFont(&fontInfo, ttfData, 0) == 0)
     {
-        std::cout << "Font: stbtt_InitFont() failed - " << filename << std::endl;
+        std::cout << "Font: stbtt_InitFont() failed - " << id << std::endl;
         return;
     }
 
@@ -198,7 +214,7 @@ void Font::loadTrueType(const std::string& filename, const int sizePx, const std
 
         if(id == 0)
         {
-            std::cout << "Font: stbtt_FindGlyphIndex(" << codePoint << ") failed - " << filename << std::endl;
+            std::cout << "Font: stbtt_FindGlyphIndex(" << codePoint << ") failed - " << id << std::endl;
             continue;
         }
 
