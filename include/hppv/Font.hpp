@@ -45,7 +45,7 @@ public:
     explicit Font(const std::string& filename, int sizePx = 52, std::string_view additionalChars = "");
 
     // create a font from the embedded ProggyClean.ttf
-    explicit Font(Default, int sizePx, std::string_view additionalChars = "");
+    Font(Default, int sizePx, std::string_view additionalChars = "");
 
     Texture& getTexture() {return texture_;}
 
