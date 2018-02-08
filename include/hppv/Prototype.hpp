@@ -41,7 +41,7 @@ private:
 
 struct PInput
 {
-    const std::vector<Event> events;
+    const std::vector<Event>& events;
     glm::vec2 cursorPos;
     bool lmb;
 };
