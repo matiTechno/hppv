@@ -103,7 +103,8 @@ public:
 
             if(sequentially_)
             {
-                constexpr auto halfDuration = transition_.duration / 2.f;
+                // note: constexpr failed to compile with clang 5.0.1
+                const auto halfDuration = transition_.duration / 2.f;
 
                 if(transition_.time < halfDuration)
                 {

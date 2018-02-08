@@ -23,7 +23,8 @@ endif()
 
 # -----
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -pedantic -fno-rtti")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -pedantic -fno-rtti \
+                                        -Wno-nested-anon-types")
 
 set(CMAKE_C_FLAGS   "-Wall -Wextra -O3")
 

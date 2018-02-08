@@ -2,10 +2,10 @@ h p p v
 
 todo:
 
-* test (Renderer): replace 4x4 matrices with 3x3
-* Space rotation, Camera class?
+* Scene::processInput() - better design !!!
 * curves, lines
-* Scene::processInput() - better design
+* Space rotation, Camera class?
+* test (Renderer): replace 4x4 matrices with 3x3
 * lua bindings
 * profiling
 * flat_map
@@ -28,7 +28,7 @@ dependencies:
 * glm
 * lua (LuaTest, optional - see cmake options)
 
-compiles with gcc 7.2.1 on Linux
+compiles with gcc 7.3 and clang 5.0 on Linux
 
 runs with OpenGL 3.3,
 ARB_texture_storage and ARB_base_instance extensions must be supported
