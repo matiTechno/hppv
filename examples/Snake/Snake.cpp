@@ -24,12 +24,9 @@ Snake::Snake()
     while(food_.pos == nodes_.back());
 }
 
-void Snake::processInput(const bool hasInput)
+void Snake::processInput(const std::vector<hppv::Event>& events)
 {
-    if(!hasInput)
-        return;
-
-    for(const auto& event: frame_.events)
+    for(const auto& event: events)
     {
         if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS)
         {

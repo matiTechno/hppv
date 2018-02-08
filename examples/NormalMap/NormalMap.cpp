@@ -64,14 +64,11 @@ private:
     }
     light_;
 
-    void prototypeProcessInput(const bool hasInput) override
+    void prototypeProcessInput(const hppv::PInput input) override
     {
-        if(hasInput)
-        {
-            const auto pos = hppv::mapCursor(prototype_.cursorPos, space_.projected, this);
-            light_.pos.x = pos.x;
-            light_.pos.y = pos.y;
-        }
+        const auto pos = hppv::mapCursor(input.cursorPos, space_.projected, this);
+        light_.pos.x = pos.x;
+        light_.pos.y = pos.y;
     }
 
     void prototypeRender(hppv::Renderer& renderer) override

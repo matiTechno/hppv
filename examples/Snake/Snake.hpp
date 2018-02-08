@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include <hppv/Scene.hpp>
 
 class Snake: public hppv::Scene
@@ -9,7 +7,7 @@ class Snake: public hppv::Scene
 public:
     Snake();
 
-    void processInput(bool hasInput) override;
+    void processInput(const std::vector<hppv::Event>& events) override;
 
     void update() override;
 

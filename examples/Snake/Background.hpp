@@ -19,7 +19,7 @@ class Background: public hppv::Scene
 public:
     Background();
 
-    void processInput(bool hasInput) override;
+    void processInput(const std::vector<hppv::Event>& events) override;
 
     void update() override;
 

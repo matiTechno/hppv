@@ -384,7 +384,7 @@ void ImGui_ImplGlfwGL3_NewFrame()
 
     // Setup inputs
     // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-    if (glfwGetWindowAttrib(g_Window, GLFW_FOCUSED))
+    if (glfwGetWindowAttrib(g_Window, GLFW_FOCUSED) && (glfwGetInputMode(g_Window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL))
     {
         if (io.WantMoveMouse)
         {

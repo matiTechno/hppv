@@ -162,15 +162,11 @@ private:
     std::vector<hppv::Sprite> objects_;
     float time_ = 0.f;
 
-    void update() override
-    {
-        time_ += frame_.time;
-
-        lights_[2].center = glm::vec2(90.f, 80.f) + 40.f * glm::vec2(glm::sin(time_), glm::cos(time_));
-    }
-
     void prototypeRender(hppv::Renderer& renderer) override
     {
+        time_ += frame_.time;
+        lights_[2].center = glm::vec2(90.f, 80.f) + 40.f * glm::vec2(glm::sin(time_), glm::cos(time_));
+
         renderer.antialiasedSprites(true);
 
         for(const auto& light: lights_)

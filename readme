@@ -2,7 +2,6 @@ h p p v
 
 todo:
 
-* Scene::processInput() - better design !!!
 * curves, lines
 * Space rotation, Camera class?
 * test (Renderer): replace 4x4 matrices with 3x3

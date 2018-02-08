@@ -4,8 +4,6 @@
 
 #include <glm/vec2.hpp>
 
-#include "Event.hpp"
-
 namespace hppv
 {
 
@@ -33,8 +31,6 @@ struct Window
 struct Frame
 {
     float time; // in seconds
-    std::vector<Event> events;
-    glm::vec2 cursorPos;
     glm::ivec2 framebufferSize;
     Window window;
 };

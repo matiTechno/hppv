@@ -1,10 +1,12 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include <glm/vec2.hpp>
 
 #include "Frame.hpp"
+#include "Event.hpp"
 
 namespace hppv
 {
@@ -18,11 +20,12 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual void processInput(bool hasInput) {(void)hasInput;}
+    // called every frame on the top scene
+    virtual void processInput(const std::vector<Event>&) {}
 
     virtual void update() {}
 
-    virtual void render(Renderer& renderer) {(void)renderer;}
+    virtual void render(Renderer&) {}
 
     struct
     {

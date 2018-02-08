@@ -43,7 +43,7 @@ public:
         }
     }
 
-    void processInput(bool hasInput) override;
+    void processInput(const std::vector<hppv::Event>& events) override;
     void render(hppv::Renderer& renderer) override;
 
 private:
@@ -54,15 +54,15 @@ private:
     bool pilot_ = false;
 };
 
-void Parallax::processInput(const bool hasInput)
+void Parallax::processInput(const std::vector<hppv::Event>& events)
 {
     std::set<int> keysPressed;
 
-    for(const auto& event: frame_.events)
+    for(const auto& event: events)
     {
         if(event.type == hppv::Event::Key)
         {
-            if(event.key.action == GLFW_PRESS && hasInput)
+            if(event.key.action == GLFW_PRESS)
             {
                 keysPressed.insert(event.key.key);
                 keysHeld_.insert(event.key.key);

@@ -12,24 +12,23 @@ namespace hppv
 {
 
 Prototype::Prototype(const Space space):
-    space_(space),
-    prototype_{lmb_, cursorPos_}
+    space_(space)
 {
     properties_.maximize = true;
-    cursorPos_ = frame_.cursorPos;
+    cursorPos_ = hppv::App::getCursorPos();
 
     std::memset(avgFrameTimesMs_, 0, sizeof(avgFrameTimesMs_));
 }
 
-void Prototype::processInput(const bool hasInput)
+void Prototype::processInput(const std::vector<Event>& events)
 {
     space_.newFrame(properties_.size);
 
-    for(const auto& event: frame_.events)
+    for(const auto& event: events)
     {
         if(event.type == Event::Cursor)
         {
-            if(rmb_ && hasInput)
+            if(rmb_)
             {
                 const auto newSpaceCoords = mapCursor(event.cursor.pos, space_.projected, this);
                 const auto prevSpaceCoords = mapCursor(cursorPos_, space_.projected, this);
@@ -46,7 +45,7 @@ void Prototype::processInput(const bool hasInput)
             case GLFW_MOUSE_BUTTON_LEFT: lmb_ = event.mouseButton.action == GLFW_PRESS;
             }
         }
-        else if(event.type == Event::Scroll && hasInput)
+        else if(event.type == Event::Scroll)
         {
             const auto zoom = glm::pow(prototype_.zoomFactor, event.scroll.offset.y);
 
@@ -62,11 +61,11 @@ void Prototype::processInput(const bool hasInput)
         }
         else if(event.type == Event::FramebufferSize)
         {
-            cursorPos_ = frame_.cursorPos;
+            cursorPos_ = hppv::App::getCursorPos();
         }
     }
 
-    prototypeProcessInput(hasInput);
+    prototypeProcessInput({events, cursorPos_, lmb_});
 }
 
 void Prototype::render(Renderer& renderer)

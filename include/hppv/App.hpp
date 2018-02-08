@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+#include "Event.hpp"
 #include "Frame.hpp"
 #include "Deleter.hpp"
 
@@ -35,7 +36,10 @@ struct Request
     {
         struct
         {
-            bool visible;
+            // see glfwSetInputMode()
+            // GLFW_CURSOR_HIDDEN and GLFW_CURSOR_DISABLED
+            // disable imgui mouse capture (see ImGui_ImplGlfwGL3_NewFrame())
+            int mode;
         }
         cursor;
 
@@ -104,6 +108,9 @@ public:
 
     static const Frame& getFrame() {return frame_;}
 
+    // see Prototype.cpp for proper usage
+    static glm::vec2 getCursorPos();
+
 private:
     enum
     {
@@ -119,11 +126,10 @@ private:
     static Frame frame_;
     static bool handleQuitEvent_;
     static std::vector<Request> requests_;
+    static std::vector<Event> events_;
 
     static void refreshFrame();
-
     static void setFullscreen();
-
     static void handleRequests();
 
     static void errorCallback(int, const char* description);

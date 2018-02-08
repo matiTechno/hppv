@@ -19,6 +19,7 @@ GLFWwindow* App::window_;
 Frame App::frame_;
 bool App::handleQuitEvent_;
 std::vector<Request> App::requests_;
+std::vector<Event> App::events_;
 
 App::App() = default;
 App::~App() = default;
@@ -99,7 +100,7 @@ bool App::initialize(const InitParams& initParams)
     glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
 
     scenes_.reserve(ReservedScenes);
-    frame_.events.reserve(ReservedEvents);
+    events_.reserve(ReservedEvents);
     requests_.reserve(ReservedRequests);
 
     handleQuitEvent_ = initParams.handleQuitEvent;
@@ -136,10 +137,27 @@ void App::run()
         if(glfwWindowShouldClose(window_))
             break;
 
-        frame_.events.clear();
-
+        events_.clear();
         glfwPollEvents();
         ImGui_ImplGlfwGL3_NewFrame();
+
+        if(ImGui::GetIO().WantCaptureKeyboard)
+        {
+            events_.erase(std::remove_if(events_.begin(), events_.end(), [](const Event& e)
+            {
+                return e.type == Event::Key;
+            }), events_.end());
+        }
+
+        if(ImGui::GetIO().WantCaptureMouse)
+        {
+            events_.erase(std::remove_if(events_.begin(), events_.end(), [](const Event& e)
+            {
+                return (e.type == Event::MouseButton && e.mouseButton.action != GLFW_RELEASE) ||
+                        e.type == Event::Cursor ||
+                        e.type == Event::Scroll;
+            }), events_.end());
+        }
 
         {
             const auto newTime = glfwGetTime();
@@ -148,9 +166,6 @@ void App::run()
         }
 
         refreshFrame();
-
-        const auto imguiWantsInput = ImGui::GetIO().WantCaptureKeyboard ||
-                                     ImGui::GetIO().WantCaptureMouse;
 
         for(auto it = scenes_.begin(); it != scenes_.end(); ++it)
         {
@@ -164,7 +179,10 @@ void App::run()
 
             const auto isTop = it == scenes_.end() - 1;
 
-            scene.processInput(isTop && !imguiWantsInput);
+            if(isTop)
+            {
+                scene.processInput(events_);
+            }
 
             if(scene.properties_.updateWhenNotTop || isTop)
             {
@@ -211,15 +229,15 @@ void App::run()
     }
 }
 
+glm::vec2 App::getCursorPos()
+{
+    glm::dvec2 pos;
+    glfwGetCursorPos(window_, &pos.x, &pos.y);
+    return pos;
+}
+
 void App::refreshFrame()
 {
-    if(glfwGetWindowAttrib(window_, GLFW_FOCUSED))
-    {
-        glm::dvec2 cursorPos;
-        glfwGetCursorPos(window_, &cursorPos.x, &cursorPos.y);
-        frame_.cursorPos = cursorPos;
-    }
-
     glfwGetFramebufferSize(window_, &frame_.framebufferSize.x, &frame_.framebufferSize.y);
 
     const auto previousState = frame_.window.state;
@@ -264,8 +282,7 @@ void App::handleRequests()
 
         case Request::Cursor:
         {
-            const auto mode = request.cursor.visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
-            glfwSetInputMode(window_, GLFW_CURSOR, mode);
+            glfwSetInputMode(window_, GLFW_CURSOR, request.cursor.mode);
             break;
         }
 
@@ -318,7 +335,7 @@ void App::windowCloseCallback(GLFWwindow*)
         return;
 
     glfwSetWindowShouldClose(window_, GLFW_FALSE);
-    frame_.events.push_back(Event::Quit);
+    events_.push_back(Event::Quit);
 }
 
 void App::windowFocusCallback(GLFWwindow*, const int focused)
@@ -334,7 +351,7 @@ void App::windowFocusCallback(GLFWwindow*, const int focused)
         event.type = Event::FocusLost;
     }
 
-    frame_.events.push_back(event);
+    events_.push_back(event);
 }
 
 void App::keyCallback(GLFWwindow* const window, const int key, const int scancode, const int action, const int mods)
@@ -343,7 +360,7 @@ void App::keyCallback(GLFWwindow* const window, const int key, const int scancod
     event.key.key = key;
     event.key.action = action;
     event.key.mods = mods;
-    frame_.events.push_back(event);
+    events_.push_back(event);
 
     ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
 }
@@ -352,7 +369,7 @@ void App::cursorPosCallback(GLFWwindow*, const double xpos, const double ypos)
 {
     Event event(Event::Cursor);
     event.cursor.pos = {xpos, ypos};
-    frame_.events.push_back(event);
+    events_.push_back(event);
 }
 
 void App::mouseButtonCallback(GLFWwindow* const window, const int button, const int action, const int mods)
@@ -361,7 +378,7 @@ void App::mouseButtonCallback(GLFWwindow* const window, const int button, const 
     event.mouseButton.button = button;
     event.mouseButton.action = action;
     event.mouseButton.mods = mods;
-    frame_.events.push_back(event);
+    events_.push_back(event);
 
     ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
 }
@@ -370,7 +387,7 @@ void App::scrollCallback(GLFWwindow* const window, const double xoffset, const d
 {
     Event event(Event::Scroll);
     event.scroll.offset = {xoffset, yoffset};
-    frame_.events.push_back(event);
+    events_.push_back(event);
 
     ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
 }
@@ -382,7 +399,7 @@ void App::charCallback(GLFWwindow* const window, const unsigned int codepoint)
 
 void App::framebufferSizeCallback(GLFWwindow*, int, int)
 {
-    frame_.events.push_back(Event::FramebufferSize);
+    events_.push_back(Event::FramebufferSize);
 }
 
 } // namespace hppv

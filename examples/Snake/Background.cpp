@@ -54,16 +54,13 @@ Background::Background():
     properties_.updateWhenNotTop = true;
 
     hppv::Request request(hppv::Request::Cursor);
-    request.cursor.visible = false;
+    request.cursor.mode = GLFW_CURSOR_HIDDEN;
     hppv::App::request(request);
 }
 
-void Background::processInput(const bool hasInput)
+void Background::processInput(const std::vector<hppv::Event>& events)
 {
-    if(hasInput == false)
-        return;
-
-    for(const auto& event: frame_.events)
+    for(const auto& event: events)
     {
         if(event.type == hppv::Event::Key && event.key.key == GLFW_KEY_ENTER
                                           && event.key.action == GLFW_PRESS)

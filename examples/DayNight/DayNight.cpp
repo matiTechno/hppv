@@ -182,12 +182,9 @@ public:
         }
     }
 
-    void processInput(bool) override
+    void processInput(const std::vector<hppv::Event>& events) override
     {
-        if(ImGui::GetIO().WantCaptureKeyboard)
-            return;
-
-        for(const auto& event: frame_.events)
+        for(const auto& event: events)
         {
             if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS
                                               && event.key.key == GLFW_KEY_ENTER)
@@ -195,7 +192,7 @@ public:
                 hideEditor_ = !hideEditor_;
 
                 hppv::Request r(hppv::Request::Cursor);
-                r.cursor.visible = !hideEditor_;
+                r.cursor.mode = hideEditor_ ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL;
                 hppv::App::request(r);
             }
         }

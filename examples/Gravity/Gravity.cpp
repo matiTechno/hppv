@@ -6,13 +6,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
 
+#include <hppv/glad.h>
+#include <GLFW/glfw3.h>
+
 #include <hppv/App.hpp>
 #include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/GLobjects.hpp>
 #include <hppv/Shader.hpp>
 #include <hppv/imgui.h>
-#include <hppv/glad.h>
 
 const char* const renderSource = R"(
 
@@ -184,13 +186,24 @@ private:
     }
     pilot_;
 
+    bool active_ = false;
+
     // gafferongames.com/post/fix_your_timestep
 
     float accumulator_ = 0.f;
     const float dt_ = 0.01f;
 
-    void prototypeProcessInput(const bool hasInput) override
+    void prototypeProcessInput(const hppv::PInput input) override
     {
+        for(const auto& event: input.events)
+        {
+            if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS &&
+                                                 event.key.key == GLFW_KEY_ENTER)
+            {
+                active_ = !active_;
+            }
+        }
+
         time_ += frame_.time;
 
         {
@@ -203,10 +216,10 @@ private:
 
         shCompute_.bind();
 
-        if((prototype_.lmb && hasInput) || pilot_.active)
+        if(input.lmb || active_ || pilot_.active)
         {
             const glm::vec2 pos = pilot_.active ? pilot_.pos :
-                                                  hppv::mapCursor(prototype_.cursorPos, space_.projected, this);
+                                                  hppv::mapCursor(input.cursorPos, space_.projected, this);
 
             shCompute_.uniform2f("gravityPos", pos);
 
@@ -252,7 +265,7 @@ private:
 
         ImGui::Begin(prototype_.imguiWindowName);
         {
-            ImGui::Text("lmb - activate gravity");
+            ImGui::Text("lmb / Enter - activate / toggle gravity");
             ImGui::Checkbox("pilot", &pilot_.active);
         }
         ImGui::End();

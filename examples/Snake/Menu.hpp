@@ -16,7 +16,7 @@ class Menu: public hppv::Scene
 public:
     Menu(int score, Game state);
 
-    void processInput(bool hasInput) override;
+    void processInput(const std::vector<hppv::Event>& events) override;
 
     void render(hppv::Renderer& renderer) override;
 

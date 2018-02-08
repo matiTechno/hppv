@@ -30,14 +30,11 @@ Menu::Menu(const int score, const Game state):
     selectedOption_ = options_.begin();
 }
 
-void::Menu::processInput(const bool hasInput)
+void::Menu::processInput(const std::vector<hppv::Event>& events)
 {
     properties_.pos = (frame_.framebufferSize - properties_.size) / 2;
 
-    if(hasInput == false)
-        return;
-
-    for(const auto& event: frame_.events)
+    for(const auto& event: events)
     {
         if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS)
         {

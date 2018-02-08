@@ -41,14 +41,11 @@ public:
 private:
     Data d_;
 
-    void prototypeProcessInput(const bool hasInput) override
+    void prototypeProcessInput(const hppv::PInput input) override
     {
-        if(!hasInput)
-            return;
-
-        if(prototype_.lmb)
+        if(input.lmb)
         {
-            d_.point = hppv::mapCursor(prototype_.cursorPos, space_.projected, this);
+            d_.point = hppv::mapCursor(input.cursorPos, space_.projected, this);
             d_.vel = {0.f, 0.f};
         }
     }
@@ -130,7 +127,7 @@ private:
             ImGui::InputFloat("b", &d_.b, 0.1f);
             d_.b = std::max(0.01f, d_.b);
 
-            ImGui::Text("x = %f", glm::length(d_.point - d_.attachmentPoint));
+            ImGui::Text("dx = %f", glm::length(d_.point - d_.attachmentPoint));
             ImGui::Text("v = %f", glm::length(d_.vel));
 
             if(ImGui::Button("save"))

@@ -2,18 +2,16 @@
 
 #include <utility>
 
-#include <glm/vec2.hpp>
-
 #include "Scene.hpp"
 #include "Space.hpp"
 
 namespace hppv
 {
 
-class PrototypeSpace
+class PSpace
 {
 public:
-    PrototypeSpace(Space initial):
+    PSpace(Space initial):
         initial(initial),
         current_(initial)
     {}
@@ -41,21 +39,26 @@ private:
     glm::ivec2 sceneSize_;
 };
 
+struct PInput
+{
+    const std::vector<Event> events;
+    glm::vec2 cursorPos;
+    bool lmb;
+};
+
 class Prototype: public Scene
 {
 public:
     Prototype(Space space);
 
-    void processInput(bool hasInput) final override;
+    void processInput(const std::vector<Event>& events) final override;
     void render(Renderer& renderer)  final override;
 
 protected:
-    PrototypeSpace space_;
+    PSpace space_;
 
     struct
     {
-        const bool& lmb; // might be true even if the scene has no input
-        const glm::vec2& cursorPos;
         const char* const imguiWindowName = "Prototype";
         bool renderImgui = true;
         float zoomFactor = 1.1f;
@@ -64,10 +67,11 @@ protected:
     prototype_;
 
 private:
-    virtual void prototypeProcessInput(bool hasInput) {(void)hasInput;}
+    // todo: callbacks?
+    virtual void prototypeProcessInput(PInput) {}
 
     // projection is already set
-    virtual void prototypeRender(Renderer& renderer) {(void)renderer;}
+    virtual void prototypeRender(Renderer&) {}
 
     float accumulator_ = 0.f;
     int frameCount_ = 0;
@@ -81,7 +85,7 @@ private:
     bool rmb_ = false;
     bool lmb_ = false;
 
-    // event based unlike frame_.cursorPos
+    // event based unlike App::getCursorPos()
     glm::vec2 cursorPos_;
 };
 
