@@ -30,4 +30,9 @@ if(LUA_TEST)
 endif()
 
 add_subdirectory(RayTracer)
-add_subdirectory(Audio)
+
+if(UNIX AND NOT APPLE)
+    add_subdirectory(Audio)
+endif()
+
+add_subdirectory(Scene3D)
