@@ -32,8 +32,6 @@ Menu::Menu(const int score, const Game state):
 
 void::Menu::processInput(const std::vector<hppv::Event>& events)
 {
-    properties_.pos = (frame_.framebufferSize - properties_.size) / 2;
-
     for(const auto& event: events)
     {
         if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS)
@@ -75,6 +73,8 @@ void::Menu::processInput(const std::vector<hppv::Event>& events)
 
 void Menu::render(hppv::Renderer& renderer)
 {
+    properties_.pos = (frame_.framebufferSize - properties_.size) / 2;
+
     animation_.accumulator += frame_.time;
 
     while(animation_.accumulator >= animation_.timestep)

@@ -25,7 +25,9 @@ public:
 
     virtual void update() {}
 
+    // App: renderer.viewport(scene);
     virtual void render(Renderer&) {}
+    // App: renderer.flush();
 
     struct
     {
