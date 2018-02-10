@@ -20,6 +20,7 @@ constexpr int size(T(&)[N])
 // framebuffer size
 // vsync, quit
 // fullscreen, maximize, restore
+// frameTime plot
 // spacing
 
 class AppWidget

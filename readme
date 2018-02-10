@@ -25,8 +25,8 @@ dependencies:
 
 * glfw
 * glm
-* lua (LuaTest, optional - see cmake options)
-* assimp (Scene3D, optional)
+* lua (LuaTest, see cmake options)
+* assimp (Scene3D, ^)
 
 compiles with gcc 7.3 and clang 5.0 on Linux
 
