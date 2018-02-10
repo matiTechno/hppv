@@ -201,8 +201,6 @@ private:
         {
             time += frameTime;
 
-            // todo: depth testing
-
             glDisable(GL_BLEND);
 
             fb.bind();

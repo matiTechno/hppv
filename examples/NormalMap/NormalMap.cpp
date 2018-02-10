@@ -21,7 +21,7 @@ struct Texture
     hppv::Texture normal;
 };
 
-// todo: gamma correction?
+// todo?: gamma correction?
 
 class NormalMap: public hppv::Prototype
 {

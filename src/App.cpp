@@ -109,7 +109,7 @@ bool App::initialize(const InitParams& initParams)
     frame_.window.restored.pos = {0, 0};
     frame_.window.restored.size = initParams.window.size;
 
-    // todo: setting the fullscreen mode in glfwCreateWindow()?
+    // todo?: setting the fullscreen mode in glfwCreateWindow()?
     // (note: glfwRestoreWindow() will not set the correct window size in one case)
 
     if(initParams.window.state == Window::Fullscreen)

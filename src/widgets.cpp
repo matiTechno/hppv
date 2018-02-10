@@ -1,4 +1,4 @@
-#include <cstring> // std::memset, std::memmove
+#include <algorithm> // std::copy, std::max
 
 #include <hppv/widgets.hpp>
 #include <hppv/Frame.hpp>
@@ -11,24 +11,18 @@
 namespace hppv
 {
 
-AppWidget::AppWidget()
-{
-    std::memset(avgFrameTimesMs_, 0, sizeof(avgFrameTimesMs_));
-}
-
 void AppWidget::update(const Frame& frame)
 {
     ++frameCount_;
     accumulator_ += frame.time;
 
-    if(accumulator_ >= 0.0333f)
+    if(accumulator_ >= 0.033f)
     {
-        const auto avgFrameTime = accumulator_ / frameCount_;
-        avgFrameTimeMs_ = avgFrameTime * 1000.f;
+        auto* const end = frameTimesMs_ + size(frameTimesMs_);
+        std::copy(frameTimesMs_ + 1, end, frameTimesMs_);
+        *(end - 1) = accumulator_ / frameCount_ * 1000.f;
         frameCount_ = 0;
         accumulator_ = 0.f;
-        std::memmove(avgFrameTimesMs_, avgFrameTimesMs_ + 1, sizeof(avgFrameTimesMs_) - sizeof(float));
-        avgFrameTimesMs_[size(avgFrameTimesMs_) - 1] = avgFrameTimeMs_;
     }
 }
 
@@ -48,8 +42,6 @@ void requestVsync(bool on)
 
 void AppWidget::imgui(const Frame& frame) const
 {
-    ImGui::Text("frameTime          %f ms", avgFrameTimeMs_);
-    ImGui::Text("fps                %d",    static_cast<int>(1.f / avgFrameTimeMs_ * 1000.f + 0.5f));
     ImGui::Text("framebuffer size   %d, %d", frame.framebufferSize.x, frame.framebufferSize.y);
     ImGui::Spacing();
     ImGui::Text("vsync");
@@ -86,11 +78,30 @@ void AppWidget::imgui(const Frame& frame) const
     }
 
     ImGui::Spacing();
+    {
+        auto max = 0.f;
+        auto sum = 0.f;
+
+        for(const auto v: frameTimesMs_)
+        {
+            sum += v;
+            max = std::max(max, v);
+        }
+
+        const auto avg = sum / size(frameTimesMs_);
+
+        ImGui::Text("frame time ms");
+        ImGui::PushStyleColor(ImGuiCol_Text, {0.f, 1.f, 0.f, 1.f});
+        ImGui::Text("avg   %.3f (%d)", avg, static_cast<int>(1.f / avg * 1000.f + 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_Text, {1.f, 0.f, 0.f, 1.f});
+        ImGui::Text("max   %.3f", max);
+        ImGui::PopStyleColor(2);
+    }
+
+    ImGui::Spacing();
     ImGui::PushStyleColor(ImGuiCol_PlotLines, {1.f, 1.f, 0.f, 1.f});
     ImGui::PushStyleColor(ImGuiCol_FrameBg, {1.f, 0.8f, 0.8f, 0.07f});
-    ImGui::PlotLines("frameTime(ms)", avgFrameTimesMs_, size(avgFrameTimesMs_),
-                     0, nullptr, 0, 33, {0, 80});
-
+    ImGui::PlotLines("", frameTimesMs_, size(frameTimesMs_), 0, nullptr, 0, 33, {0, 80});
     ImGui::PopStyleColor(2);
     ImGui::Spacing();
 }
