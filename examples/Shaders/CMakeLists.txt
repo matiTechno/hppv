@@ -1,2 +1,2 @@
-add_executable(Shaders Shaders.cpp Shaders.hpp)
+add_executable(Shaders Shaders.cpp shaders.hpp)
 target_link_libraries(Shaders hppv)

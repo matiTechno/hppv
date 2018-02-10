@@ -12,7 +12,7 @@
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>
 
-#include "Glsl.hpp"
+#include "shaders.hpp"
 #include "../run.hpp"
 
 struct Texture
@@ -64,7 +64,7 @@ private:
     }
     light_;
 
-    void prototypeProcessInput(const hppv::PInput input) override
+    void prototypeProcessInput(const hppv::Pinput input) override
     {
         const auto pos = hppv::mapCursor(input.cursorPos, space_.projected, this);
         light_.pos.x = pos.x;

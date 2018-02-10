@@ -1,5 +1,5 @@
-#include <glm/gtc/constants.hpp>
-#include <glm/trigonometric.hpp>
+#include <glm/gtc/constants.hpp> // glm::pi
+#include <glm/trigonometric.hpp> // glm::sin, glm::cos
 
 #include <hppv/Prototype.hpp>
 #include <hppv/glad.h>

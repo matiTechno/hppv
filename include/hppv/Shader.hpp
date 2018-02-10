@@ -142,10 +142,10 @@ private:
 #ifdef SHADER_IMPLEMENTATION
 
 #include <iostream>
-#include <iomanip>
+#include <iomanip> // std::setw
 #include <fstream>
 #include <sstream>
-#include <algorithm>
+#include <algorithm> // std::sort
 #include <vector>
 #include <optional>
 

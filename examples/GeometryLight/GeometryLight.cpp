@@ -2,12 +2,11 @@
 
 #include <vector>
 #include <optional>
-#include <algorithm>
-#include <cmath>
+#include <algorithm> // std::min, std::max, std::sort
+#include <cmath> // std::atan2
 
-#include <glm/trigonometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/vector_angle.hpp>
+#include <glm/gtx/vector_angle.hpp> // glm::rotate
 
 #include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
@@ -162,7 +161,7 @@ private:
         });
     }
 
-    void prototypeProcessInput(const hppv::PInput input) override
+    void prototypeProcessInput(const hppv::Pinput input) override
     {
         lightPos_ = hppv::mapCursor(input.cursorPos, space_.projected, this);
         lightPos_.x = std::max(lightPos_.x, border_.pos.x + 1);

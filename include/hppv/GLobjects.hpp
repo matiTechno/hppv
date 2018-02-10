@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include <utility>
+#include <utility> // std::move
 
 using GLuint = unsigned int;
 

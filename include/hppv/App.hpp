@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include <memory> // std::unique_ptr
 #include <vector>
 #include <string>
 
@@ -80,7 +80,7 @@ public:
         struct
         {
             glm::ivec2 size = {640, 480};
-            std::string title = "hppv";
+            std::string title = "hppv_test";
             Window::State state = Window::Restored;
 
             // meaningful only when == Window::Maximized and state == Window::Fullscreen

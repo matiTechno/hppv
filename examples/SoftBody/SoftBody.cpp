@@ -1,5 +1,7 @@
-#include <algorithm>
+#include <algorithm> // std::max
 #include <fstream>
+
+#include <glm/geometric.hpp> // glm::length, glm::normalize
 
 #include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
@@ -41,7 +43,7 @@ public:
 private:
     Data d_;
 
-    void prototypeProcessInput(const hppv::PInput input) override
+    void prototypeProcessInput(const hppv::Pinput input) override
     {
         if(input.lmb)
         {

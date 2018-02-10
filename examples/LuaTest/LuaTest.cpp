@@ -1,8 +1,8 @@
 #include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 
-#include "../run.hpp"
 #include "sol.hpp"
+#include "../run.hpp"
 
 class LuaTest: public hppv::Scene
 {

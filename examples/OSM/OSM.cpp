@@ -2,9 +2,9 @@
 
 #include <fstream>
 #include <vector>
-#include <string>
+#include <string> // std::string, std::stoul
 #include <string_view>
-#include <algorithm>
+#include <algorithm> // std::sort
 
 #include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
@@ -49,7 +49,6 @@ public:
         hppv::Prototype({20.5f, /*51.8f*/ -52.7f, 1.12f, 1.f})
     {
         prototype_.zoomFactor = 1.05f;
-        prototype_.alwaysZoomToCursor = true;
 
         std::ifstream file("map.osm");
 

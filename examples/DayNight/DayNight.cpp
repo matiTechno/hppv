@@ -1,9 +1,13 @@
 // inspired by FEZ
 
 #include <vector>
-#include <algorithm>
+#include <algorithm> // std::max, std::swap
 #include <random>
 #include <fstream>
+#include <string>
+
+#include <hppv/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <hppv/App.hpp>
 #include <hppv/Scene.hpp>
@@ -12,13 +16,7 @@
 #include <hppv/Shader.hpp>
 #include <hppv/Font.hpp>
 
-#include <hppv/glad.h>
-#include <GLFW/glfw3.h>
-
 #include "../run.hpp"
-
-// ImGui::PushItemFlag()
-#include "../../src/imgui/imgui_internal.h"
 
 const char* const gradientSource = R"(
 
@@ -71,18 +69,6 @@ struct Gradient
     glm::vec4 colorBot;
 };
 
-void imguiPushDisabled(const float alpha)
-{
-    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
-}
-
-void imguiPopDisabled()
-{
-    ImGui::PopStyleVar();
-    ImGui::PopItemFlag();
-}
-
 void imguiGradientEdit(std::vector<Gradient>::iterator it, float* const time, bool current)
 {
     const char* const title = current ? "current:" : "next:   ";
@@ -104,7 +90,7 @@ void imguiGradientEdit(std::vector<Gradient>::iterator it, float* const time, bo
     {
         ImGui::Spacing();
         ImGui::Text("read-only");
-        imguiPushDisabled(1.f);
+        hppv::imguiPushDisabled(1.f);
     }
 
     ImGui::PushID(title);
@@ -114,7 +100,7 @@ void imguiGradientEdit(std::vector<Gradient>::iterator it, float* const time, bo
 
     if(current == false)
     {
-        imguiPopDisabled();
+        hppv::imguiPopDisabled();
     }
 }
 
@@ -295,7 +281,7 @@ void DayNight::editor()
 
     if(disabled)
     {
-        imguiPushDisabled(0.5f);
+        hppv::imguiPushDisabled();
     }
 
     if(ImGui::InputText("change name", textInputBuf_, hppv::size(textInputBuf_), ImGuiInputTextFlags_EnterReturnsTrue))
@@ -365,7 +351,7 @@ void DayNight::editor()
 
     if(disabled)
     {
-        imguiPopDisabled();
+        hppv::imguiPopDisabled();
     }
 
     imguiNewSection();

@@ -9,8 +9,10 @@
 #include <hppv/imgui.h>
 
 // ----- for d3_
+#include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/trigonometric.hpp> // glm::radians
 
 #include <hppv/Shader.hpp>
 #include <hppv/GLobjects.hpp>
@@ -27,6 +29,7 @@
 // * better class and function names
 // * move some parts into separate files
 // * change the project name
+// * reuse the camera code from the Scene3D example
 
 class RayTracer: public hppv::Scene
 {
@@ -221,9 +224,6 @@ private:
                 glm::mat4 model(1.f);
 
                 constexpr auto angularVel = glm::radians(360.f / 10.f);
-                //const auto x = glm::sin(angularVel * time);
-                //const auto z = glm::cos(angularVel * time);
-                //model = glm::translate(model, glm::vec3(x, 0.f, z));
                 model = glm::rotate(model, angularVel * time, {0.f, 1.f, 0.f});
 
                 sh.uniformMat4f("model", model);

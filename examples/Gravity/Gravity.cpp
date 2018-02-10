@@ -1,10 +1,8 @@
 #include <random>
-#include <cassert>
 #include <vector>
-#include <iostream>
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/trigonometric.hpp>
+#include <glm/gtc/matrix_transform.hpp> // glm::ortho
+#include <glm/trigonometric.hpp> // glm::sin, glm::cos
 
 #include <hppv/glad.h>
 #include <GLFW/glfw3.h>
@@ -134,8 +132,6 @@ public:
     {
         static_assert(NumParticles % ComputeLocalSize == 0);
 
-        prototype_.alwaysZoomToCursor = true;
-
         shCompute_.bind();
         shCompute_.uniform1f("dt", dt_);
 
@@ -193,13 +189,14 @@ private:
     float accumulator_ = 0.f;
     const float dt_ = 0.01f;
 
-    void prototypeProcessInput(const hppv::PInput input) override
+    void prototypeProcessInput(const hppv::Pinput input) override
     {
         for(const auto& event: input.events)
         {
-            if(event.type == hppv::Event::Key && event.key.action == GLFW_PRESS &&
-                                                 event.key.key == GLFW_KEY_ENTER)
+            if(event.type == hppv::Event::MouseButton && event.mouseButton.action == GLFW_PRESS &&
+                                                         event.mouseButton.button == GLFW_MOUSE_BUTTON_LEFT)
             {
+                // todo?: hide the input from imgui when active_ == true?
                 active_ = !active_;
             }
         }
@@ -216,7 +213,7 @@ private:
 
         shCompute_.bind();
 
-        if(input.lmb || active_ || pilot_.active)
+        if(active_ || pilot_.active)
         {
             const glm::vec2 pos = pilot_.active ? pilot_.pos :
                                                   hppv::mapCursor(input.cursorPos, space_.projected, this);
@@ -265,8 +262,11 @@ private:
 
         ImGui::Begin(prototype_.imguiWindowName);
         {
-            ImGui::Text("lmb / Enter - activate / toggle gravity");
-            ImGui::Checkbox("pilot", &pilot_.active);
+            ImGui::Text("lmb - toggle gravity");
+            if(ImGui::Checkbox("pilot", &pilot_.active))
+            {
+                active_ = false;
+            }
         }
         ImGui::End();
     }
@@ -275,9 +275,10 @@ private:
 int main()
 {
     hppv::App app;
-    hppv::App::InitParams initParams;
-    initParams.glVersion = {4, 3};
-    if(!app.initialize(initParams)) return 1;
+    hppv::App::InitParams p;
+    p.glVersion = {4, 3};
+    p.window.title = "Gravity";
+    if(!app.initialize(p)) return 1;
     app.pushScene<Gravity>();
     app.run();
     return 0;

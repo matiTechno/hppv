@@ -1,4 +1,4 @@
-#include <glm/trigonometric.hpp>
+#include <glm/trigonometric.hpp> // glm::sin, glm::cos
 
 #include <hppv/Prototype.hpp>
 #include <hppv/glad.h>
@@ -63,6 +63,7 @@ public:
         properties_.maximize = false;
         properties_.pos = {100.f, 100.f};
         properties_.size = {600.f, 600.f};
+        prototype_.alwaysZoomToCursor = false;
     }
 
 private:

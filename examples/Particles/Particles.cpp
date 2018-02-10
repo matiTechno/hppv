@@ -4,7 +4,7 @@
 #include "Emitter.hpp"
 #include "../run.hpp"
 
-// note: rendering lots of particles in one place slows down OpenGL (overdraw)
+// note: rendering lots of particles in one place might slow down OpenGL (overdraw)
 
 class Particles: public hppv::Prototype
 {
@@ -13,6 +13,8 @@ public:
         hppv::Prototype({0.f, 0.f, 1000.f, 1000.f}),
         emitter_(generator_)
     {
+        prototype_.alwaysZoomToCursor = false;
+
         std::random_device rd;
         generator_.seed(rd());
         configureEmitter();

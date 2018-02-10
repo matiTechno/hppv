@@ -1,7 +1,18 @@
 #include <cassert>
-#include <algorithm>
+#include <algorithm> // std::find
+#include <iostream>
+#include <vector>
+#include <string>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include <glm/vec3.hpp>
+#include <glm/common.hpp>
+#include <glm/exponential.hpp>
+#include <glm/geometric.hpp>
+#include <glm/trigonometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <hppv/glad.h>
@@ -11,8 +22,80 @@
 #include <hppv/imgui.h>
 #include <hppv/Shader.hpp>
 #include <hppv/GLobjects.hpp>
+#include <hppv/Renderer.hpp>
+#include <hppv/Font.hpp>
+#include <hppv/widgets.hpp>
 
 #include "../run.hpp"
+
+struct Mesh
+{
+    hppv::GLvao vao;
+    hppv::GLbo vbo;
+    hppv::GLbo ebo;
+    int numIndices = 0;
+};
+
+struct Model
+{
+    std::vector<Mesh> meshes;
+};
+
+Model loadModel(const std::string& filename)
+{
+    Assimp::Importer importer;
+    const aiScene* const scene = importer.ReadFile(filename, aiProcess_Triangulate);
+
+    if(!scene)
+    {
+        std::cout << "Assimp::Importer::ReadFile() failed: " << filename << std::endl;
+        return {};
+    }
+
+    assert(scene->HasMeshes());
+    std::vector<glm::vec3> vertices;
+    std::vector<unsigned> indices;
+    Model model;
+
+    for(unsigned k = 0; k < scene->mNumMeshes; ++k)
+    {
+        {
+            const auto& mesh = *scene->mMeshes[k];
+            assert(mesh.HasFaces());
+            assert(mesh.mFaces[0].mNumIndices == 3);
+
+            vertices.reserve(mesh.mNumVertices);
+            vertices.clear();
+            for(unsigned i = 0; i < mesh.mNumVertices; ++i)
+            {
+                const auto v = mesh.mVertices[i];
+                vertices.emplace_back(v.x, v.y, v.z);
+            }
+
+            indices.reserve(mesh.mNumFaces * 3);
+            indices.clear();
+            for(unsigned i = 0; i < mesh.mNumFaces; ++i)
+            {
+                for(auto j = 0; j < 3; ++j)
+                {
+                    indices.push_back(mesh.mFaces[i].mIndices[j]);
+                }
+            }
+        }
+
+        auto& mesh = model.meshes.emplace_back();
+        mesh.numIndices = indices.size();
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo.getId());
+        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+        glBindVertexArray(mesh.vao.getId());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo.getId());
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned) * indices.size(), indices.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glEnableVertexAttribArray(0);
+    }
+
+    return model;
+}
 
 void tryInsert(std::vector<int>& vec, const int key)
 {
@@ -39,7 +122,8 @@ class Scene3D: public hppv::Scene
 {
 public:
     Scene3D():
-        sh_(hppv::Shader::File(), "res/test.glsl")
+        font_(hppv::Font::Default(), 13),
+        sh_(hppv::Shader::File(), "res/test.sh")
     {
         properties_.maximize = true;
 
@@ -55,6 +139,8 @@ public:
         glBindVertexArray(vao_.getId());
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         glEnableVertexAttribArray(0);
+
+        model_ = loadModel("../RayTracer/res/african_head.obj");
 
         toggleCameraMode();
     }
@@ -104,42 +190,42 @@ public:
         camera_.dir = glm::normalize(camera_.dir);
 
         // update the camera position
-        {
-            const auto xzDir = glm::normalize(glm::vec3(camera_.dir.x, 0.f, camera_.dir.z));
 
-            if(keyActive(GLFW_KEY_W))
-            {
-                camera_.eye += xzDir * camera_.vel * frame_.time;
-            }
-            if(keyActive(GLFW_KEY_S))
-            {
-                camera_.eye -= xzDir * camera_.vel * frame_.time;
-            }
+        if(keyActive(GLFW_KEY_W))
+        {
+            camera_.eye += camera_.dir * camera_.speed * frame_.time;
+        }
+        if(keyActive(GLFW_KEY_S))
+        {
+            camera_.eye -= camera_.dir * camera_.speed * frame_.time;
         }
         {
             const auto right = glm::normalize(glm::cross(camera_.dir, camera_.up));
 
             if(keyActive(GLFW_KEY_A))
             {
-                camera_.eye -= right * camera_.vel * frame_.time;
+                camera_.eye -= right * camera_.speed * frame_.time;
             }
             if(keyActive(GLFW_KEY_D))
             {
-                camera_.eye += right * camera_.vel * frame_.time;
+                camera_.eye += right * camera_.speed * frame_.time;
             }
         }
         if(keyActive(GLFW_KEY_SPACE))
         {
-            camera_.eye += camera_.up * camera_.vel * frame_.time;
+            camera_.eye += camera_.up * camera_.speed * frame_.time;
         }
         if(keyActive(GLFW_KEY_LEFT_SHIFT))
         {
-            camera_.eye -= camera_.up * camera_.vel * frame_.time;
+            camera_.eye -= camera_.up * camera_.speed * frame_.time;
         }
     }
 
-    void render(hppv::Renderer&) override
+    void render(hppv::Renderer& renderer) override
     {
+        // hppv::App already cleared the color buffer
+        glClear(GL_DEPTH_BUFFER_BIT);
+
         assert(properties_.maximize);
         const auto size = properties_.size;
         glViewport(0, 0, size.x, size.y);
@@ -153,34 +239,65 @@ public:
 
             const auto view = glm::lookAt(camera_.eye, camera_.eye + camera_.dir, camera_.up);
             sh_.uniformMat4f("view", view);
-
+        }
+        // todo: render commands
+        {
             glm::mat4 model(1.f);
             constexpr auto angularVel = glm::radians(360.f / 10.f);
-            //const auto x = glm::sin(angularVel * time);
-            //const auto z = glm::cos(angularVel * time);
-            //model = glm::translate(model, glm::vec3(x, 0.f, z));
+            model = glm::translate(model, glm::vec3(0.f, 0.f, -5.f));
             time_ += frame_.time;
             model = glm::rotate(model, angularVel * time_, {0.f, 1.f, 0.f});
             sh_.uniformMat4f("model", model);
+            sh_.uniform4f("color", {1.f, 0.5f, 0.f, 1.f});
+            glBindVertexArray(vao_.getId());
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+            sh_.uniformMat4f("model", glm::mat4(1.f));
+            sh_.uniform4f("color", {0.1f, 0.1f, 0.f, 0.f});
+
+            for(auto& mesh: model_.meshes)
+            {
+                glBindVertexArray(mesh.vao.getId());
+                glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_INT, nullptr);
+            }
+
+            glDisable(GL_BLEND);
         }
 
-        glBindVertexArray(vao_.getId());
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        appWidget_.update(frame_);
 
         ImGui::Begin("Scene3D");
-        ImGui::Text("Esc - toggle the camera mode");
+        appWidget_.imgui(frame_);
+        ImGui::Text("toggle the camera mode - Esc");
         ImGui::Text("pitch / yaw - mouse");
-        ImGui::Text("move - wsad (xz plane), space (up), lshift (down)");
+        ImGui::Text("move - wsad, space (up), lshift (down)");
         ImGui::End();
+
+        renderer.projection({0.f, 0.f, properties_.size});
+        renderer.shader(hppv::Render::Font);
+        renderer.texture(font_.getTexture());
+        hppv::Text text(font_);
+        text.text = "hppv::Renderer test";
+        text.pos = glm::vec2(20.f);
+        text.color = {0.f, 0.7f, 0.f, 1.f};
+        renderer.cache(text);
+        renderer.flush();
     }
 
 private:
     bool cameraMode_ = false;
     glm::vec2 cursorPos_;
     float time_ = 0.f;
+    hppv::AppWidget appWidget_;
+    hppv::Font font_;
     hppv::Shader sh_;
     hppv::GLvao vao_;
     hppv::GLbo bo_;
+    Model model_;
 
     struct
     {
@@ -197,8 +314,8 @@ private:
         const glm::vec3 up = {0.f, 1.f, 0.f};
         const float fovy = 90.f; // degrees
         const float zNear = 0.1f;
-        const float zFar = 100.f;
-        const float vel = 4.f;
+        const float zFar = 10000.f;
+        float speed = 4.f;
 
         // degrees
         float pitch = 0.f;

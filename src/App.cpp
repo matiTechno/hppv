@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <algorithm> // std::remove_if
 
 #include <hppv/glad.h> // must be included before glfw3.h
 #include <GLFW/glfw3.h>

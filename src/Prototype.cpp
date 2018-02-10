@@ -1,5 +1,4 @@
 #include <string>
-#include <cstring>
 
 #include <GLFW/glfw3.h>
 
@@ -15,9 +14,7 @@ Prototype::Prototype(const Space space):
     space_(space)
 {
     properties_.maximize = true;
-    cursorPos_ = hppv::App::getCursorPos();
-
-    std::memset(avgFrameTimesMs_, 0, sizeof(avgFrameTimesMs_));
+    cursorPos_ = App::getCursorPos();
 }
 
 void Prototype::processInput(const std::vector<Event>& events)
@@ -61,7 +58,7 @@ void Prototype::processInput(const std::vector<Event>& events)
         }
         else if(event.type == Event::FramebufferSize)
         {
-            cursorPos_ = hppv::App::getCursorPos();
+            cursorPos_ = App::getCursorPos();
         }
     }
 
@@ -70,84 +67,12 @@ void Prototype::processInput(const std::vector<Event>& events)
 
 void Prototype::render(Renderer& renderer)
 {
-    ++frameCount_;
-    accumulator_ += frame_.time;
-
-    if(accumulator_ >= 0.0333f)
-    {
-        const auto avgFrameTime = accumulator_ / frameCount_;
-        avgFrameTimeMs_ = avgFrameTime * 1000.f;
-        avgFps_ = 1.f / avgFrameTime + 0.5f;
-        frameCount_ = 0;
-        accumulator_ = 0.f;
-
-        std::memmove(avgFrameTimesMs_, avgFrameTimesMs_ + 1, sizeof(avgFrameTimesMs_) - sizeof(float));
-        avgFrameTimesMs_[size(avgFrameTimesMs_) - 1] = avgFrameTimeMs_;
-    }
+    appWidget_.update(frame_);
 
     if(prototype_.renderImgui)
     {
         ImGui::Begin(prototype_.imguiWindowName);
-
-        ImGui::Text("h p p v");
-        ImGui::Text("frameTime          %f ms", avgFrameTimeMs_);
-        ImGui::Text("fps                %d",    avgFps_);
-        ImGui::Text("framebuffer size   %d, %d", frame_.framebufferSize.x, frame_.framebufferSize.y);
-
-        if(ImGui::Checkbox("vsync", &vsync_))
-        {
-            Request request(Request::Vsync);
-            request.vsync.on = vsync_;
-            App::request(request);
-        }
-
-        // window state
-        if(frame_.window.state == Window::Fullscreen)
-        {
-            if(ImGui::Button("restore"))
-            {
-                Request request(Request::Window);
-                request.window.state = Window::Restored;
-                App::request(request);
-            }
-        }
-        else
-        {
-            if(ImGui::Button("set fullscreen"))
-            {
-                Request request(Request::Window);
-                request.window.state = Window::Fullscreen;
-                App::request(request);
-            }
-
-            ImGui::SameLine();
-
-            if(frame_.window.state == Window::Maximized)
-            {
-                if(ImGui::Button("restore"))
-                {
-                    Request request(Request::Window);
-                    request.window.state = Window::Restored;
-                    App::request(request);
-                }
-            }
-            else
-            {
-                if(ImGui::Button("maximize"))
-                {
-                    Request request(Request::Window);
-                    request.window.state = Window::Maximized;
-                    App::request(request);
-                }
-            }
-        }
-
-        if(ImGui::Button("quit"))
-        {
-            App::request(Request::Quit);
-        }
-
-        ImGui::Separator();
+        appWidget_.imgui(frame_);
         ImGui::Text("rmb      move around");
 
         std::string zoomInfo("scroll   zoom to ");
@@ -163,22 +88,12 @@ void Prototype::render(Renderer& renderer)
         }
 
         ImGui::Text("%s", zoomInfo.c_str());
-
-        ImGui::Separator();
         const auto spaceCoords = mapCursor(cursorPos_, space_.projected, this);
-        ImGui::Text("space coords       %.3f, %.3f", spaceCoords.x, spaceCoords.y);
-
+        ImGui::NewLine();
+        ImGui::Text("space coords   %.3f, %.3f", spaceCoords.x, spaceCoords.y);
+        ImGui::Spacing();
         ImGui::Separator();
-        ImGui::PushStyleColor(ImGuiCol_PlotLines, {1.f, 1.f, 0.f, 1.f});
-        ImGui::PlotLines("frameTime(ms)", avgFrameTimesMs_, size(avgFrameTimesMs_),
-                         0, nullptr, 0, 33, {0, 80});
-
-        ImGui::PopStyleColor();
-
-        ImGui::PushStyleColor(ImGuiCol_Separator, {0.67f, 0.4f, 0.4f, 1.f});
-        ImGui::Separator();
-        ImGui::PopStyleColor();
-
+        ImGui::Spacing();
         ImGui::End();
     }
 

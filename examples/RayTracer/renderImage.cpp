@@ -1,7 +1,10 @@
 #include <limits>
 
-#include <glm/trigonometric.hpp>
+#include <glm/vec3.hpp>
+#include <glm/common.hpp>
+#include <glm/exponential.hpp>
 #include <glm/geometric.hpp>
+#include <glm/trigonometric.hpp>
 
 #include "renderImage.hpp"
 

@@ -1,5 +1,4 @@
-#include <cstddef>
-#include <algorithm>
+#include <algorithm> // std::max
 #include <cassert>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,7 +12,7 @@
 #include <hppv/Font.hpp>
 #include <hppv/Framebuffer.hpp>
 
-#include "Shaders.hpp"
+#include "shaders.hpp"
 
 // see imgui.cpp
 int ImTextCharFromUtf8(unsigned int* out_char, const char* in_text, const char* in_text_end);
@@ -444,7 +443,10 @@ void Renderer::flush()
     if(batches_.front().instances.count == 0 && batches_.front().vertices.count == 0)
         return;
 
+    // todo?: more robust GL state management (something like in imgui_impl_glfw_gl3.cpp)?
     glEnable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
 
     {
         const auto numInstances = batches_.back().instances.start + batches_.back().instances.count;

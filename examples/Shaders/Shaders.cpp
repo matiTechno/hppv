@@ -6,7 +6,7 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/Shader.hpp>
 
-#include "Shaders.hpp"
+#include "shaders.hpp"
 #include "../run.hpp"
 
 class Shaders: public hppv::Prototype

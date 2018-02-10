@@ -5,6 +5,7 @@
 #include <optional>
 
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
@@ -16,6 +17,8 @@
 using GLint = int;
 
 // * in all cases x-axis grows right, y-axis grows down
+
+// todo?: upgrade to 3D?
 
 namespace hppv
 {

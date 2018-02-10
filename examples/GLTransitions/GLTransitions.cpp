@@ -1,4 +1,4 @@
-#include <algorithm>
+#include <algorithm> // std::min, std::swap
 #include <vector>
 #include <string>
 
@@ -8,7 +8,7 @@
 #include <hppv/Shader.hpp>
 #include <hppv/imgui.h>
 
-#include "Glsl.hpp"
+#include "shaders.hpp"
 #include "../run.hpp"
 
 // todo: aspect ratio interpolation

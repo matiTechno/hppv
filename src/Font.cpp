@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include <experimental/filesystem>
 #include <vector>
-#include <algorithm>
 #include <set>
+#include <experimental/filesystem> // std::experimental::filesystem::path
+#include <algorithm> // std::max
+#include <cstdlib> // std::atoi
 
 #include <hppv/Font.hpp>
 #include <hppv/glad.h>
@@ -246,7 +247,7 @@ void Font::loadTrueType(const unsigned char* const ttfData, const int sizePx, co
         maxBitmapSizeY = std::max(maxBitmapSizeY, glyph.texRect.w);
     }
 
-    texture_ = hppv::Texture(GL_R8, {TexSizeX, pos.y + maxBitmapSizeY});
+    texture_ = Texture(GL_R8, {TexSizeX, pos.y + maxBitmapSizeY});
     texture_.bind();
     const auto texSize = texture_.getSize();
 

@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <hppv/Space.hpp>
 #include <hppv/Scene.hpp>
 #include <hppv/Framebuffer.hpp>

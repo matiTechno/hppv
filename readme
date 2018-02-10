@@ -6,7 +6,7 @@ todo:
 * Space rotation, Camera class?
 * test (Renderer): replace 4x4 matrices with 3x3
 * lua bindings
-* profiling
+* profiling, allocations
 * flat_map
 * UTF-8 - input, dynamic glyph caching?
 * better cmake (finding libraries / cross-compilation)
@@ -26,6 +26,7 @@ dependencies:
 * glfw
 * glm
 * lua (LuaTest, optional - see cmake options)
+* assimp (Scene3D, optional)
 
 compiles with gcc 7.3 and clang 5.0 on Linux
 

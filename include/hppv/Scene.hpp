@@ -1,12 +1,14 @@
 #pragma once
 
-#include <memory>
+#include <memory> // unique_ptr
 #include <vector>
 
 #include <glm/vec2.hpp>
 
 #include "Frame.hpp"
 #include "Event.hpp"
+// included for convenience
+#include "widgets.hpp"
 
 namespace hppv
 {
@@ -40,17 +42,9 @@ public:
         unsigned numScenesToPop = 0;
         std::unique_ptr<Scene> sceneToPush;
     }
-    properties_;
+    properties_; // note: convention exception
 
-    const Frame& frame_;
+    const Frame& frame_; // same
 };
-
-// todo?: find better place for this?
-
-template<typename T, int N>
-constexpr int size(T(&)[N])
-{
-    return N;
-}
 
 } // namespace hppv

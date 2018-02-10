@@ -9,9 +9,10 @@ add_library(hppv
     Prototype.cpp
     Renderer.cpp
     Scene.cpp
-    Shaders.hpp
+    shaders.hpp
     Space.cpp
     Texture.cpp
+    widgets.cpp
 
     glad.c
 
@@ -30,7 +31,7 @@ add_library(hppv
 
 target_include_directories(hppv PRIVATE ../include/hppv) # for imgui
 
-target_link_libraries(hppv PRIVATE -lglfw -lGL -ldl -lstdc++fs)
+target_link_libraries(hppv PRIVATE -lglfw -ldl -lstdc++fs)
 
 target_compile_definitions(hppv PRIVATE
     IMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION

@@ -1,17 +1,18 @@
 #pragma once
 
-#include <utility>
+#include <vector>
 
 #include "Scene.hpp"
 #include "Space.hpp"
+#include "widgets.hpp"
 
 namespace hppv
 {
 
-class PSpace
+class Pspace
 {
 public:
-    PSpace(Space initial):
+    Pspace(Space initial):
         initial(initial),
         current_(initial)
     {}
@@ -39,7 +40,7 @@ private:
     glm::ivec2 sceneSize_;
 };
 
-struct PInput
+struct Pinput
 {
     const std::vector<Event>& events;
     glm::vec2 cursorPos;
@@ -55,33 +56,25 @@ public:
     void render(Renderer& renderer)  final override;
 
 protected:
-    PSpace space_;
+    Pspace space_;
 
     struct
     {
         const char* const imguiWindowName = "Prototype";
         bool renderImgui = true;
         float zoomFactor = 1.1f;
-        bool alwaysZoomToCursor = false;
+        bool alwaysZoomToCursor = true;
     }
     prototype_;
 
 private:
     // todo: callbacks?
-    virtual void prototypeProcessInput(PInput) {}
+    virtual void prototypeProcessInput(Pinput) {}
 
     // projection is already set
     virtual void prototypeRender(Renderer&) {}
 
-    float accumulator_ = 0.f;
-    int frameCount_ = 0;
-    float avgFrameTimeMs_ = 0.f;
-    int avgFps_ = 0;
-    float avgFrameTimesMs_[180];
-
-    // we should get the value from App
-    bool vsync_ = true;
-
+    AppWidget appWidget_;
     bool rmb_ = false;
     bool lmb_ = false;
 

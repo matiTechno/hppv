@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-#include <fstream>
 #include <string_view>
 
 #include <glm/vec2.hpp>

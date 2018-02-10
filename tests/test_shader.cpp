@@ -4,7 +4,7 @@
 #include <hppv/Shader.hpp>
 #include <hppv/Renderer.hpp>
 
-#include "../catch.hpp"
+#include "catch.hpp"
 
 const char* const vertex = R"(
 

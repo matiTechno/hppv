@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <cstdlib>
+#include <cstdlib> // std::getenv
 #include <string>
 
 #include <hppv/App.hpp>

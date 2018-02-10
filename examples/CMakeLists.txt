@@ -35,4 +35,8 @@ if(UNIX AND NOT APPLE)
     add_subdirectory(Audio)
 endif()
 
-add_subdirectory(Scene3D)
+option (SCENE3D "build Scene3D example" ON)
+
+if(SCENE3D)
+    add_subdirectory(Scene3D)
+endif()

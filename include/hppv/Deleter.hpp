@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include <functional>
+#include <functional> // std::function
 
 namespace hppv
 {

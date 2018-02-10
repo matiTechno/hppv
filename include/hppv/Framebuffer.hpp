@@ -2,8 +2,6 @@
 
 #include <vector>
 
-#include <glm/vec2.hpp>
-
 #include "Texture.hpp"
 #include "GLobjects.hpp"
 

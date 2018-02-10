@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include <glm/gtc/constants.hpp>
-#include <glm/trigonometric.hpp>
+#include <glm/gtc/constants.hpp> // glm::pi
+#include <glm/trigonometric.hpp> // glm::sin, glm::cos
 
 #include <hppv/Prototype.hpp>
 #include <hppv/Renderer.hpp>
@@ -108,6 +108,8 @@ public:
         shShadow_({hppv::Renderer::vInstancesSource, shadowSource}, "shShadow_"),
         shLight_({hppv::Renderer::vInstancesSource, lightSource}, "shLight_")
     {
+        prototype_.alwaysZoomToCursor = false;
+
         {
             hppv::Circle circle;
             circle.center = {50.f, 50.f};

@@ -15,9 +15,10 @@ void main()
 #fragment
 #version 330
 
-out vec4 color;
+uniform vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
+out vec4 oColor;
 
 void main()
 {
-    color = vec4(1.0, 1.0, 0.0, 1.0);
+    oColor = color;
 }
