@@ -91,9 +91,9 @@ void AppWidget::imgui(const Frame& frame) const
         const auto avg = sum / size(frameTimesMs_);
 
         ImGui::Text("frame time ms");
-        ImGui::PushStyleColor(ImGuiCol_Text, {0.f, 1.f, 0.f, 1.f});
+        ImGui::PushStyleColor(ImGuiCol_Text, {0.f, 0.85f, 0.f, 1.f});
         ImGui::Text("avg   %.3f (%d)", avg, static_cast<int>(1.f / avg * 1000.f + 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_Text, {1.f, 0.f, 0.f, 1.f});
+        ImGui::PushStyleColor(ImGuiCol_Text, {0.9f, 0.f, 0.f, 1.f});
         ImGui::Text("max   %.3f", max);
         ImGui::PopStyleColor(2);
     }

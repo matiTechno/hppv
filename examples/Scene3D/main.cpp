@@ -31,9 +31,10 @@
 struct Mesh
 {
     hppv::GLvao vao;
-    hppv::GLbo vbo;
-    hppv::GLbo ebo;
-    int numIndices = 0;
+    // note: we are storing vertices and indices in one buffer
+    hppv::GLbo bo;
+    int numIndices = 0; // used for both glDrawArrays() and glDrawElements()
+    GLsizeiptr indicesOffset = 0; // if 0 glDrawArrays() will be used
 };
 
 struct Model
@@ -53,6 +54,7 @@ Model loadModel(const std::string& filename)
     }
 
     assert(scene->HasMeshes());
+    // todo: vertices -> vertexData (store here all vertex components interleaved)
     std::vector<glm::vec3> vertices;
     std::vector<unsigned> indices;
     Model model;
@@ -61,6 +63,7 @@ Model loadModel(const std::string& filename)
     {
         {
             const auto& mesh = *scene->mMeshes[k];
+            // todo?: do all models have faces?
             assert(mesh.HasFaces());
             assert(mesh.mFaces[0].mNumIndices == 3);
 
@@ -85,13 +88,24 @@ Model loadModel(const std::string& filename)
 
         auto& mesh = model.meshes.emplace_back();
         mesh.numIndices = indices.size();
-        glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo.getId());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+        const GLsizeiptr verticesBytes = sizeof(glm::vec3) * vertices.size();
+        const GLsizeiptr indicesBytes = sizeof(unsigned) * indices.size();
+
+        mesh.indicesOffset = verticesBytes;
+
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.bo.getId());
+        glBufferData(GL_ARRAY_BUFFER, verticesBytes + indicesBytes, nullptr, GL_STATIC_DRAW);
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, verticesBytes, vertices.data());
+        glBufferSubData(GL_ARRAY_BUFFER, mesh.indicesOffset, indicesBytes, indices.data());
+
         glBindVertexArray(mesh.vao.getId());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo.getId());
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned) * indices.size(), indices.data(), GL_STATIC_DRAW);
+
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.bo.getId());
     }
 
     return model;
@@ -125,6 +139,13 @@ public:
         font_(hppv::Font::Default(), 13),
         sh_(hppv::Shader::File(), "res/test.sh")
     {
+        {
+            // todo: camera jump (also when resizing the window)
+            hppv::Request r(hppv::Request::Window);
+            r.window.state = hppv::Window::Fullscreen;
+            hppv::App::request(r);
+        }
+
         properties_.maximize = true;
 
         const glm::vec3 vertices[] =
@@ -262,7 +283,8 @@ public:
             for(auto& mesh: model_.meshes)
             {
                 glBindVertexArray(mesh.vao.getId());
-                glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_INT, nullptr);
+                glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_INT,
+                               reinterpret_cast<const void*>(mesh.indicesOffset));
             }
 
             glDisable(GL_BLEND);
