@@ -211,7 +211,7 @@ private:
 
             sh.bind();
             {
-                const auto projection = glm::perspective(camera.fovy, static_cast<float>(size.x) / size.y,
+                const auto projection = glm::perspective(glm::radians(camera.fovy), static_cast<float>(size.x) / size.y,
                                                          camera.zNear, camera.zFar);
 
                 sh.uniformMat4f("projection", projection);

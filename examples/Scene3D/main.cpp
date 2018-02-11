@@ -25,6 +25,7 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/Font.hpp>
 #include <hppv/widgets.hpp>
+#include <hppv/Texture.hpp>
 
 #include "../run.hpp"
 
@@ -54,42 +55,61 @@ Model loadModel(const std::string& filename)
     }
 
     assert(scene->HasMeshes());
-    // todo: vertices -> vertexData (store here all vertex components interleaved)
-    std::vector<glm::vec3> vertices;
+    // todo?: use something smaller than float for texCoords and normals?
+    std::vector<float> vertexData;
     std::vector<unsigned> indices;
     Model model;
 
     for(unsigned k = 0; k < scene->mNumMeshes; ++k)
     {
-        {
-            const auto& mesh = *scene->mMeshes[k];
-            // todo?: do all models have faces?
-            assert(mesh.HasFaces());
-            assert(mesh.mFaces[0].mNumIndices == 3);
+        const auto& aimesh = *scene->mMeshes[k];
+        // todo?: do all models have faces?
+        assert(aimesh.HasFaces());
+        assert(aimesh.mFaces[0].mNumIndices == 3);
+        assert(aimesh.HasPositions());
+        const auto hasTexCoords = aimesh.HasTextureCoords(0);
+        const auto hasNormals = aimesh.HasNormals();
+        const auto floatsPerVertex = 3 + hasTexCoords * 2 + hasNormals * 3;
 
-            vertices.reserve(mesh.mNumVertices);
-            vertices.clear();
-            for(unsigned i = 0; i < mesh.mNumVertices; ++i)
+        vertexData.reserve(aimesh.mNumVertices * floatsPerVertex);
+        vertexData.clear();
+        for(unsigned i = 0; i < aimesh.mNumVertices; ++i)
+        {
+            const auto v = aimesh.mVertices[i];
+            vertexData.push_back(v.x);
+            vertexData.push_back(v.y);
+            vertexData.push_back(v.z);
+
+            if(hasTexCoords)
             {
-                const auto v = mesh.mVertices[i];
-                vertices.emplace_back(v.x, v.y, v.z);
+                const auto t = aimesh.mTextureCoords[0][i];
+                vertexData.push_back(t.x);
+                vertexData.push_back(t.y);
             }
 
-            indices.reserve(mesh.mNumFaces * 3);
-            indices.clear();
-            for(unsigned i = 0; i < mesh.mNumFaces; ++i)
+            if(hasNormals)
             {
-                for(auto j = 0; j < 3; ++j)
-                {
-                    indices.push_back(mesh.mFaces[i].mIndices[j]);
-                }
+                const auto n = aimesh.mNormals[i];
+                vertexData.push_back(n.x);
+                vertexData.push_back(n.y);
+                vertexData.push_back(n.z);
+            }
+        }
+
+        indices.reserve(aimesh.mNumFaces * 3);
+        indices.clear();
+        for(unsigned i = 0; i < aimesh.mNumFaces; ++i)
+        {
+            for(auto j = 0; j < 3; ++j)
+            {
+                indices.push_back(aimesh.mFaces[i].mIndices[j]);
             }
         }
 
         auto& mesh = model.meshes.emplace_back();
         mesh.numIndices = indices.size();
 
-        const GLsizeiptr verticesBytes = sizeof(glm::vec3) * vertices.size();
+        const GLsizeiptr verticesBytes = sizeof(float) * vertexData.size();
         const GLsizeiptr indicesBytes = sizeof(unsigned) * indices.size();
 
         mesh.indicesOffset = verticesBytes;
@@ -97,13 +117,31 @@ Model loadModel(const std::string& filename)
         glBindBuffer(GL_ARRAY_BUFFER, mesh.bo.getId());
         glBufferData(GL_ARRAY_BUFFER, verticesBytes + indicesBytes, nullptr, GL_STATIC_DRAW);
 
-        glBufferSubData(GL_ARRAY_BUFFER, 0, verticesBytes, vertices.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, verticesBytes, vertexData.data());
         glBufferSubData(GL_ARRAY_BUFFER, mesh.indicesOffset, indicesBytes, indices.data());
 
         glBindVertexArray(mesh.vao.getId());
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        const GLsizei stride = floatsPerVertex * sizeof(float);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
         glEnableVertexAttribArray(0);
+
+        if(hasTexCoords)
+        {
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride,
+                                  reinterpret_cast<const void*>(3 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+        }
+
+        if(hasNormals)
+        {
+            const auto offset = 3 * sizeof(float) + hasTexCoords * 2 * sizeof(float);
+
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride,
+                                  reinterpret_cast<const void*>(offset));
+            glEnableVertexAttribArray(2);
+        }
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.bo.getId());
     }
@@ -137,7 +175,8 @@ class Scene3D: public hppv::Scene
 public:
     Scene3D():
         font_(hppv::Font::Default(), 13),
-        sh_(hppv::Shader::File(), "res/test.sh")
+        sh_(hppv::Shader::File(), "res/test.sh"),
+        texDiffuse_("../RayTracer/res/african_head_diffuse.tga")
     {
         {
             // todo: camera jump (also when resizing the window)
@@ -247,13 +286,15 @@ public:
         // hppv::App already cleared the color buffer
         glClear(GL_DEPTH_BUFFER_BIT);
 
+        glEnable(GL_DEPTH_TEST);
+
         assert(properties_.maximize);
         const auto size = properties_.size;
         glViewport(0, 0, size.x, size.y);
 
         sh_.bind();
         {
-            const auto projection = glm::perspective(camera_.fovy, static_cast<float>(size.x) / size.y,
+            const auto projection = glm::perspective(glm::radians(camera_.fovy), static_cast<float>(size.x) / size.y,
                                                      camera_.zNear, camera_.zFar);
 
             sh_.uniformMat4f("projection", projection);
@@ -265,20 +306,27 @@ public:
         {
             glm::mat4 model(1.f);
             constexpr auto angularVel = glm::radians(360.f / 10.f);
-            model = glm::translate(model, glm::vec3(0.f, 0.f, -5.f));
+            const glm::vec3 pos(4.f, 4.f, 8.f);
+            const glm::vec3 color(1.f, 1.f, 1.f);
+            // our little triangle will represent the light
+            sh_.uniform3f("lightPos", pos);
+            sh_.uniform3f("lightColor", color);
+            model = glm::translate(model, pos);
             time_ += frame_.time;
             model = glm::rotate(model, angularVel * time_, {0.f, 1.f, 0.f});
             sh_.uniformMat4f("model", model);
-            sh_.uniform4f("color", {1.f, 0.5f, 0.f, 1.f});
+            sh_.uniform4f("color", glm::vec4(color, 1.f));
+            sh_.uniform1i("useTexture", false);
+            sh_.uniform1i("doLighting", false);
             glBindVertexArray(vao_.getId());
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
         {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
             sh_.uniformMat4f("model", glm::mat4(1.f));
-            sh_.uniform4f("color", {0.1f, 0.1f, 0.f, 0.f});
+            sh_.uniform4f("color", {1.f, 1.f, 1.f, 1.f});
+            sh_.uniform1i("useTexture", true);
+            sh_.uniform1i("doLighting", true);
+            texDiffuse_.bind();
 
             for(auto& mesh: model_.meshes)
             {
@@ -286,8 +334,6 @@ public:
                 glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_INT,
                                reinterpret_cast<const void*>(mesh.indicesOffset));
             }
-
-            glDisable(GL_BLEND);
         }
 
         appWidget_.update(frame_);
@@ -320,6 +366,9 @@ private:
     hppv::GLvao vao_;
     hppv::GLbo bo_;
     Model model_;
+    // todo: mipmapping, gamma correction, sampler
+    // todo?: Sampler class?
+    hppv::Texture texDiffuse_;
 
     struct
     {
