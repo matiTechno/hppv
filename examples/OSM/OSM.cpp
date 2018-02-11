@@ -48,8 +48,6 @@ public:
         // hack
         hppv::Prototype({20.5f, /*51.8f*/ -52.7f, 1.12f, 1.f})
     {
-        prototype_.zoomFactor = 1.05f;
-
         std::ifstream file("map.osm");
 
         std::vector<Node> nodes;

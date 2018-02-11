@@ -19,6 +19,7 @@ void main()
     vPos = pos.xyz;
     gl_Position = projection * view * pos;
     vTexCoord = texCoord;
+    // todo: understand why transpose and inverse
     vNormal = mat3(transpose(inverse(model))) * normal;
 }
 
@@ -51,7 +52,7 @@ void main()
     if(doLighting)
     {
         vec3 lightDir = normalize(vPos - lightPos);
-        // isn't vNormal already normalized?
-        oColor.xyz *= lightColor * dot(-lightDir, normalize(vNormal));
+        // todo: isn't vNormal already normalized?
+        oColor.xyz *= lightColor * max(0.0, dot(-lightDir, normalize(vNormal)));
     }
 }

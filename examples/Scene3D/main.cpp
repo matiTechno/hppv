@@ -1,5 +1,4 @@
 #include <cassert>
-#include <algorithm> // std::find
 #include <iostream>
 #include <vector>
 #include <string>
@@ -9,10 +8,8 @@
 #include <assimp/postprocess.h>
 
 #include <glm/vec3.hpp>
-#include <glm/common.hpp>
-#include <glm/exponential.hpp>
-#include <glm/geometric.hpp>
-#include <glm/trigonometric.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/trigonometric.hpp> // glm::radians
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <hppv/glad.h>
@@ -72,7 +69,7 @@ Model loadModel(const std::string& filename)
         const auto floatsPerVertex = 3 + hasTexCoords * 2 + hasNormals * 3;
 
         vertexData.reserve(aimesh.mNumVertices * floatsPerVertex);
-        vertexData.clear();
+        vertexData.clear(); // leaves the capacity() of the vector unchanged
         for(unsigned i = 0; i < aimesh.mNumVertices; ++i)
         {
             const auto v = aimesh.mVertices[i];
@@ -149,27 +146,6 @@ Model loadModel(const std::string& filename)
     return model;
 }
 
-void tryInsert(std::vector<int>& vec, const int key)
-{
-    if(std::find(vec.cbegin(), vec.cend(), key) == vec.cend())
-    {
-        vec.push_back(key);
-    }
-}
-
-void tryErase(std::vector<int>& vec, const int key)
-{
-    if(const auto it = std::find(vec.cbegin(), vec.cend(), key); it != vec.cend())
-    {
-        vec.erase(it);
-    }
-}
-
-bool find(const std::vector<int>& vec, const int key)
-{
-    return std::find(vec.cbegin(), vec.cend(), key) != vec.cend();
-}
-
 class Scene3D: public hppv::Scene
 {
 public:
@@ -178,14 +154,8 @@ public:
         sh_(hppv::Shader::File(), "res/test.sh"),
         texDiffuse_("../RayTracer/res/african_head_diffuse.tga")
     {
-        {
-            // todo: camera jump (also when resizing the window)
-            hppv::Request r(hppv::Request::Window);
-            r.window.state = hppv::Window::Fullscreen;
-            hppv::App::request(r);
-        }
-
         properties_.maximize = true;
+        camera_.enterCameraMode();
 
         const glm::vec3 vertices[] =
         {
@@ -201,127 +171,60 @@ public:
         glEnableVertexAttribArray(0);
 
         model_ = loadModel("../RayTracer/res/african_head.obj");
-
-        toggleCameraMode();
     }
 
     void processInput(const std::vector<hppv::Event>& events) override
     {
-        keys_.pressed.clear();
-        keys_.released.clear();
-
         for(const auto& event: events)
         {
-            if(event.type == hppv::Event::Key)
-            {
-                if(event.key.action == GLFW_PRESS)
-                {
-                    tryInsert(keys_.pressed, event.key.key);
-                    tryInsert(keys_.held, event.key.key);
-                }
-                else if(event.key.action == GLFW_RELEASE)
-                {
-                    tryInsert(keys_.released, event.key.key);
-                    tryErase(keys_.held, event.key.key);
-                }
-            }
-            else if(event.type == hppv::Event::Cursor && cameraMode_)
-            {
-                const auto offset = event.cursor.pos - cursorPos_;
-                cursorPos_ = event.cursor.pos;
-                constexpr auto coeff = 0.1f;
-                camera_.pitch -= offset.y * coeff;
-                // todo: why 89 and not 90? (learnopengl.com/Getting-started/Camera)
-                camera_.pitch = glm::min(89.f, camera_.pitch);
-                camera_.pitch = glm::max(-89.f, camera_.pitch);
-                camera_.yaw = glm::mod(camera_.yaw + offset.x * coeff, 360.f);
-            }
-        }
-
-        if(find(keys_.pressed, GLFW_KEY_ESCAPE))
-        {
-            toggleCameraMode();
-        }
-
-        // update the camera direction
-        camera_.dir.x = glm::cos(glm::radians(camera_.pitch)) * glm::cos(glm::radians(camera_.yaw));
-        camera_.dir.y = glm::sin(glm::radians(camera_.pitch));
-        camera_.dir.z = glm::cos(glm::radians(camera_.pitch)) * glm::sin(glm::radians(camera_.yaw));
-        camera_.dir = glm::normalize(camera_.dir);
-
-        // update the camera position
-
-        if(keyActive(GLFW_KEY_W))
-        {
-            camera_.eye += camera_.dir * camera_.speed * frame_.time;
-        }
-        if(keyActive(GLFW_KEY_S))
-        {
-            camera_.eye -= camera_.dir * camera_.speed * frame_.time;
-        }
-        {
-            const auto right = glm::normalize(glm::cross(camera_.dir, camera_.up));
-
-            if(keyActive(GLFW_KEY_A))
-            {
-                camera_.eye -= right * camera_.speed * frame_.time;
-            }
-            if(keyActive(GLFW_KEY_D))
-            {
-                camera_.eye += right * camera_.speed * frame_.time;
-            }
-        }
-        if(keyActive(GLFW_KEY_SPACE))
-        {
-            camera_.eye += camera_.up * camera_.speed * frame_.time;
-        }
-        if(keyActive(GLFW_KEY_LEFT_SHIFT))
-        {
-            camera_.eye -= camera_.up * camera_.speed * frame_.time;
+            camera_.processEvent(event);
         }
     }
 
     void render(hppv::Renderer& renderer) override
     {
+        time_ += frame_.time;
+
         // hppv::App already cleared the color buffer
         glClear(GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
 
         assert(properties_.maximize);
-        const auto size = properties_.size;
-        glViewport(0, 0, size.x, size.y);
+        glViewport(0, 0, properties_.size.x, properties_.size.y);
 
+        const glm::vec3 lightPos(4.f, 4.f, 8.f);
+        const glm::vec3 lightColor(1.f, 1.f, 1.f);
+
+        camera_.update(frame_);
         sh_.bind();
-        {
-            const auto projection = glm::perspective(glm::radians(camera_.fovy), static_cast<float>(size.x) / size.y,
-                                                     camera_.zNear, camera_.zFar);
+        sh_.uniformMat4f("projection", camera_.projection);
+        sh_.uniformMat4f("view", camera_.view);
+        sh_.uniform3f("lightPos", lightPos);
+        sh_.uniform3f("lightColor", lightColor);
 
-            sh_.uniformMat4f("projection", projection);
-
-            const auto view = glm::lookAt(camera_.eye, camera_.eye + camera_.dir, camera_.up);
-            sh_.uniformMat4f("view", view);
-        }
         // todo: render commands
         {
             glm::mat4 model(1.f);
-            constexpr auto angularVel = glm::radians(360.f / 10.f);
-            const glm::vec3 pos(4.f, 4.f, 8.f);
-            const glm::vec3 color(1.f, 1.f, 1.f);
             // our little triangle will represent the light
-            sh_.uniform3f("lightPos", pos);
-            sh_.uniform3f("lightColor", color);
-            model = glm::translate(model, pos);
-            time_ += frame_.time;
+            model = glm::translate(model, lightPos);
+            constexpr auto angularVel = glm::radians(360.f / 10.f);
             model = glm::rotate(model, angularVel * time_, {0.f, 1.f, 0.f});
+
             sh_.uniformMat4f("model", model);
-            sh_.uniform4f("color", glm::vec4(color, 1.f));
+            sh_.uniform4f("color", glm::vec4(lightColor, 1.f));
             sh_.uniform1i("useTexture", false);
             sh_.uniform1i("doLighting", false);
+
             glBindVertexArray(vao_.getId());
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
         {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            glFrontFace(GL_CCW);
+
             sh_.uniformMat4f("model", glm::mat4(1.f));
             sh_.uniform4f("color", {1.f, 1.f, 1.f, 1.f});
             sh_.uniform1i("useTexture", true);
@@ -334,15 +237,15 @@ public:
                 glDrawElements(GL_TRIANGLES, mesh.numIndices, GL_UNSIGNED_INT,
                                reinterpret_cast<const void*>(mesh.indicesOffset));
             }
+
+            glDisable(GL_CULL_FACE);
         }
 
         appWidget_.update(frame_);
 
         ImGui::Begin("Scene3D");
         appWidget_.imgui(frame_);
-        ImGui::Text("toggle the camera mode - Esc");
-        ImGui::Text("pitch / yaw - mouse");
-        ImGui::Text("move - wsad, space (up), lshift (down)");
+        camera_.imgui();
         ImGui::End();
 
         renderer.projection({0.f, 0.f, properties_.size});
@@ -357,10 +260,9 @@ public:
     }
 
 private:
-    bool cameraMode_ = false;
-    glm::vec2 cursorPos_;
     float time_ = 0.f;
     hppv::AppWidget appWidget_;
+    hppv::Camera camera_;
     hppv::Font font_;
     hppv::Shader sh_;
     hppv::GLvao vao_;
@@ -369,41 +271,6 @@ private:
     // todo: mipmapping, gamma correction, sampler
     // todo?: Sampler class?
     hppv::Texture texDiffuse_;
-
-    struct
-    {
-        std::vector<int> pressed;
-        std::vector<int> released;
-        std::vector<int> held;
-    }
-    keys_;
-
-    struct
-    {
-        glm::vec3 eye = {0.f, 0.f, 3.f};
-        glm::vec3 dir;
-        const glm::vec3 up = {0.f, 1.f, 0.f};
-        const float fovy = 90.f; // degrees
-        const float zNear = 0.1f;
-        const float zFar = 10000.f;
-        float speed = 4.f;
-
-        // degrees
-        float pitch = 0.f;
-        float yaw = -90.f; // -z direction
-    }
-    camera_;
-
-    bool keyActive(int key) const {return find(keys_.held, key) || find(keys_.pressed, key);}
-
-    void toggleCameraMode()
-    {
-        cameraMode_ = !cameraMode_;
-        hppv::Request r(hppv::Request::Cursor);
-        r.cursor.mode = cameraMode_ ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
-        hppv::App::request(r);
-        cursorPos_ = hppv::App::getCursorPos();
-    }
 };
 
 RUN(Scene3D)

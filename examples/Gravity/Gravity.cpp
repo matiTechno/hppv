@@ -278,6 +278,7 @@ int main()
     hppv::App::InitParams p;
     p.glVersion = {4, 3};
     p.window.title = "Gravity";
+    p.window.state = hppv::Window::Fullscreen;
     if(!app.initialize(p)) return 1;
     app.pushScene<Gravity>();
     app.run();

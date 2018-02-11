@@ -158,6 +158,7 @@ int main(const int argc, const char* const * const argv)
 
     hppv::App::InitParams p;
     p.window.title = "Audio";
+    p.window.state = hppv::Window::Fullscreen;
     hppv::App app;
     if(!app.initialize(p)) return 1;
     app.pushScene<Audio>(argc == 2 ? argv[1] : "res/520387_Horizon_short.mp3");

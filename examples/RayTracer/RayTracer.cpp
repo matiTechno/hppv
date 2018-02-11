@@ -29,7 +29,7 @@
 // * better class and function names
 // * move some parts into separate files
 // * change the project name
-// * reuse the camera code from the Scene3D example
+// * reuse the camera code from widgets.hpp
 
 class RayTracer: public hppv::Scene
 {

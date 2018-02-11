@@ -1,15 +1,33 @@
 #include <algorithm> // std::copy, std::max
 
+#include <GLFW/glfw3.h>
+
+#include <glm/trigonometric.hpp> // glm::sin, glm::cos, glm::radians
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <hppv/widgets.hpp>
 #include <hppv/Frame.hpp>
 #include <hppv/App.hpp>
 #include <hppv/imgui.h>
+#include <hppv/Event.hpp>
 
 // ImGui::PushItemFlag()
 #include "imgui/imgui_internal.h"
 
 namespace hppv
 {
+
+void imguiPushDisabled(const float alpha)
+{
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+}
+
+void imguiPopDisabled()
+{
+    ImGui::PopStyleVar();
+    ImGui::PopItemFlag();
+}
 
 void AppWidget::update(const Frame& frame)
 {
@@ -106,16 +124,120 @@ void AppWidget::imgui(const Frame& frame) const
     ImGui::Spacing();
 }
 
-void imguiPushDisabled(const float alpha)
+Camera::Camera()
 {
-    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * alpha);
+    controls_[Forward] = GLFW_KEY_W;
+    controls_[Back] = GLFW_KEY_S;
+    controls_[Left] = GLFW_KEY_A;
+    controls_[Right] = GLFW_KEY_D;
+    controls_[Up] = GLFW_KEY_SPACE;
+    controls_[Down] = GLFW_KEY_LEFT_SHIFT;
+    controls_[ToggleCameraMode] = GLFW_KEY_ESCAPE;
 }
 
-void imguiPopDisabled()
+void Camera::enterCameraMode()
 {
-    ImGui::PopStyleVar();
-    ImGui::PopItemFlag();
+    cameraMode_ = false;
+    toggleCameraMode();
+}
+
+void Camera::processEvent(const Event& event)
+{
+    if(event.type == Event::Key)
+    {
+        auto idx = -1;
+        for(auto i = 0; i < NumControls; ++i)
+        {
+            if(event.key.key == controls_[i])
+            {
+                idx = i;
+                break;
+            }
+        }
+
+        if(idx == -1)
+            return;
+
+        if(event.key.action == GLFW_PRESS)
+        {
+            keys_.pressed[idx] = true;
+            keys_.held[idx] = true;
+        }
+        else if(event.key.action == GLFW_RELEASE)
+        {
+            keys_.held[idx] = false;
+        }
+    }
+    else if(event.type == Event::Cursor && cameraMode_)
+    {
+        const auto offset = event.cursor.pos - cursorPos_;
+        cursorPos_ = event.cursor.pos;
+        pitch -= offset.y * sensitivity;
+        // todo: why 89 and not 90? (learnopengl.com/Getting-started/Camera)
+        pitch = glm::min(89.f, pitch);
+        pitch = glm::max(-89.f, pitch);
+        yaw = glm::mod(yaw + offset.x * sensitivity, 360.f);
+    }
+}
+
+void Camera::update(const Frame& frame)
+{
+    if(keys_.pressed[ToggleCameraMode]) toggleCameraMode();
+
+    const auto dir = glm::normalize(glm::vec3(glm::cos(glm::radians(pitch)) * glm::cos(glm::radians(yaw)),
+                                              glm::sin(glm::radians(pitch)),
+                                              glm::cos(glm::radians(pitch)) * glm::sin(glm::radians(yaw))));
+    {
+        glm::vec3 moveDir(0.f);
+
+        if(active(Forward)) moveDir += dir;
+        if(active(Back)) moveDir -= dir;
+        {
+            const auto right = glm::normalize(glm::cross(dir, up));
+            if(active(Left)) moveDir -= right;
+            if(active(Right)) moveDir += right;
+        }
+        if(active(Up)) moveDir += up;
+        if(active(Down)) moveDir -= up;
+
+        if(glm::length(moveDir) != 0.f)
+        {
+            glm::normalize(moveDir);
+        }
+
+        eye += moveDir * speed * frame.time;
+    }
+
+    for(auto& key: keys_.pressed)
+    {
+        key = false;
+    }
+
+    const auto aspectRatio = static_cast<float>(frame.framebufferSize.x) / frame.framebufferSize.y;
+    projection = glm::perspective(glm::radians(fovy), aspectRatio, zNear, zFar);
+    view = glm::lookAt(eye, eye + dir, up);
+}
+
+void Camera::imgui() const
+{
+    ImGui::Text("toggle the camera mode - Esc");
+    ImGui::Text("pitch / yaw - mouse");
+    ImGui::Text("move - wsad, space (up), lshift (down)");
+    // todo: position, ...
+}
+
+void Camera::toggleCameraMode()
+{
+    cameraMode_ = !cameraMode_;
+    Request r(Request::Cursor);
+    r.cursor.mode = cameraMode_ ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL;
+    App::request(r);
+    cursorPos_ = App::getCursorPos();
+}
+
+bool Camera::active(const int control) const
+{
+    return keys_.pressed[control] || keys_.held[control];
 }
 
 } // namespace hppv

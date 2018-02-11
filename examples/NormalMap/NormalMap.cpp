@@ -34,8 +34,6 @@ public:
         texRock_{hppv::Texture("res/rock_diffuse.png"), hppv::Texture("res/rock_normal.png")},
         texTeapot_{hppv::Texture("res/teapot_diffuse.png"), hppv::Texture("res/teapot_normal.png")}
     {
-        prototype_.zoomFactor = 1.05f;
-
         light_.pos.z = 2.f;
 
         hppv::Shader* shaders[] = {&shDeferred_, &shTexture_};

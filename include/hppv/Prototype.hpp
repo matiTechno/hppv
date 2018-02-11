@@ -62,13 +62,14 @@ protected:
     {
         const char* const imguiWindowName = "Prototype";
         bool renderImgui = true;
+        // todo: test with different mice and find the best default
         float zoomFactor = 1.1f;
         bool alwaysZoomToCursor = true;
     }
     prototype_;
 
 private:
-    // todo: callbacks?
+    // todo?: callbacks?
     virtual void prototypeProcessInput(Pinput) {}
 
     // projection is already set
