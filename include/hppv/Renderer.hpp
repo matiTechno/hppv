@@ -40,7 +40,12 @@ struct Text
     glm::vec4 color = {1.f, 1.f, 1.f, 1.f};
     float rotation = 0.f; // angle in radians
     glm::vec2 rotationPoint = {0.f, 0.f}; // distance from the Text center
+
+    // todo?:
+    // * set font as the Renderer state?
+    // * assert(font)?
     const Font* font;
+
     std::string text; // UTF-8
 };
 
