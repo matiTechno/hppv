@@ -356,6 +356,7 @@ void DayNight::editor()
 
     imguiNewSection();
 
+    // bug: data.txt gradient 6 - value can exceed the duration
     ImGui::SliderFloat("time(s)", &time_, 0.f, current_->duration);
 
     ImGui::Text("set to 0 or disable 'go to next'\nto enable modifiers");
