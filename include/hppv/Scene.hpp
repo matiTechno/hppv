@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory> // unique_ptr
+#include <memory> // std::unique_ptr
 #include <vector>
 
 #include <glm/vec2.hpp>

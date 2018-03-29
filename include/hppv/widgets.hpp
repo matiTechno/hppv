@@ -98,7 +98,7 @@ private:
     keys_;
 
     glm::vec2 cursorPos_;
-    bool cameraMode_;
+    bool cameraMode_ = false;
 
     void toggleCameraMode();
     bool active(int control) const;
