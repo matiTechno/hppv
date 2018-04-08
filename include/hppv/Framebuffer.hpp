@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "Texture.hpp"
 #include "GLobjects.hpp"
 
@@ -11,6 +9,8 @@ namespace hppv
 class Framebuffer
 {
 public:
+    enum {MaxAttachments = 5};
+
     Framebuffer(GLenum textureFormat, int numAttachments);
 
     void bind();
@@ -28,9 +28,10 @@ public:
     void clear();
 
 private:
-    GLframebuffer framebuffer_;
-    std::vector<Texture> textures_;
     GLenum textureFormat_;
+    int numAttachments_;
+    GLframebuffer framebuffer_;
+    Texture textures_[MaxAttachments];
 };
 
 } // namespace hppv

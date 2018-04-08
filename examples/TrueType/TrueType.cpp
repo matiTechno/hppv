@@ -8,7 +8,7 @@ class TrueType: public hppv::Scene
 {
 public:
     TrueType():
-        font1_("SourceCodePro-Regular.otf", 26, u8"ĄąĆćĘęŁłŃńÓóŚśŹźŻż"),
+        font1_("res/SourceCodePro-Regular.otf", 26, u8"ĄąĆćĘęŁłŃńÓóŚśŹźŻż"),
         font2_(hppv::Font::Default(), 13)
     {
         properties_.maximize = true;

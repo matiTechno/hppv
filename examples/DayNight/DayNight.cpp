@@ -188,7 +188,7 @@ public:
     void editor();
 
 private:
-    const char* const filename_ = "data.txt";
+    const char* const filename_ = "res/data.txt";
     const hppv::Space space_ = {0.f, 0.f, 100.f, 100.f};
     hppv::Shader sh_;
     hppv::Font font_;

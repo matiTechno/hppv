@@ -42,8 +42,8 @@ Background::Background():
     assert(resources == nullptr);
     resources = &resources_;
 
-    resources_.font = hppv::Font("CPMono_v07 Bold.otf", 64);
-    resources_.texSnakeFood = hppv::Texture("food.png");
+    resources_.font = hppv::Font("res/CPMono_v07 Bold.otf", 64);
+    resources_.texSnakeFood = hppv::Texture("res/food.png");
 
     {
         std::random_device rd;

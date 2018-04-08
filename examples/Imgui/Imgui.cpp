@@ -8,8 +8,8 @@ class Imgui: public hppv::Scene
 {
 public:
     Imgui():
-        tex1_("dindinwo.jpg"),
-        tex2_("hamburger.png")
+        tex1_("res/dindinwo.jpg"),
+        tex2_("res/hamburger.png")
     {}
 
     void render(hppv::Renderer&) override

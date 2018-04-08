@@ -104,7 +104,7 @@ public:
         hppv::Prototype({0.f, 0.f, 100.f, 100.f}),
         fbOcclusion_(GL_RGBA8, 1),
         fbShadow_(GL_RGBA8, 1),
-        texTile_("tile.png"),
+        texTile_("res/tile.png"),
         shShadow_({hppv::Renderer::vInstancesSource, shadowSource}, "shShadow_"),
         shLight_({hppv::Renderer::vInstancesSource, lightSource}, "shLight_")
     {

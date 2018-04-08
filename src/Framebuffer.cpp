@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>
 
@@ -5,22 +7,23 @@ namespace hppv
 {
 
 Framebuffer::Framebuffer(const GLenum textureFormat, const int numAttachments):
-    textureFormat_(textureFormat)
+    textureFormat_(textureFormat),
+    numAttachments_(numAttachments)
 {
+    assert(numAttachments <= MaxAttachments);
+
     bind();
 
-    std::vector<GLenum> attachments(numAttachments);
+    GLenum attachments[MaxAttachments];
 
     for(auto i = 0; i < numAttachments; ++i)
     {
         attachments[i] = GL_COLOR_ATTACHMENT0 + i;
     }
 
-    glDrawBuffers(numAttachments, attachments.data());
+    glDrawBuffers(numAttachments, attachments);
 
     unbind();
-
-    textures_.resize(numAttachments);
 }
 
 void Framebuffer::bind()
@@ -35,7 +38,7 @@ void Framebuffer::unbind()
 
 void Framebuffer::setSize(const glm::ivec2 size)
 {
-    for(std::size_t i = 0; i < textures_.size(); ++i)
+    for(auto i = 0; i < numAttachments_; ++i)
     {
         textures_[i] = Texture(textureFormat_, size);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
