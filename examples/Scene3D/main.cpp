@@ -15,7 +15,6 @@
 #include <hppv/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <hppv/Scene.hpp>
 #include <hppv/imgui.h>
 #include <hppv/Shader.hpp>
 #include <hppv/GLobjects.hpp>

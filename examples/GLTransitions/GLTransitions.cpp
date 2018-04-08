@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/Shader.hpp>

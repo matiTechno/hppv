@@ -9,8 +9,6 @@
 #include <hppv/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <hppv/App.hpp>
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
 #include <hppv/Shader.hpp>

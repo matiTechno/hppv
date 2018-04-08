@@ -7,6 +7,6 @@
     p.window.title = #SceneType; \
     p.window.state = hppv::Window::Fullscreen; \
     if(!app.initialize(p)) return 1; \
-    app.pushScene<SceneType>(); \
+    app.pushScene(std::make_unique<SceneType>()); \
     app.run(); \
     return 0;}

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+#include "Scene.hpp"
 #include "Event.hpp"
 #include "Frame.hpp"
 #include "Deleter.hpp"
@@ -37,8 +38,9 @@ struct Request
         struct
         {
             // see glfwSetInputMode()
-            // GLFW_CURSOR_HIDDEN and GLFW_CURSOR_DISABLED
-            // disable imgui mouse capture (see ImGui_ImplGlfwGL3_NewFrame())
+            // GLFW_CURSOR_HIDDEN and GLFW_CURSOR_DISABLED disable
+            // imgui mouse capture (see ImGui_ImplGlfwGL3_NewFrame())
+
             int mode;
         }
         cursor;
@@ -89,17 +91,9 @@ public:
         window;
     };
 
-    // without these tests fail to compile
-    App();
-    ~App();
-
     bool initialize(const InitParams& initParams);
 
-    template<typename T, typename ... Args>
-    void pushScene(Args&& ... args)
-    {
-        scenes_.push_back(std::make_unique<T>(std::forward<Args>(args)...));
-    }
+    void pushScene(std::unique_ptr<Scene> scene) {scenes_.push_back(std::move(scene));}
 
     void run();
 

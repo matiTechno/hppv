@@ -280,7 +280,7 @@ int main()
     p.window.title = "Gravity";
     p.window.state = hppv::Window::Fullscreen;
     if(!app.initialize(p)) return 1;
-    app.pushScene<Gravity>();
+    app.pushScene(std::make_unique<Gravity>());
     app.run();
     return 0;
 }

@@ -3,7 +3,6 @@
 #include <glm/common.hpp> // glm::mix
 #include <glm/mat2x2.hpp>
 
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
 

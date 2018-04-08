@@ -1,4 +1,3 @@
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 
 #include "sol.hpp"

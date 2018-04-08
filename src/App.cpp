@@ -6,7 +6,6 @@
 #include <GLFW/glfw3.h>
 
 #include <hppv/App.hpp>
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Space.hpp>
 #include <hppv/imgui.h>
@@ -21,9 +20,6 @@ Frame App::frame_;
 bool App::handleQuitEvent_;
 std::vector<Request> App::requests_;
 std::vector<Event> App::events_;
-
-App::App() = default;
-App::~App() = default;
 
 bool App::initialize(const InitParams& initParams)
 {

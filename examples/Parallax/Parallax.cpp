@@ -5,7 +5,6 @@
 #include <glm/common.hpp> // glm::abs
 #include <glm/geometric.hpp> // glm::normalize
 
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/imgui.h>

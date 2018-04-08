@@ -4,7 +4,6 @@
 #include <string>
 
 #include <hppv/App.hpp>
-#include <hppv/Scene.hpp>
 #include <hppv/Deleter.hpp>
 #include <hppv/imgui.h>
 #include <hppv/Renderer.hpp>
@@ -161,7 +160,7 @@ int main(const int argc, const char* const * const argv)
     p.window.state = hppv::Window::Fullscreen;
     hppv::App app;
     if(!app.initialize(p)) return 1;
-    app.pushScene<Audio>(argc == 2 ? argv[1] : "res/520387_Horizon_short.mp3");
+    app.pushScene(std::make_unique<Audio>(argc == 2 ? argv[1] : "res/520387_Horizon_short.mp3"));
     app.run();
     return 0;
 }

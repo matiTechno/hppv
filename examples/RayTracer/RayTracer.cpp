@@ -2,7 +2,6 @@
 #include <thread>
 #include <functional> // std::ref
 
-#include <hppv/Scene.hpp>
 #include <hppv/Renderer.hpp>
 #include <hppv/Texture.hpp>
 #include <hppv/glad.h>
