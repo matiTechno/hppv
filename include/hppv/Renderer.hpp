@@ -208,20 +208,20 @@ public:
 
     // ----- fragment shader options, disabled by default
 
-    void premultiplyAlpha(bool on) {getBatchToUpdate().shader->uniform1i("premultiplyAlpha", on);}
+    void premultiplyAlpha(bool on) {getBatchToUpdate().premultiplyAlpha = on;}
 
     // good for rendering rotated sprites,
     // not so good when one sprite must perfectly cover the other
 
-    void antialiasedSprites(bool on) {getBatchToUpdate().shader->uniform1i("antialiasedSprites", on);}
+    void antialiasedSprites(bool on) {getBatchToUpdate().antialiasedSprites = on;}
 
     // ----- vertex shader options, disabled by default
 
     // work with non-vertices shaders
-    void flipTexRectX(bool on) {getBatchToUpdate(); uniform1i("flipTexRectX", on);}
-    void flipTexRectY(bool on) {getBatchToUpdate(); uniform1i("flipTexRectY", on);}
+    void flipTexRectX(bool on) {getBatchToUpdate().flipTexRectX = on;}
+    void flipTexRectY(bool on) {getBatchToUpdate().flipTexRectY = on;}
 
-    void flipTextureY(bool on) {getBatchToUpdate(); uniform1i("flipTextureY", on);}
+    void flipTextureY(bool on) {getBatchToUpdate().flipTextureY = on;}
 
     // -----
 
@@ -326,6 +326,11 @@ private:
         Shader* shader;
         GLenum srcAlpha;
         GLenum dstAlpha;
+        bool premultiplyAlpha;
+        bool antialiasedSprites;
+        bool flipTexRectX;
+        bool flipTexRectY;
+        bool flipTextureY;
 
         struct
         {

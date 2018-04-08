@@ -110,6 +110,11 @@ Renderer::Renderer():
         batch.shader = &shaderBasic_;
         batch.srcAlpha = GL_ONE;
         batch.dstAlpha = GL_ONE_MINUS_SRC_ALPHA;
+        batch.premultiplyAlpha = false;
+        batch.antialiasedSprites = false;
+        batch.flipTexRectX = false;
+        batch.flipTexRectY = false;
+        batch.flipTextureY = false;
         batch.instances.start = 0;
         batch.instances.count = 0;
         batch.texUnits.start = 1; // first texUnit is omitted, it exists only for texUnits_.back().texture->getSize()
@@ -468,19 +473,37 @@ void Renderer::flush()
 
         glViewport(batch.viewport.x, batch.viewport.y, batch.viewport.z, batch.viewport.w);
 
+        auto& shader = *batch.shader;
+        shader.bind();
+
+        if(&shader == &shaderBasic_ || &shader == &shaderVertices_)
         {
-            auto& shader = *batch.shader;
-            shader.bind();
+            shader.uniform1i("premultiplyAlpha", batch.premultiplyAlpha);
+        }
 
-            {
-                const auto projection = batch.projection;
+        if(&shader == &shaderBasic_)
+        {
+            shader.uniform1i("antialiasedSprites", batch.antialiasedSprites);
+        }
 
-                const auto matrix = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
-                                               projection.pos.y + projection.size.y, projection.pos.y);
+        if(batch.vao == &vaoInstances_)
+        {
+            shader.uniform1i("flipTexRectX", batch.flipTexRectX);
+            shader.uniform1i("flipTexRectY", batch.flipTexRectY);
+        }
 
-                shader.uniformMat4f("projection", matrix);
-            }
+        shader.uniform1i("flipTextureY", batch.flipTextureY);
 
+        {
+            const auto projection = batch.projection;
+
+            const auto matrix = glm::ortho(projection.pos.x, projection.pos.x + projection.size.x,
+                                     projection.pos.y + projection.size.y, projection.pos.y);
+
+            shader.uniformMat4f("projection", matrix);
+        }
+
+        {
             const auto start = batch.uniforms.start;
             const auto count = batch.uniforms.count;
 

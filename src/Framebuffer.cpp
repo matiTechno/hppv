@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <cassert>
 
 #include <hppv/Framebuffer.hpp>
 #include <hppv/glad.h>

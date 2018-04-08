@@ -4,13 +4,10 @@ todo:
 
 * curves, lines
 * Space rotation, Camera class?
-* test (Renderer): replace 4x4 matrices with 3x3
 * lua bindings
 * profiling, allocations
 * flat_map
-* UTF-8 - input, dynamic glyph caching?
-* better cmake (finding libraries / cross-compilation)
-* license
+* better cmake (finding libraries / cross-platform)
 
 included:
 
