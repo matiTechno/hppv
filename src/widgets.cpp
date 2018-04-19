@@ -119,7 +119,7 @@ void AppWidget::imgui(const Frame& frame) const
     ImGui::Spacing();
     ImGui::PushStyleColor(ImGuiCol_PlotLines, {1.f, 1.f, 0.f, 1.f});
     ImGui::PushStyleColor(ImGuiCol_FrameBg, {1.f, 0.8f, 0.8f, 0.07f});
-    ImGui::PlotLines("", frameTimesMs_, size(frameTimesMs_), 0, nullptr, 0, 33, {0, 80});
+    ImGui::PlotLines("", frameTimesMs_, size(frameTimesMs_), 0, nullptr, 0.f, 33.f, {0, 80});
     ImGui::PopStyleColor(2);
     ImGui::Spacing();
 }
