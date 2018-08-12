@@ -176,7 +176,7 @@ void Camera::processEvent(const Event& event)
         // todo: why 89 and not 90? (learnopengl.com/Getting-started/Camera)
         pitch = glm::min(89.f, pitch);
         pitch = glm::max(-89.f, pitch);
-        yaw = glm::mod(yaw + offset.x * sensitivity, 360.f);
+        yaw = fmod(yaw + offset.x * sensitivity, 360.f);
     }
 }
 
