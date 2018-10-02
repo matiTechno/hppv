@@ -107,7 +107,7 @@ public:
         {
             renderer.flush();
 
-            constexpr glm::vec2 size{200, 200};
+            const glm::vec2 size{200, 200};
             d3_.render(size, frame_.time);
 
             renderer.projection({0, 0, properties_.size});
@@ -136,7 +136,7 @@ private:
     {
         Image(): buffer(size.x * size.y), tex(GL_RGB8, size) {}
 
-        static constexpr glm::ivec2 size{800, 600};
+        static inline glm::ivec2 size{800, 600};
         std::vector<Pixel> buffer;
         hppv::Texture tex;
         std::atomic_int renderProgress = 0;
@@ -220,7 +220,7 @@ private:
 
                 glm::mat4 model(1.f);
 
-                constexpr auto angularVel = glm::radians(360.f / 10.f);
+                const auto angularVel = glm::radians(360.f / 10.f);
                 model = glm::rotate(model, angularVel * time, {0.f, 1.f, 0.f});
 
                 sh.uniformMat4f("model", model);

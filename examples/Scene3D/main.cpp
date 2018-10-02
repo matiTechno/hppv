@@ -208,7 +208,7 @@ public:
             glm::mat4 model(1.f);
             // our little triangle will represent the light
             model = glm::translate(model, lightPos);
-            constexpr auto angularVel = glm::radians(360.f / 10.f);
+            const auto angularVel = glm::radians(360.f / 10.f);
             model = glm::rotate(model, angularVel * time_, {0.f, 1.f, 0.f});
 
             sh_.uniformMat4f("model", model);

@@ -87,8 +87,8 @@ public:
 
         renderer.shader(hppv::Render::CircleColor);
 
-        constexpr M2 shear{{1.f, 0.f}, {1.f, 1.f}};
-        constexpr M2 rotation90{{0.f, 1.f}, {-1.f, 0.f}};
+        const M2 shear{{1.f, 0.f}, {1.f, 1.f}};
+        const M2 rotation90{{0.f, 1.f}, {-1.f, 0.f}};
         const auto outputMatrix = rotation90 * shear;
 
         assert(glm::mat2(rotation90.i, rotation90.j) * glm::mat2(shear.i, shear.j) * glm::vec2(1.f) ==

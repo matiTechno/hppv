@@ -186,7 +186,7 @@ void Snake::render(hppv::Renderer& renderer)
     const hppv::Space mapSpace(0.f, 0.f, 100.f, 100.f);
 
     {
-        constexpr glm::vec2 mapOffset(2.f);
+        const glm::vec2 mapOffset(2.f);
         const hppv::Space space(mapSpace.pos - mapOffset, mapSpace.size + 2.f * mapOffset);
         renderer.projection(hppv::expandToMatchAspectRatio(space, frame_.framebufferSize));
     }
