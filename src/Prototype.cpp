@@ -13,6 +13,7 @@ namespace hppv
 Prototype::Prototype(const Space space):
     space_(space)
 {
+    space_.newFrame(frame_.framebufferSize); // initialize space_.projected_
     properties_.maximize = true;
     cursorPos_ = App::getCursorPos();
 }

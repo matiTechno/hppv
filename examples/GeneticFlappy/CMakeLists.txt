@@ -1,0 +1,2 @@
+add_executable(GeneticFlappy GeneticFlappy.cpp)
+target_link_libraries(GeneticFlappy hppv)
