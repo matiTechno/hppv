@@ -362,7 +362,24 @@ private:
         for(Bird& bird: birds)
             alive += !bird.dead;
         ImGui::Text("birds alive: %d", alive);
-        ImGui::Text("score: %f", birds[0].score);
+
+        float score;
+
+        if(play_as_human)
+            score = birds[0].score;
+        else
+        {
+            for(Bird& bird: birds)
+            {
+                if(!bird.dead)
+                {
+                    score = bird.score;
+                    break;
+                }
+            }
+        }
+
+        ImGui::Text("score: %f", score);
 
         if(ImGui::Checkbox("play as human", &play_as_human))
             init_game();
