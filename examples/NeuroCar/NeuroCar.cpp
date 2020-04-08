@@ -609,6 +609,18 @@ public:
                 car.eliminated = true;
         }
 
+        if(ImGui::Button("restart"))
+        {
+            for(Car& car: cars)
+            {
+                net_randomize_params(car.net);
+
+                if(!human_player)
+                    restart_car(car, checkpoints);
+            }
+            generation = 0;
+        }
+
         ImGui::End();
 
         rr.mode(hppv::RenderMode::Vertices);
