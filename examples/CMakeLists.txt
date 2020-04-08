@@ -33,6 +33,7 @@ add_subdirectory(Parallax)
 add_subdirectory(DayNight)
 add_subdirectory(Matrix2x2)
 add_subdirectory(GeneticFlappy)
+add_subdirectory(NeuroCar)
 
 option(LUA_TEST "build LuaTest example" ON)
 
