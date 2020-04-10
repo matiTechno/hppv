@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(hppv)
 
 option(EXAMPLES "build examples" ON)
-option(TESTS "build tests" ON)
+option(TESTS "build tests" OFF)
 
 # hack? I want to keep the asserts
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2")

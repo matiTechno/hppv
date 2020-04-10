@@ -34,8 +34,9 @@ add_subdirectory(DayNight)
 add_subdirectory(Matrix2x2)
 add_subdirectory(GeneticFlappy)
 add_subdirectory(NeuroCar)
+add_subdirectory(Numerics)
 
-option(LUA_TEST "build LuaTest example" ON)
+option(LUA_TEST "build LuaTest example" OFF)
 
 if(LUA_TEST)
     add_subdirectory(LuaTest)
@@ -47,7 +48,7 @@ if(UNIX AND NOT APPLE)
     add_subdirectory(Audio)
 endif()
 
-option (SCENE3D "build Scene3D example" ON)
+option (SCENE3D "build Scene3D example" OFF)
 
 if(SCENE3D)
     add_subdirectory(Scene3D)

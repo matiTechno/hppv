@@ -412,6 +412,7 @@ public:
     float best_prev_score = 0.f;
     int generation = 0;
     bool human_player = false;
+    float accumulator = 0.f;
 
     NeuroCar():
         hppv::Prototype({0.f, 0.f, 100.f, 100.f})
@@ -475,9 +476,6 @@ public:
 
     void sim(float dt)
     {
-        if(dt > 0.02f)
-            dt = 0.02f;
-
         for(Car& car: cars)
         {
             if(car.eliminated)
@@ -595,8 +593,17 @@ public:
 
     void prototypeRender(hppv::Renderer& rr) override
     {
-        for(int i = 0; i < speedup; ++i)
-            sim(frame_.time);
+        float dt = 0.007f;
+        accumulator += frame_.time * speedup;
+
+        if(accumulator > 100 * dt) // avoid the spiral of death
+            accumulator = 100 * dt;
+
+        while(accumulator >= dt)
+        {
+            accumulator -= dt;
+            sim(dt);
+        }
 
         ImGui::Begin(prototype_.imguiWindowName);
         ImGui::Text("generation: %d", generation);
