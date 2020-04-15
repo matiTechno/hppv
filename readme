@@ -2,32 +2,12 @@ h p p v
 
 screenshots are on the releases page
 
-todo:
-
-* curves, lines
-* Space rotation, Camera class?
-* lua bindings
-* profiling, allocations
-* flat_map
-* better cmake (finding libraries / cross-platform)
-
-included:
-
-* catch.hpp
-* dear imgui
-* glad.c glad.h
-* stb_image.h
-* sol2 - sol.h (LuaTest)
-* FMOD Low Level Api for Linux (Audio)
-
 dependencies:
 
 * glfw
 * glm
-* lua (LuaTest, see cmake options)
-* assimp (Scene3D, ^)
 
-compiles with gcc 7.3 and clang 5.0 on Linux
+compiles on Linux
 
 runs with OpenGL 3.3,
 ARB_texture_storage and ARB_base_instance extensions must be supported

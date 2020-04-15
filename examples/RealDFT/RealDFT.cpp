@@ -131,7 +131,7 @@ void draw_axes(hppv::Renderer& rr, glm::vec2 origin, float line_length)
 
 #define TEST_SIZE 200
 
-class Numerics: public hppv::Prototype
+class RealDFT: public hppv::Prototype
 {
 public:
     bool taylor_mode = false;
@@ -150,7 +150,7 @@ public:
 
     } debug;
 
-    Numerics():
+    RealDFT():
         hppv::Prototype({-10.f, -10.f, 40.f, 40.f})
     {
         float total_time = 30.f; // in case of an exponential function signal change this to a smaller value, e.g. 5.f (otherwise DFT will produce some crap)
@@ -358,4 +358,4 @@ public:
     }
 };
 
-RUN(Numerics)
+RUN(RealDFT)

@@ -34,7 +34,8 @@ add_subdirectory(DayNight)
 add_subdirectory(Matrix2x2)
 add_subdirectory(GeneticFlappy)
 add_subdirectory(NeuroCar)
-add_subdirectory(Numerics)
+add_subdirectory(RealDFT)
+add_subdirectory(FourierDrawing)
 
 option(LUA_TEST "build LuaTest example" OFF)
 

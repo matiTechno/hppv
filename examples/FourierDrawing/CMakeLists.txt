@@ -1,0 +1,2 @@
+add_executable(FourierDrawing FourierDrawing.cpp)
+target_link_libraries(FourierDrawing hppv)
