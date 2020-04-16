@@ -129,6 +129,83 @@ void draw_axes(hppv::Renderer& rr, glm::vec2 origin, float line_length)
     rr.breakBatch();
 }
 
+struct Complex
+{
+    float re;
+    float im;
+};
+
+Complex cx_exp(float exp)
+{
+    return {cosf(exp), sinf(exp)};
+}
+
+Complex cx_mul(Complex lhs, Complex rhs)
+{
+    return {lhs.re * rhs.re - lhs.im * rhs.im, lhs.re * rhs.im + lhs.im * rhs.re};
+}
+
+Complex cx_add(Complex lhs, Complex rhs)
+{
+    return {lhs.re + rhs.re, lhs.im + rhs.im};
+}
+
+Complex cx_sub(Complex lhs, Complex rhs)
+{
+    return {lhs.re - rhs.re, lhs.im - rhs.im};
+}
+
+void rfft_impl(Complex* x, int N)
+{
+    if(N == 1)
+        return;
+
+    int n = N / 2;
+    rfft_impl(x, n);
+    rfft_impl(x + n, n);
+
+    for(int k = 0; k < n; ++k)
+    {
+        Complex even = x[k];
+        Complex odd = x[k + n];
+        Complex rhs = cx_mul(cx_exp(-2.f * pi * k / N), odd);
+        x[k] = cx_add(even, rhs);
+        x[k + n] = cx_sub(even, rhs);
+    }
+}
+
+// recursive in-place FFT implementation
+// x is an array of samples and is overwritten with output (Fourier coefficients; or inversely when used as an inverse transformation)
+
+void rfft(Complex* x, int N)
+{
+    assert( ((N & (N - 1)) == 0) && N); // N must be a power of two
+
+    // bit-reversal sorting
+
+    for(unsigned int i = 0; i < N; ++i)
+    {
+        assert(sizeof(unsigned int) == 4);
+
+        unsigned int b = i;
+
+        b = ((b >> 1) & 0x55555555) | ((b & 0x55555555) << 1);
+        b = ((b >> 2) & 0x33333333) | ((b & 0x33333333) << 2);
+        b = ((b >> 4) & 0x0f0f0f0f) | ((b & 0x0f0f0f0f) << 4);
+        b = ((b >> 8) & 0x00ff00ff) | ((b & 0x00ff00ff) << 8);
+        b = ((b >> 16) | (b << 16)) >> (32 - (int)log2(N));
+
+        if(b > i)
+        {
+            Complex tmp = x[i];
+            x[i] = x[b];
+            x[b] = tmp;
+        }
+    }
+
+    rfft_impl(x, N);
+}
+
 #define TEST_SIZE 200
 
 class RealDFT: public hppv::Prototype
@@ -137,7 +214,7 @@ public:
     bool taylor_mode = false;
     int taylor_degree = 1;
     std::vector<float> signal;
-    float sampling_period = 0.005f;
+    float sampling_period;
     std::vector<Harmonic> harmonics;
     std::vector<float> synthesis; // reconstructed signal using Fourier series (harmonics)
     struct
@@ -155,19 +232,63 @@ public:
     {
         float total_time = 30.f; // in case of an exponential function signal change this to a smaller value, e.g. 5.f (otherwise DFT will produce some crap)
 
-        for(float t = 0.f; t < total_time; t += sampling_period)
+        int sample_count = 1024; // must be a power of two (for FFT)
+        sampling_period = total_time / sample_count;
+
+        float t = 0.f;
+
+        for(int i = 0; i < sample_count; ++i)
+        {
             signal.push_back(signal1(t)); // change signal function to see the effect on various input functions
+            t += sampling_period;
+        }
 
-        if(signal.size() % 2)
-            signal.pop_back();
+        // test FFT implementation of DFT
+        {
+            std::vector<Complex> complex_signal;
 
+            for(float s: signal)
+                complex_signal.push_back({s, 0.f});
+
+            rfft(complex_signal.data(), complex_signal.size());
+
+            // Fourier coefficients are stored in complex_signal, transform them into harmonics
+
+            for(int k = 0; k <= complex_signal.size() / 2; ++k) // notice <=, same as in realDFT(); don't exceed Nyquist frequency
+            {
+                Complex coeff = complex_signal[k];
+                Harmonic hm;
+                hm.amp = sqrt(coeff.re * coeff.re + coeff.im * coeff.im) / complex_signal.size();
+                hm.phase = pi / 2.f + atan2f(coeff.im, coeff.re);
+
+                if(k != 0 && k != complex_signal.size() / 2)
+                    hm.amp *= 2.f;
+
+                harmonics.push_back(hm);
+            }
+
+            // inverse transform (synthesis)
+            // https://www.embedded.com/dsp-tricks-computing-inverse-ffts-using-the-forward-fft/
+
+            for(Complex& c: complex_signal)
+                c.im *= -1.f;
+
+            rfft(complex_signal.data(), complex_signal.size());
+            // second negation is skipped, only real part is used
+
+            for(Complex c: complex_signal)
+                synthesis.push_back(c.re / complex_signal.size());
+        }
+
+        // disabled in favor of FFT
+        /*
         harmonics = dft(signal);
 
         for(int n = 0; n < signal.size(); ++n)
         {
             float sum = 0.f;
 
-            for(int k = 0; k < harmonics.size(); ++k)
+            for(int k = 0; k < harmonics.size(); ++k) // try e.g. k < 40 to see intermediate approximation
             {
                 Harmonic hm = harmonics[k];
                 float angle = hm.phase + (2.f * pi * k * n / signal.size());
@@ -175,6 +296,7 @@ public:
             }
             synthesis.push_back(sum);
         }
+        */
     }
 
     void prototypeRender(hppv::Renderer& rr) override
