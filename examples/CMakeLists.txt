@@ -36,6 +36,7 @@ add_subdirectory(GeneticFlappy)
 add_subdirectory(NeuroCar)
 add_subdirectory(RealDFT)
 add_subdirectory(FourierDrawing)
+add_subdirectory(AudioFFT)
 
 option(LUA_TEST "build LuaTest example" OFF)
 
