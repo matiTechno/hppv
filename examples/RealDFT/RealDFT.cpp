@@ -129,6 +129,11 @@ void draw_axes(hppv::Renderer& rr, glm::vec2 origin, float line_length)
     rr.breakBatch();
 }
 
+int ilog2(int n)
+{
+    return log2(n) + 0.5f;
+}
+
 struct Complex
 {
     float re;
@@ -174,14 +179,11 @@ void rfft_impl(Complex* x, int N)
     }
 }
 
-// recursive in-place FFT implementation
-// x is an array of samples and is overwritten with output (Fourier coefficients; or inversely when used as an inverse transformation)
+// bit-reversal sorting
 
-void rfft(Complex* x, int N)
+void fft_sort(Complex* x, int N)
 {
     assert( ((N & (N - 1)) == 0) && N); // N must be a power of two
-
-    // bit-reversal sorting
 
     for(unsigned int i = 0; i < N; ++i)
     {
@@ -193,7 +195,7 @@ void rfft(Complex* x, int N)
         b = ((b >> 2) & 0x33333333) | ((b & 0x33333333) << 2);
         b = ((b >> 4) & 0x0f0f0f0f) | ((b & 0x0f0f0f0f) << 4);
         b = ((b >> 8) & 0x00ff00ff) | ((b & 0x00ff00ff) << 8);
-        b = ((b >> 16) | (b << 16)) >> (32 - (int)log2(N));
+        b = ((b >> 16) | (b << 16)) >> (32 - ilog2(N));
 
         if(b > i)
         {
@@ -202,8 +204,43 @@ void rfft(Complex* x, int N)
             x[b] = tmp;
         }
     }
+}
 
+// recursive in-place FFT implementation
+// x is an array of samples and is overwritten with output (Fourier coefficients; or inversely when used as an inverse transformation)
+
+void rfft(Complex* x, int N)
+{
+    fft_sort(x, N);
     rfft_impl(x, N);
+}
+
+// iterative implementation
+
+void fft(Complex* x, int N)
+{
+    fft_sort(x, N);
+
+    for(int stride = 2; stride <= N; stride *= 2)
+    {
+        Complex w_s = cx_exp(-2.f * pi / stride);
+        int n = stride / 2;
+
+        for(int off = 0; off < N; off += stride)
+        {
+            Complex w = {1.f, 0.f};
+
+            for(int k = 0; k < n; ++k)
+            {
+                Complex even = x[off + k];
+                Complex odd = x[off + k + n];
+                Complex rhs = cx_mul(w, odd);
+                x[off + k] = cx_add(even, rhs);
+                x[off + k + n] = cx_sub(even, rhs);
+                w = cx_mul(w, w_s);
+            }
+        }
+    }
 }
 
 #define TEST_SIZE 200
@@ -250,7 +287,7 @@ public:
             for(float s: signal)
                 complex_signal.push_back({s, 0.f});
 
-            rfft(complex_signal.data(), complex_signal.size());
+            fft(complex_signal.data(), complex_signal.size()); // alternatively use a recursive version
 
             // Fourier coefficients are stored in complex_signal, transform them into harmonics
 
@@ -273,7 +310,7 @@ public:
             for(Complex& c: complex_signal)
                 c.im *= -1.f;
 
-            rfft(complex_signal.data(), complex_signal.size());
+            fft(complex_signal.data(), complex_signal.size());
             // second negation is skipped, only real part is used
 
             for(Complex c: complex_signal)
