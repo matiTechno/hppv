@@ -13,6 +13,7 @@
 #include <hppv/Renderer.hpp>
 #include <hppv/imgui.h>
 #include <hppv/glad.h>
+#include <hppv/Font.hpp>
 
 #include "../run.hpp"
 
@@ -135,6 +136,10 @@ void sdl_error()
 
 // todo: 'culled' frequencies seem not to be 100% culled, I don't know why (it is not that bad visually)
 // + there is some weird sound distortion happening when culling is performed
+// ok, these two seem to be related, when the whole muted band goes up (uniformly) this weird sound is happening
+// the question is: why the muted band is still changing (at least uniformly across the entire band)
+// see this:
+// https://dsp.stackexchange.com/questions/6220/why-is-it-a-bad-idea-to-filter-by-zeroing-out-fft-bins
 
 class Scene: public hppv::Prototype
 {
@@ -155,9 +160,21 @@ public:
     bool lmb = false;
     int cull_fq_beg = 1;
     int cull_fq_end = 1;
+    std::vector<glm::vec2*> graphs; // spectrogram
 
     Scene(): hppv::Prototype({0.f, 0.f, 100.f, 100.f})
     {
+        for(int i = 0; i < 100; ++i)
+        {
+            int size = SAMPLE_COUNT / 2;
+            glm::vec2* graph = (glm::vec2*)malloc(sizeof(glm::vec2) * size);
+
+            for(int i = 0; i < size; ++i)
+                graph[i].x = 1000.f;
+
+            graphs.push_back(graph);
+        }
+
         stream.pos = 0;
         prepare_next = false;
         fft_buf = (Complex*)malloc(sizeof(Complex) * SAMPLE_COUNT);
@@ -174,7 +191,7 @@ public:
         unsigned char* tmp_buf;
         unsigned int tmp_size;
 
-        if(!SDL_LoadWAV("/home/mat/output.wav", &spec, &tmp_buf, &tmp_size))
+        if(!SDL_LoadWAV("res/output.wav", &spec, &tmp_buf, &tmp_size))
             sdl_error();
 
         assert(spec.channels == 2);
@@ -268,6 +285,8 @@ public:
 
     void prototypeRender(hppv::Renderer& rr) override
     {
+        bool graph_swapped = false;
+
         if(prepare_next)
         {
             audio_buf_unmod = stream.samples + stream.pos - SAMPLE_COUNT;
@@ -336,7 +355,27 @@ public:
             prepare_next = false;
             SDL_UnlockAudio();
             stream.pos += SAMPLE_COUNT;
+
+            graphs.insert(graphs.begin(), graphs.back());
+            graphs.pop_back();
+            graph_swapped = true;
         }
+
+        // update spectrogram
+
+        if(pause_on_click)
+        {
+            for(glm::vec2* graph: graphs)
+            {
+                for(int i = 0; i < SAMPLE_COUNT / 2; ++i)
+                {
+                    graph[i].x += 2.5f * frame_.time;
+                    graph[i].y -= 5.f * frame_.time;
+                }
+            }
+        }
+
+        // render imgui
 
         ImGui::Begin(prototype_.imguiWindowName);
 
@@ -346,6 +385,24 @@ public:
             pause_on_click = !pause_on_click;
         }
         ImGui::Checkbox("show unmodified audio", &show_unmod);
+
+        {
+            float world_x = hppv::mapCursor(cursor_current_pos, space_.projected, this).x;
+            float x = map(world_x, 0.f, 5.f, 0.f, 100.f);
+            int real_fq;
+
+            if(x < 0.f || x > 5.f)
+                real_fq = 0.f;
+            else
+                real_fq = powf(10.f, x);
+            ImGui::Text("frequency: %d Hz", real_fq);
+        }
+        if(cull_fq_beg != cull_fq_end)
+        {
+            int real_fq_beg = (float)cull_fq_beg * AUDIO_FQ / SAMPLE_COUNT;
+            int real_fq_end = (float)cull_fq_end * AUDIO_FQ / SAMPLE_COUNT;
+            ImGui::Text("muted band: %d - %d Hz", real_fq_beg, real_fq_end);
+        }
         ImGui::End();
 
         // fill fft buffer
@@ -397,8 +454,11 @@ public:
             x = map(x, 0.f, 100.f, 0.f, 5.f);
             hppv::Vertex v;
             v.pos.x = x;
-            v.pos.y = 80.f + -120.f * amp;
+            v.pos.y = 80.f + -80.f * amp;
             rr.cache(&v, 1);
+
+            if(graph_swapped)
+                graphs.front()[k] = v.pos;
         }
 
         // render a culled frequency band
@@ -426,6 +486,23 @@ public:
             rr.cache(&v, 1);
             v.pos.x = x_end;
             rr.cache(&v, 1);
+        }
+
+        // skip the first graph if it was created in the current frame
+        int idx_start = graph_swapped ? 1 : 0;
+
+        for(int i = idx_start; i < (int)graphs.size(); ++i)
+        {
+            rr.breakBatch();
+            glm::vec2* graph = graphs[i];
+            hppv::Vertex v;
+            v.color = {0.3f, 0.05f, 0.1f, 0.f};
+
+            for(int k = 1; k < SAMPLE_COUNT / 2; ++k)
+            {
+                v.pos = graph[k];
+                rr.cache(&v, 1);
+            }
         }
     }
 };
