@@ -38,6 +38,7 @@ add_subdirectory(RealDFT)
 add_subdirectory(FourierDrawing)
 add_subdirectory(AudioFFT)
 add_subdirectory(FFT2D)
+add_subdirectory(IK)
 
 option(LUA_TEST "build LuaTest example" OFF)
 
